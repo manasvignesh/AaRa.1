@@ -241,7 +241,42 @@ export function selectDeterministicMeals(
     return selectedMeals;
 }
 
-export function selectBestMealForSlot() {
-    // Deprecated by strict engine
-    return null;
+export function selectBestMealForSlot(
+    dietType: string,
+    age: number,
+    slotType: string,
+    excludeNames: Set<string>,
+    recentMeals: any[] = []
+): any {
+    // 1. Load fresh library
+    const lib = loadLibrary(dietType);
+    if (!lib) return null;
+
+    const tier = getCalorieTier(age);
+
+    // 2. Filter candidates
+    const candidates = lib.meals.filter(m =>
+        m.mealType === slotType &&
+        m.calorieTier === tier &&
+        !excludeNames.has(m.name)
+    );
+
+    if (candidates.length === 0) return null;
+
+    // 3. Simple rotation (pick first available that isn't excluded)
+    // In a real "best" logic we'd check recentMeals, but for now just returning valid data is crucial.
+    const selected = candidates[0];
+
+    return {
+        type: slotType,
+        name: selected.name,
+        calories: selected.calories,
+        protein: selected.protein,
+        carbs: selected.carbs,
+        fats: selected.fats,
+        ingredients: [selected.prep],
+        instructions: `Preparation: ${selected.prep || "Standard"}.`,
+        quantity: "1 Serving",
+        why: "Regenerated alternative."
+    };
 }
