@@ -57,10 +57,10 @@ async function fetchNutritionInfo(query: string) {
   }
 }
 
-export async function registerRoutes(
+export function registerRoutes(
   httpServer: Server,
   app: Express
-): Promise<Server> {
+): Server {
   const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
     if (req.isAuthenticated()) return next();
     res.sendStatus(401);
