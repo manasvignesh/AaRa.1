@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AaRa Workout</string>
+    <string name="title_activity_main">AaRa Workout</string>
+    <string name="package_name">com.aara.fitness</string>
+    <string name="custom_url_scheme">com.aara.fitness</string>
+</resources>

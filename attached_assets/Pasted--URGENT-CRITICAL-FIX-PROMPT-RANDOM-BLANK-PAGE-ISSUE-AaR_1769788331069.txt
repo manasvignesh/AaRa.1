@@ -1,0 +1,225 @@
+🚨 URGENT CRITICAL FIX PROMPT — RANDOM BLANK PAGE ISSUE (AaRa)
+ABSOLUTE PRIORITY — READ FIRST
+
+STOP all feature development immediately.
+
+You are working on AaRa, a health-critical, user-facing application.
+
+The app is currently UNUSABLE due to random blank pages appearing when users click buttons.
+
+This is a SEV-1 CRITICAL FAILURE.
+
+❌ No new features
+❌ No UI polish
+❌ No refactors
+❌ No assumptions
+
+Your ONLY goal is to ELIMINATE ALL BLANK PAGES and make the app state-safe and non-breakable.
+
+PROBLEM STATEMENT (CONFIRMED)
+
+Observed behavior:
+
+Clicking various buttons (meal regenerate, navigation, progress, back, etc.)
+
+App redirects to a blank / white page
+
+No error message
+
+No fallback UI
+
+User is stuck
+
+This happens randomly, not tied to one feature.
+
+This indicates:
+👉 Broken navigation guards
+👉 Undefined / null state rendering
+👉 Routes loading without required data
+👉 Silent runtime errors
+
+NON-NEGOTIABLE RULE
+
+A BLANK PAGE MUST NEVER OCCUR — UNDER ANY CIRCUMSTANCE.
+
+If data is missing, invalid, or blocked:
+👉 Show an error screen
+👉 OR show an empty state
+👉 OR stay on the same page
+
+But NEVER render nothing.
+
+YOUR TASK (DO NOT SKIP STEPS)
+1️⃣ GLOBAL FLOW TRACE (MANDATORY)
+
+Trace the app end-to-end:
+
+App initialization
+
+Global state provider
+
+Router / navigation system
+
+Page-level guards
+
+Button click handlers
+
+API calls
+
+Async responses
+
+Page rendering conditions
+
+You must identify:
+
+Where a route is being rendered with undefined / null / empty state.
+
+2️⃣ IDENTIFY ROOT CAUSE (NO GUESSING)
+
+You must explicitly check and report:
+
+❌ Route navigation before data is ready
+
+❌ Pages that assume data exists
+
+❌ Conditional rendering like if (!data) return null
+
+❌ Unhandled promise rejections
+
+❌ API calls failing silently
+
+❌ Global state being reset or lost
+
+❌ Navigation to routes without required params
+
+❌ Missing default state initialization
+
+You must state clearly:
+
+“Blank pages occur because ________.”
+
+3️⃣ APPLY A GLOBAL FIX STRATEGY (REQUIRED)
+
+You must implement ALL of the following:
+
+✅ A. GLOBAL ERROR BOUNDARY / SAFETY WRAPPER
+
+Every screen MUST be wrapped in a safety layer that:
+
+Catches render errors
+
+Prevents white screens
+
+Displays a fallback UI
+
+Example behavior (conceptual):
+
+“Something didn’t load correctly. We’re fixing it.”
+
+❌ No silent failures
+
+✅ B. ROUTE GUARDS FOR ALL PAGES
+
+Before navigating to ANY page:
+
+Validate required data exists
+
+If missing:
+
+DO NOT navigate
+
+Show explanation
+
+Provide retry
+
+❌ No route should render without validated state.
+
+✅ C. LOADING & EMPTY STATES (MANDATORY)
+
+For every async action:
+
+Show loading indicator
+
+On failure:
+
+Show error message
+
+Keep user on same screen
+
+❌ Never redirect to an empty page.
+
+✅ D. DEFAULT STATE INITIALIZATION
+
+All pages must have:
+
+Safe default state
+
+No reliance on previous navigation
+
+No assumptions that API already ran
+
+If data isn’t ready:
+👉 Render a placeholder UI, NOT nothing.
+
+4️⃣ ADD DEBUG LOGGING (TEMPORARY BUT REQUIRED)
+
+Add logs for:
+
+Button clicks
+
+Route changes
+
+API responses
+
+Rendering failures
+
+State resets
+
+These logs are for diagnosis, not users.
+
+5️⃣ VALIDATE FIX (MANDATORY CHECKLIST)
+
+You must confirm:
+
+☑ Clicking any button NEVER shows a blank page
+☑ Every page has loading + error + empty states
+☑ Navigation only happens with valid state
+☑ Errors are visible, not silent
+☑ App is usable even when backend fails
+
+OUTPUT REQUIRED FROM YOU
+
+You must return:
+
+Exact root cause
+
+Screens/routes affected
+
+What guardrails were added
+
+How blank pages are now impossible
+
+Confirmation that no safety logic was bypassed
+
+❌ Do NOT say “should be fixed”
+❌ Do NOT say “try this”
+❌ Do NOT ship partial fixes
+
+FINAL WARNING (IMPORTANT)
+
+This app is health-critical.
+
+A blank page:
+
+breaks trust
+
+breaks safety
+
+blocks users mid-flow
+
+is unacceptable
+
+If something fails:
+👉 FAIL LOUDLY
+👉 FAIL SAFELY
+👉 NEVER FAIL SILENTLY

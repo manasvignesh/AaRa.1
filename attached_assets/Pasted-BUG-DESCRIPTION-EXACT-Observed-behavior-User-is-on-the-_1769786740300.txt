@@ -1,0 +1,161 @@
+BUG DESCRIPTION (EXACT)
+
+Observed behavior:
+
+User is on the meal generation flow
+
+User selects / enters available ingredients
+
+User taps “Generate / Regenerate Meal”
+
+App redirects to a blank page (white screen / empty state)
+
+No error message is shown
+
+User is stuck and cannot proceed
+
+Expected behavior:
+
+Backend should rebuild a meal using ONLY provided ingredients
+
+Calories and protein should be recalculated
+
+Safety validation should run
+
+Frontend should render the regenerated meal OR show a clear error message
+
+CRITICAL CONTEXT (DO NOT IGNORE)
+
+The app follows this strict sequence:
+
+Generate best meal
+
+Ask ingredient availability
+
+User provides ingredients
+
+Backend rebuilds meal using ONLY those ingredients
+
+Backend recalculates calories & protein
+
+Frontend renders updated meal
+
+The blank page indicates a BREAK in this sequence.
+
+YOUR TASK (MANDATORY)
+
+You must:
+
+1️⃣ TRACE THE FLOW STEP-BY-STEP
+
+Explicitly trace:
+
+frontend event handler (button click)
+
+request payload sent to backend
+
+backend meal regeneration function
+
+validation checks
+
+response returned
+
+frontend state update
+
+navigation / routing logic
+
+👉 Identify exactly where execution stops or returns null/undefined.
+
+2️⃣ IDENTIFY THE ROOT CAUSE (DO NOT GUESS)
+
+Check for ALL of the following (report which one applies):
+
+Missing or empty ingredient array
+
+Backend function returning null / undefined
+
+Safety validation blocking output without message
+
+Unhandled promise rejection
+
+State not being set before route change
+
+Route rendered without required data
+
+Conditional rendering hiding UI when data is missing
+
+API error swallowed without UI feedback
+
+You must explicitly state:
+
+“The blank page occurs because ________.”
+
+3️⃣ FIX THE ISSUE PROPERLY (NON-NEGOTIABLE)
+
+Implement ALL of the following:
+
+✅ Backend Fix
+
+Meal regeneration must ALWAYS return one of:
+
+a valid rebuilt meal object
+
+OR a structured error object with reason
+
+❌ Backend must NEVER return nothing.
+
+Example (conceptual):
+
+{
+  "status": "error",
+  "reason": "Insufficient ingredients to meet protein minimum"
+}
+
+✅ Frontend Fix
+
+Frontend must NEVER navigate to a page without validated data
+
+Before redirecting, confirm:
+
+meal object exists
+
+calories and protein are present
+
+If error object is received:
+
+show a calm explanatory message
+
+keep user on the same screen
+
+Example UX text:
+
+“We couldn’t rebuild a safe meal with these ingredients.
+Please add one protein source.”
+
+4️⃣ ADD FAIL-SAFE UI STATES (REQUIRED)
+
+You must add:
+
+Loading state during regeneration
+
+Explicit error state (no blank screens)
+
+Guard clause to block rendering if meal data is missing
+
+Clear retry path for the user
+
+❌ A blank page must NEVER be possible.
+
+5️⃣ ADD LOGGING (FOR FUTURE SAFETY)
+
+Add logs for:
+
+ingredient input received
+
+meal regeneration attempt
+
+validation failures
+
+successful rebuilds
+
+These logs must NOT be shown to users.

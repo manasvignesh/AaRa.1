@@ -1,0 +1,166 @@
+You are working on AaRa, a health-critical application.
+
+The app currently has state synchronization and navigation flow bugs that cause:
+
+delayed UI updates
+
+error / blank pages
+
+broken user trust
+
+❌ Do NOT add hacks
+❌ Do NOT add forced refreshes
+❌ Do NOT rely on navigation to refresh UI
+
+Your task is to fix the root cause, not symptoms.
+
+ISSUES TO FIX (CONFIRMED)
+1️⃣ Water Consumed Not Updating in Real Time
+
+Water updates backend correctly
+
+UI updates only after navigating away and back
+
+This indicates UI is not subscribed to live shared state
+
+2️⃣ Meal Regeneration → OK → Error Page
+
+Meal regeneration succeeds
+
+Clicking “OK” navigates to an error page
+
+Going back to dashboard shows the regenerated meal
+
+This means navigation happens before state is ready
+
+This redirect is incorrect behavior.
+
+3️⃣ “Mark as Consumed” Feels Disconnected
+
+Action works but does not update:
+
+dashboard
+
+daily nutrition
+
+progress tracker
+
+Indicates fragmented state updates
+
+ROOT CAUSE (YOU MUST CONFIRM)
+
+The app is navigating or rendering screens before global state updates are committed, causing:
+
+null / undefined data
+
+error pages
+
+delayed UI refresh
+
+REQUIRED FIX STRATEGY (ALL MUST BE DONE)
+✅ 1. Single Source of Truth
+
+Move all of the following into ONE shared global state:
+
+water intake
+
+current meals
+
+meal consumption status
+
+daily nutrition summary
+
+No screen may rely on local state for these.
+
+✅ 2. State-First, Navigation-Second Rule
+
+Navigation is NOT allowed until:
+
+Backend call completes
+
+Global state is updated
+
+UI confirms required data exists
+
+If data is not ready → stay on the same screen and show loading.
+
+✅ 3. Fix Meal Regeneration Flow (CRITICAL)
+
+Correct flow must be:
+
+Regenerate meal API succeeds
+
+Update global meal state
+
+UI immediately shows regenerated meal
+
+“OK” button only closes the modal
+
+NO navigation
+
+If the meal is regenerated on the same screen, redirecting is a bug.
+
+✅ 4. Real-Time UI Updates (Water & Consumed)
+
+For:
+
+water intake
+
+mark as consumed
+
+You must:
+
+update UI optimistically
+
+sync backend in parallel
+
+rollback only if backend fails
+
+UI must update instantly without navigation.
+
+✅ 5. Hard Render Guards (No Blank Pages)
+
+Every screen must:
+
+handle loading state
+
+handle missing data state
+
+NEVER render null
+
+NEVER show a blank page
+
+If data is missing → show explanation, not an empty screen.
+
+VALIDATION CHECKLIST (MUST PASS)
+
+☑ Water updates instantly
+☑ Meal regeneration shows immediately
+☑ OK button never redirects to error page
+☑ Mark as consumed updates all related sections
+☑ No button click can cause a blank page
+☑ Navigation only happens with valid state
+
+OUTPUT REQUIRED FROM YOU
+
+You must return:
+
+Exact root cause
+
+What navigation was removed or delayed
+
+How state was centralized
+
+How real-time updates were ensured
+
+Confirmation blank pages are now impossible
+
+❌ Do NOT say “fixed” without explanation
+❌ Do NOT ship partial fixes
+
+FINAL RULE
+
+If state and UI ever diverge:
+👉 show loading
+👉 show explanation
+👉 never show a blank page

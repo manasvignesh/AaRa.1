@@ -1,0 +1,234 @@
+WORKOUT ENGINE — HIGH-LEVEL FLOW
+REQUIRED FLOW (NON-NEGOTIABLE)
+
+User opens Workout
+
+App shows today’s workout preview
+
+User taps Start Workout
+
+Workout runs as a guided sequence with timers
+
+Exercises + rest run automatically
+
+Workout ends exactly at selected time
+
+Completion is recorded
+
+❌ No free skipping of exercises
+❌ No jumping to end
+❌ No auto-start without consent
+
+WORKOUT STRUCTURE (MANDATORY)
+
+Every workout MUST include:
+
+1️⃣ Warm-up (15–20% of total time)
+
+Joint mobility
+
+Light cardio
+
+Gradual ramp-up
+
+Timed exercises
+
+2️⃣ Main Workout (60–65% of total time)
+
+Simple compound movements
+
+Bodyweight or light resistance
+
+No max effort
+
+Time-based sets (not reps by default)
+
+Example:
+
+Squats – 45s
+
+Push-ups (or wall push-ups) – 45s
+
+Rest – 15s
+
+Repeat
+
+3️⃣ Cool-down (15–20% of total time)
+
+Breathing
+
+Stretching
+
+Heart rate down-regulation
+
+❌ A workout missing any section is INVALID.
+
+TIMER-BASED EXECUTION (CRITICAL)
+EXERCISE FLOW RULES
+
+Each exercise has:
+
+Name
+
+Duration (seconds)
+
+Instruction text
+
+Timer starts ONLY when user taps Start
+
+After each exercise:
+
+Mandatory rest (default 10–20 seconds)
+
+Rest duration may vary by:
+
+experience level
+
+fatigue signals
+
+❌ No endless workouts
+❌ No uncontrolled loops
+
+USER CONTROL (ALLOWED)
+
+User may:
+
+Pause workout
+
+Resume workout
+
+End workout early (with confirmation)
+
+If ended early:
+
+Record as partial
+
+Do NOT punish
+
+Do NOT auto-extend later
+
+NOTIFICATIONS & ENFORCEMENT (IMPORTANT)
+DAILY WORKOUT REMINDERS
+
+If workout not completed:
+
+Send reminder notifications
+
+Tone: firm but supportive
+
+Example:
+
+“You committed to 30 minutes today.
+Let’s get it done — your body needs it.”
+
+❌ No shaming
+❌ No fear language
+
+MISSED WORKOUT HANDLING
+
+If workout not completed by end of day:
+
+Mark as missed
+
+Reflect in adherence
+
+Do NOT force double workouts next day
+
+Next day messaging:
+
+“Yesterday didn’t go as planned.
+Let’s show up today.”
+
+ADAPTIVE SAFETY LOGIC (MANDATORY)
+
+Based on:
+
+fatigue reports
+
+incomplete workouts
+
+low energy
+
+System may:
+
+reduce exercise intensity
+
+increase rest time
+
+simplify movements
+
+❌ System must NEVER increase time beyond user choice
+❌ System must NEVER push harder because of missed days
+
+INTEGRATION WITH DIET ENGINE
+
+Workout engine must:
+
+• Support muscle preservation during deficit
+• NEVER justify lower food intake
+• NEVER introduce “burn it off” logic
+
+Calories burned must:
+
+NOT be shown
+
+NOT affect meal size
+
+UI & LANGUAGE RULES
+
+Frontend must:
+
+• Clearly show remaining time
+• Clearly show current exercise
+• Clearly show rest countdown
+• Use calm, instructional language
+
+Examples:
+
+“Next: Squats (45s)”
+“Rest – 15 seconds”
+“You’re doing well. Keep moving.”
+
+❌ No hype music language
+❌ No fitness-bro tone
+
+STATE & NAVIGATION SAFETY
+
+• Workout state must live in global store
+• Timers must persist across minor navigation
+• No workout action may cause blank or error page
+• If app crashes, resume workout safely
+
+VALIDATION CHECKLIST (ALL MUST PASS)
+
+☑ Workout is mandatory
+☑ Time is user-chosen and enforced
+☑ Timed exercise flow works end-to-end
+☑ Rest periods auto-trigger
+☑ Notifications remind but don’t shame
+☑ Partial completion handled safely
+☑ No calorie burn pressure
+☑ No blank pages
+
+OUTPUT REQUIRED FROM YOU
+
+You must return:
+
+Workout flow logic
+
+Timer execution logic
+
+Rest handling logic
+
+Notification rules
+
+Safety constraints applied
+
+❌ Do NOT add HIIT by default
+❌ Do NOT add streaks or rewards
+❌ Do NOT add calorie burn metrics
+
+FINAL HARD RULE (LOCK THIS)
+
+Users choose the time.
+The system ensures they move for that time — safely, calmly, and consistently.

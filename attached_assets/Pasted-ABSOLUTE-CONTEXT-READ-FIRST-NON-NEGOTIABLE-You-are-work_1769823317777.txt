@@ -1,0 +1,281 @@
+ABSOLUTE CONTEXT (READ FIRST — NON-NEGOTIABLE)
+
+You are working on AaRa, a health-critical fat-loss application.
+
+The app is currently unstable due to state mismanagement, premature navigation, and missing guardrails, causing:
+
+blank / error pages
+
+delayed UI updates
+
+fluctuating meal counts
+
+unsafe or unclear water tracking
+
+broken meal regeneration flow
+
+❌ Do NOT add new features
+❌ Do NOT add hacks, refreshes, or delays
+❌ Do NOT rely on navigation to update UI
+❌ Do NOT regenerate meals unless explicitly requested
+
+Your ONLY goal is to stabilize state, fix navigation flow, and make UI deterministic and real-time.
+
+CONFIRMED ISSUES (ALL MUST BE FIXED)
+1️⃣ Water tracking
+
+No minus (–) button to subtract water
+
+Water updates backend but not UI in real time
+
+No indication when water intake is excessive or unnecessary
+
+2️⃣ Meal regeneration flow (CRITICAL)
+
+Meal regenerates correctly
+
+Clicking “OK” redirects to error / blank page
+
+Going back to dashboard shows regenerated meal
+
+Redirect after regeneration is incorrect behavior
+
+3️⃣ Dashboard meal fluctuation (CRITICAL)
+
+Meal count changes randomly (4 → 5 → 4)
+
+Navigating to “meal data not found” mutates dashboard
+
+Meals are being recreated or appended incorrectly
+
+4️⃣ “Mark as consumed” feels disconnected
+
+Action updates something but not:
+
+dashboard
+
+daily nutrition
+
+progress tracker
+
+Indicates fragmented state updates
+
+ROOT CAUSE (YOU MUST CONFIRM)
+
+The app is suffering from premature navigation and fragmented state:
+
+Navigation occurs before global state is committed
+
+Screens render with null / undefined data
+
+Meals are recreated on navigation instead of referenced
+
+UI is not subscribed to a single source of truth
+
+You must explicitly confirm:
+
+“These issues occur because navigation and rendering happen before shared global state updates are finalized, and meal structure is not fixed.”
+
+🔒 CORE ARCHITECTURAL FIX (MANDATORY)
+✅ 1. SINGLE SOURCE OF TRUTH (GLOBAL STATE)
+
+The following MUST live in one shared global state:
+
+water intake
+
+daily meal slots
+
+meal contents
+
+meal consumption status
+
+daily nutrition summary
+
+❌ No screen may rely on local component state for these
+❌ No state may be recalculated on navigation
+
+🔐 FIX DAILY MEAL COUNT (VERY IMPORTANT)
+✅ A. MEAL COUNT DECIDED AT ONBOARDING
+
+During the mandatory onboarding / questionnaire:
+
+Compute or ask for meals per day
+
+Decide once (e.g. 3 / 4 / 5 meals)
+
+Store as a user-level configuration
+
+Example:
+
+user.dailyMealCount = N
+
+
+Rules:
+
+Meal count is FIXED for the day
+
+Read-only during the day
+
+Can only change via explicit preference update + full-day regeneration
+
+✅ B. CREATE DAILY MEAL SLOTS ONCE
+
+At start of day / first app open:
+
+Read user.dailyMealCount
+
+Create EXACTLY N meal slots
+
+Persist them
+
+Lock structure for the day
+
+❌ Do NOT create meals on navigation
+❌ Do NOT append meals dynamically
+❌ Do NOT recreate meals when data is missing
+
+✅ C. REGENERATION MUST BE IN-PLACE
+
+When regenerating a meal:
+
+Replace content of the selected meal slot ONLY
+
+NEVER add or remove meal slots
+
+NEVER change meal count
+
+🚨 FIX MEAL REGENERATION FLOW (CRITICAL)
+❌ CURRENT (BROKEN)
+
+OK → navigate → state not ready → error page
+
+✅ REQUIRED FLOW
+
+Regenerate meal API succeeds
+
+Update global meal state
+
+UI immediately re-renders regenerated meal
+
+“OK” button only closes modal
+
+NO navigation
+
+If regeneration happens on the same screen, redirecting is a bug.
+
+💧 FIX WATER TRACKING (MANDATORY)
+✅ A. ADD SUBTRACT (–) WATER OPTION
+
+Add minus button for each water increment
+
+User can undo mistakes
+
+Updates must:
+
+reflect instantly in UI
+
+update global state
+
+sync backend
+
+✅ B. DEFINE SAFE WATER RANGE
+
+Backend must define:
+
+reasonable hydration range
+
+upper safe threshold
+
+When exceeded:
+
+Do NOT block
+
+Do NOT scare
+
+Show calm guidance
+
+Example:
+
+“You’ve had enough water for now. Drinking more may not be necessary.”
+
+✅ C. REAL-TIME WATER UI UPDATE
+
+UI must update immediately on tap
+
+No navigation required
+
+Must use shared global state
+
+🍽️ FIX “MARK AS CONSUMED” (MANDATORY)
+
+“Mark as consumed” must update, from ONE action:
+
+meal state
+
+daily nutrition totals
+
+dashboard
+
+progress tracker
+
+❌ It must NOT be a standalone or local update
+❌ Navigation must not be required
+
+🧭 NAVIGATION RULES (GLOBAL)
+
+Navigation must be side-effect free
+
+Navigation must NEVER:
+
+generate meals
+
+mutate state
+
+change meal count
+
+Navigation allowed ONLY after state is validated
+
+🛑 HARD UI GUARDS (NO BLANK PAGES)
+
+Every screen must:
+
+handle loading state
+
+handle missing data state
+
+NEVER render null
+
+NEVER show blank / white page
+
+If data is missing:
+
+explain calmly and wait for user action
+
+✅ VALIDATION CHECKLIST (ALL MUST PASS)
+
+☑ Water can be added AND subtracted
+☑ Water updates instantly
+☑ Excess water shows calm guidance
+☑ Meal regeneration shows immediately
+☑ OK button never redirects
+☑ Dashboard meal count never fluctuates
+☑ Meals are fixed per day
+☑ “Meal data not found” does NOT create meals
+☑ Mark as consumed updates everywhere
+☑ No button can cause blank/error page
+
+OUTPUT REQUIRED FROM YOU
+
+You must return:
+
+Exact root cause explanation
+
+Where daily meal count is decided and stored
+
+How meal slots are created and locked
+
+What navigation was removed or delayed
+
+How real-time UI updates were achieved
+
+Proof blank pages are impossible now

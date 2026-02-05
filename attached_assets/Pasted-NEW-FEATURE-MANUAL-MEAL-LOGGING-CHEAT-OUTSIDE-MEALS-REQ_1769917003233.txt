@@ -1,0 +1,211 @@
+NEW FEATURE — MANUAL MEAL LOGGING (CHEAT / OUTSIDE MEALS)
+REQUIRED FUNCTIONALITY
+
+The app must allow users to:
+
+Log a meal they ate outside the plan
+
+Describe it simply (type / photo / estimate)
+
+Select:
+
+portion size (small / medium / large)
+
+meal type (snack / meal)
+
+❌ User must NOT be forced to be precise
+❌ No calorie obsession required
+
+AI MEAL APPROXIMATION ENGINE (MANDATORY)
+
+When a manual meal is logged:
+
+AI must:
+
+Approximate calories conservatively
+
+Approximate protein/fat/carbs broadly
+
+Assign a confidence range, not exact values
+
+Example internal logic:
+
+“Estimated +400–600 kcal, moderate protein”
+
+❌ Do NOT show exact numbers to user
+❌ Do NOT scare the user
+
+Frontend message example:
+
+“We’ve roughly accounted for this meal.
+No stress — we’ll adapt gently.”
+
+CROSS-ENGINE ADAPTATION LOGIC (CRITICAL)
+❌ FORBIDDEN LOGIC
+
+Increase next workout intensity immediately
+
+Force extra workouts same day
+
+Cut meals aggressively next day
+
+Say “burn it off”
+
+✅ REQUIRED ADAPTIVE LOGIC (SAFE)
+
+When excess calories are detected:
+
+The system must distribute adaptation across future days, using one or more of the following:
+
+1️⃣ Slight Workout Load Adjustment (PRIMARY)
+
+Add small time increments (e.g. +3–5 min)
+
+OR add 1 extra low-intensity block
+
+Spread across 2–4 days
+
+❌ Never exceed user-selected workout time per day
+❌ Never add intensity spikes
+
+2️⃣ Movement Density Adjustment
+
+Slightly reduce rest times (within safe limits)
+
+Add more continuous movement (walking, mobility)
+
+3️⃣ Diet Neutralization (SECONDARY)
+
+Minor calorie smoothing over days
+
+Protein remains protected
+
+No starvation compensation
+
+TIME-BASED WORKOUT SAFETY RULE (IMPORTANT)
+
+Even during adaptation:
+
+❌ The system must NEVER exceed the user-chosen daily workout time
+❌ Adaptation must happen within that time, not by extending it
+
+Example:
+
+More efficient exercise sequencing
+
+Slightly longer main block, shorter rest
+
+NOT longer workouts
+
+AI DECISION TRANSPARENCY (USER TRUST)
+
+User must be informed calmly, without numbers:
+
+Example UI message:
+
+“We’ve gently adjusted the next few workouts to keep things balanced.
+Nothing extreme — just consistency.”
+
+❌ No calorie numbers
+❌ No blame
+
+MULTI-DAY ADAPTATION ENGINE (BACKGROUND)
+
+AI must track:
+
+excess intake trends
+
+frequency of manual meals
+
+recovery and fatigue
+
+workout adherence
+
+Then decide:
+
+whether to adapt
+
+how much to adapt
+
+when to stop adapting
+
+❌ Adaptation must NEVER stack endlessly
+❌ Adaptation must decay back to baseline
+
+FAILURE & EDGE CASE HANDLING
+If user logs many cheat meals:
+
+Do NOT escalate workouts aggressively
+
+Do NOT shame
+
+Switch to:
+
+consistency mode
+
+maintenance focus
+
+habit reinforcement
+
+Message example:
+
+“Let’s stabilize for a few days.
+Consistency beats correction.”
+
+INTEGRATION WITH PROGRESS TRACKER
+
+Progress page should show:
+
+calm explanation of adjustments
+
+trend-based interpretation
+
+Example:
+
+“Some flexibility this week.
+System adjusted gently — you’re still on track.”
+
+STATE MANAGEMENT (MANDATORY)
+
+All of the following must live in shared global state:
+
+planned meals
+
+logged meals (planned + manual)
+
+adaptation flags
+
+workout plan adjustments
+
+progress interpretation
+
+❌ No engine may operate in isolation
+❌ Diet and workout engines MUST read from same state
+
+VALIDATION CHECKLIST (ALL MUST PASS)
+
+☑ Manual meals can be logged easily
+☑ AI approximates without precision pressure
+☑ Adaptation happens across days
+☑ Workouts stay within chosen time
+☑ No punishment language
+☑ No same-day “burn it off”
+☑ Diet + workout engines coexist and communicate
+☑ User trust is preserved
+
+OUTPUT REQUIRED FROM YOU
+
+You must return:
+
+AI meal approximation logic
+
+Adaptation decision rules
+
+How adaptation is distributed across days
+
+How workout engine adjusts safely
+
+Proof no punishment mechanics exist
+
+❌ Do NOT add aggressive correction
+❌ Do NOT expose raw calorie math

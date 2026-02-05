@@ -1,0 +1,128 @@
+ISSUE 1️⃣ — PROFILE CHANGE NOT REFLECTING IN DASHBOARD (CRITICAL)
+Problem
+
+User changes number of meals (or profile configuration) in Profile
+
+Profile updates successfully
+
+Dashboard does NOT reflect the updated value
+
+Requires reload / re-login / navigation to update
+
+This indicates:
+❌ Profile state and dashboard state are not bound to the same source of truth
+
+REQUIRED FIX — PROFILE → DASHBOARD SYNC (MANDATORY)
+✅ A. SINGLE USER CONFIG STATE
+
+All user configuration values (including):
+
+meals per day
+
+lifestyle
+
+preferences
+
+Must live in ONE shared global user profile state.
+
+❌ Dashboard must NOT cache these values
+❌ Dashboard must NOT calculate independently
+
+✅ B. REAL-TIME PROFILE UPDATE PROPAGATION
+
+When a user updates profile settings:
+
+Flow MUST be:
+
+Profile update confirmed
+
+Global user state updated
+
+Dashboard re-renders automatically
+
+If change affects meals:
+
+Regenerate entire day safely
+
+Explain calmly to user
+
+❌ No manual refresh
+❌ No delayed sync
+
+✅ C. MEAL COUNT CHANGE RULE (IMPORTANT)
+
+If user changes meals per day in profile:
+
+Apply change only at day boundary OR
+
+Regenerate the full day immediately with explanation
+
+Example UX:
+
+“Your meal structure has been updated.
+Today’s meals have been adjusted safely.”
+
+❌ Partial updates are forbidden
+
+ISSUE 2️⃣ — PROGRESS COLUMN UI CAN BE IMPROVED
+Problem
+
+Progress section feels cluttered / unclear
+
+Does not visually communicate trends well
+
+Users may not intuitively understand progress at a glance
+
+This is a UI clarity issue, not logic.
+
+REQUIRED IMPROVEMENT — PROGRESS UI (NON-LOGIC)
+✅ A. CLEAR VISUAL HIERARCHY
+
+Progress section should:
+
+Show one primary metric (trend)
+
+Secondary metrics visually lighter
+
+No information overload
+
+Example structure:
+
+Big trend graph (daily / weekly / monthly toggle)
+
+Small cards below:
+
+consistency
+
+protein protection
+
+movement
+
+✅ B. CALM DESIGN LANGUAGE
+
+Progress UI must:
+
+Avoid red/green judgment
+
+Use soft gradients or neutral tones
+
+Emphasize trends, not daily spikes
+
+❌ No streak pressure
+❌ No “failed / succeeded” language
+
+✅ C. NO LOGIC CHANGE REQUIRED
+
+This task is visual improvement only.
+
+❌ Do NOT change progress calculations
+❌ Do NOT add new metrics
+❌ Do NOT introduce gamification
+
+VALIDATION CHECKLIST (MUST PASS)
+
+☑ Profile changes reflect instantly in dashboard
+☑ Meals per day update correctly and safely
+☑ Dashboard never shows stale profile data
+☑ Progress section is visually clearer
+☑ No logic regressions introduced

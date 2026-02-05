@@ -1,0 +1,181 @@
+PROGRESS TRACKER PAGE — STRUCTURE (UPDATED)
+🔹 Top Section — View Selector (MANDATORY)
+
+Provide a clear toggle:
+
+Daily
+
+Weekly
+
+Monthly
+
+Default view:
+
+Weekly (not Daily)
+
+Daily data must exist, but Weekly view is the interpretation default.
+
+📊 DAILY VIEW (RAW BUT EXPLAINED)
+Purpose
+
+Show what happened today, without judgment.
+
+What to show
+
+• Daily weight entry
+• Meal adherence for the day
+• Protein protection status
+• Movement done (Yes / No)
+
+Graph Rules
+
+• Line or dot graph
+• No red/green judgment colors
+• No “up/down = good/bad” indicators
+
+Mandatory Explanation Text (always visible)
+
+“Daily changes are normal.
+Water, salt, sleep, and stress affect this.
+We use trends — not single days — to guide decisions.”
+
+❌ Do NOT show:
+
+“You gained X today”
+
+“You failed today”
+
+Any alert tied to a single day
+
+📈 WEEKLY VIEW (PRIMARY INTERPRETATION)
+Purpose
+
+This is the main decision-making view.
+
+What to show
+
+• Weekly average weight
+• Weekly meal adherence summary
+• Weekly protein consistency
+• Weekly movement consistency
+
+Graph Rules
+
+• Smoothed line
+• Fewer points (one per week)
+• Calm color palette
+
+System Interpretation (TEXT, NOT NUMBERS)
+
+Examples:
+
+“Fat loss trend is steady.”
+“Progress is stable this week.”
+“Recovery is being prioritized.”
+
+❌ Do NOT:
+
+Demand action
+
+Push restriction
+
+Highlight “bad weeks”
+
+📉 MONTHLY VIEW (BIG PICTURE)
+Purpose
+
+Reinforce patience and long-term consistency.
+
+What to show
+
+• Monthly weight trend
+• Consistency overview (meals + movement)
+
+Graph Rules
+
+• Very smooth trend line
+• No daily detail
+• No sharp labels
+
+Interpretation Text
+
+“Long-term progress matters more than short-term changes.”
+
+This view should reduce anxiety, not increase it.
+
+🔁 BACKEND LOGIC — HOW DATA IS USED
+Data Storage
+
+• Store daily entries as-is
+• Do NOT discard daily data
+
+Interpretation Rules
+
+• Daily data = informational only
+• Weekly data = adaptive decisions
+• Monthly data = reassurance + reflection
+
+❗ Safety adjustments must NEVER be triggered by:
+
+a single day
+
+a single spike or drop
+
+⚠️ SAFETY GUARDRAILS (VERY IMPORTANT)
+When daily values look concerning:
+
+Do NOT alert immediately
+
+Wait for trend confirmation
+
+Example safe messaging:
+
+“Single-day changes don’t indicate fat gain or loss.”
+
+Rapid Drops / Risk Patterns
+
+If detected across multiple days:
+
+Trigger safety override
+
+Adjust calories / recovery
+
+Explain calmly
+
+🧭 NAVIGATION & STATE SAFETY
+
+• Progress Tracker page must ALWAYS load safely
+• If no data exists:
+
+show an empty graph with explanation
+
+never a blank page
+
+Example empty-state text:
+
+“Once you log daily progress, you’ll see your trends here.”
+
+❌ HARD BANS (STILL APPLY)
+
+Even with daily graphs, you must NOT:
+
+❌ Rank days as good/bad
+❌ Use streak pressure
+❌ Show calorie burn vs eat comparisons
+❌ Push “make up for yesterday” logic
+
+Daily data ≠ Daily judgment.
+
+✅ FINAL ASSERTION (IMPORTANT)
+
+This Progress Tracker must communicate:
+
+“Every day counts — but no single day defines you.”
+
+If the system cannot interpret data safely:
+
+👉 Show the data
+👉 Reduce commentary
+👉 Wait for trends
+
+Never panic the user.
