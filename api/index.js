@@ -1,1 +1,2 @@
-export default require('../dist/index.cjs').default;
+import app from '../dist/index.cjs';
+export default app;
