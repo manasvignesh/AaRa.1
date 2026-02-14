@@ -1,16 +1,12 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, "..", "dist");
+  const distPath = path.join(process.cwd(), "dist");
   if (!fs.existsSync(distPath)) {
     // try public if dist doesn't exist (fallback)
-    const publicPath = path.resolve(__dirname, "..", "public");
+    const publicPath = path.join(process.cwd(), "public");
     if (fs.existsSync(publicPath)) {
       app.use(express.static(publicPath));
       return;
