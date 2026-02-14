@@ -70,18 +70,14 @@ export function registerRoutes(
   app.get(api.user.getProfile.path, isAuthenticated, async (req, res) => {
     try {
       const userId = (req.user as any).id;
-      console.log(`[API] GET Profile for user ${userId}`);
       const profile = await storage.getUserProfile(userId);
 
       if (!profile) {
-        console.log(`[API] Profile NOT FOUND for user ${userId}`);
         return res.status(404).json({ message: "Profile not found" });
       }
 
-      console.log(`[API] Profile FOUND for user ${userId}`);
       res.json(profile);
     } catch (err: any) {
-      console.error(`[API] Profile Error for user ${(req.user as any)?.id}:`, err);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -323,14 +319,14 @@ export function registerRoutes(
     try {
       const userId = (req.user as any).id;
       const { date } = req.body;
-      const dailyMealCount = 4;
-
       // 1. Get User Profile
       const profile = await storage.getUserProfile(userId);
       if (!profile) {
         console.log(`Plan generation blocked: No profile for user ${userId}. Records found in DB:`, await storage.getUserProfile(userId));
         return res.status(400).json({ message: "Complete profile first" });
       }
+
+      const dailyMealCount = profile.dailyMealCount || 4;
       console.log(`Generating plan for user ${userId} for date ${date}. Profile:`, JSON.stringify(profile));
 
       // 2. Calculate Calories (Mifflin-St Jeor Equation)
@@ -364,7 +360,8 @@ export function registerRoutes(
         profile.dietaryPreferences,
         profile.age,
         profile.primaryGoal || 'fat_loss',
-        cycleDay
+        cycleDay,
+        dailyMealCount
       );
 
       if (!selectedMeals || selectedMeals.length === 0) {
@@ -537,9 +534,11 @@ export function registerRoutes(
 
     } catch (error: any) {
       console.error("Plan generation error:", error);
+      console.error("Stack trace:", error?.stack);
       res.status(500).json({
         message: "Failed to generate plan. Please try again.",
-        details: error?.message
+        details: error?.message,
+        stack: error?.stack
       });
     }
   });
