@@ -11,6 +11,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DailyPlanWithDetails, InsertDailyPlan, InsertMeal, InsertWorkout, InsertActivityLog, InsertGpsRoute } from "@shared/schema";
 import { selectDeterministicMeals, selectBestMealForSlot } from "../src/api/diet";
 import { getWorkoutForProfile } from "./data/workout-lib";
+import { generatePersonalizedPlan } from "./data/engine";
 
 // Google Gemini client for coach chat
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -319,227 +320,108 @@ export function registerRoutes(
     try {
       const userId = (req.user as any).id;
       const { date } = req.body;
-      // 1. Get User Profile
+
       const profile = await storage.getUserProfile(userId);
       if (!profile) {
-        console.log(`Plan generation blocked: No profile for user ${userId}. Records found in DB:`, await storage.getUserProfile(userId));
         return res.status(400).json({ message: "Complete profile first" });
       }
 
-      const dailyMealCount = profile.dailyMealCount || 4;
-      console.log(`Generating plan for user ${userId} for date ${date}. Profile:`, JSON.stringify(profile));
+      console.log(`[GENERATION] Starting personalized plan generation for user ${userId} on ${date}`);
 
-      // 2. Calculate Calories (Mifflin-St Jeor Equation)
-      const { caloriesTarget, proteinTarget } = calculateTargets(profile);
-      const targetCalories = caloriesTarget;
-
-      // 2.5 Check for active adaptation from previous day (gentle multi-day adjustment)
-      let adaptationBonus = 0;
-      const yesterday = new Date(date);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayPlan = await storage.getDailyPlan(userId, yesterday.toISOString().split('T')[0]);
-      if (yesterdayPlan?.adaptationActive && (yesterdayPlan.adaptationDaysRemaining ?? 0) > 0) {
-        // Gentle adaptation: slightly longer workout (+5 mins), no calorie punishment
-        adaptationBonus = 5;
-        // Decrement adaptation days for the new plan
-        console.log(`Adaptation active: ${yesterdayPlan.adaptationDaysRemaining} days remaining. Adding ${adaptationBonus} mins to workout.`);
+      // Check if plan already exists for today
+      const existingFullPlan = await storage.getDailyPlan(userId, date);
+      if (existingFullPlan && existingFullPlan.meals && existingFullPlan.meals.length > 0) {
+        console.log(`[GENERATION] Returning existing plan ${existingFullPlan.id} for ${date}`);
+        return res.status(200).json(existingFullPlan);
       }
 
-      // 3. Deterministic Generation for Meals
-      // Calculate Day of Cycle (1-28) from Date
-      const dateObj = new Date(date);
-      const startOfYear = new Date(dateObj.getFullYear(), 0, 0);
-      const diff = dateObj.getTime() - startOfYear.getTime();
-      const oneDay = 1000 * 60 * 60 * 24;
-      const dayOfYear = Math.floor(diff / oneDay);
-      const cycleDay = (dayOfYear % 28) + 1;
-
-      console.log(`[GENERATION] Date: ${date} -> DayOfYear: ${dayOfYear} -> CycleDay: ${cycleDay}`);
-
-      let selectedMeals = selectDeterministicMeals(
-        profile.dietaryPreferences,
-        profile.age,
-        profile.primaryGoal || 'fat_loss',
-        cycleDay,
-        dailyMealCount
-      );
-
-      if (!selectedMeals || selectedMeals.length === 0) {
-        console.warn(`[GENERATION] Deterministic selection failed for diet '${profile.dietaryPreferences}' (Normalizer used). Using FALLBACK meals.`);
-        // Fallback: Safe, standard meals that work for everyone
-        selectedMeals = [
-          {
-            type: "breakfast",
-            name: "Oats & Milk with Almonds (Fallback)",
-            calories: 400,
-            protein: 15,
-            ingredients: ["Oats", "Milk", "Almonds"],
-            instructions: "Boil oats in milk, top with nuts."
-          },
-          {
-            type: "lunch",
-            name: "Dal Tadka & Rice (Fallback)",
-            calories: 600,
-            protein: 20,
-            ingredients: ["Dal", "Rice", "Spices"],
-            instructions: "Standard home-cooked yellow dal with steamed rice."
-          },
-          {
-            type: "dinner",
-            name: "Mixed Veg Curry & Roti (Fallback)",
-            calories: 500,
-            protein: 12,
-            ingredients: ["Mixed Vegetables", "Whole Wheat Flour"],
-            instructions: "Lightly spiced vegetable curry with 2 rotis."
-          }
-        ];
-
-        // Adjust for snack if 5 meals
-        if (dailyMealCount > 3) {
-          selectedMeals.push({
-            type: "snack",
-            name: "Roasted Chana (Fallback)",
-            calories: 200,
-            protein: 8,
-            ingredients: ["Roasted Bengal Gram"],
-            instructions: "A handful of roasted chana."
-          });
-          selectedMeals.push({
-            type: "snack_2",
-            name: "Green Tea & Walnuts (Fallback)",
-            calories: 200,
-            protein: 5,
-            ingredients: ["Green Tea", "Walnuts"],
-            instructions: "Warm green tea with 3-4 walnuts."
-          });
+      // Mapping for Personalized Engine
+      const mapGoal = (pg: string | null) => {
+        if (!pg) {
+          console.warn(`[GENERATION] Missing primaryGoal for user ${userId}, defaulting to 'maintain'`);
+          return 'maintain';
         }
-      }
-
-      // Calculate actual totals from selected meals
-      const totalCalories = selectedMeals.reduce((sum: number, m: any) => sum + m.calories, 0);
-      const totalProtein = selectedMeals.reduce((sum: number, m: any) => sum + m.protein, 0);
-
-      // Default workout if none provided by a separate logic (Aara usually has AI workouts, but we can stick to a default for now)
-      const dayNum = new Date(date).getDate();
-      const template = getWorkoutForProfile(profile.age, profile.currentWeight, profile.targetWeight, profile.height, dayNum);
-
-      let workoutName = "Full Body Home Workout";
-      let workoutType = "strength";
-      let workoutDuration = (profile.timeAvailability || 30) + adaptationBonus;
-      let workoutDifficulty = "beginner";
-      let workoutExercises: any[] = [];
-
-      if (template) {
-        workoutName = template.name;
-        workoutType = template.type;
-        workoutDuration = template.day_type === "rest" ? 0 : (template.duration_min + adaptationBonus);
-        workoutDifficulty = template.intensity || "none";
-        workoutExercises = template.steps.map((s: string, idx: number, arr: string[]) => {
-          const phase = idx === 0 ? "warmup" : idx === arr.length - 1 ? "cooldown" : "main";
-          // Regex to handle hyphen (-), en-dash (–), em-dash (—) with flexible spacing
-          const parts = s.split(/\s*[-–—]\s*/);
-          return {
-            name: parts[0] || s,
-            duration: template.day_type === "rest" ? 0 : 300,
-            instruction: parts[1] || "Focus on movement and form",
-            phase
-          };
-        });
-      } else {
-        // Fallback if no template found
-        workoutExercises = [
-          { name: "Jumping Jacks", duration: 60, instruction: "Warm up with light cardio", phase: "warmup" },
-          { name: "Push-ups", duration: 45, instruction: "Keep back straight, core engaged", phase: "main" },
-          { name: "Squats", duration: 45, instruction: "Knees behind toes, go low", phase: "main" },
-          { name: "Plank", duration: 30, instruction: "Hold position, breathe steadily", phase: "main" },
-          { name: "Stretching", duration: 60, instruction: "Cool down and stretch", phase: "cooldown" }
-        ];
-      }
-
-      const workout = {
-        name: workoutName,
-        type: workoutType,
-        duration: workoutDuration,
-        difficulty: workoutDifficulty,
-        exercises: workoutExercises,
-        isCompleted: template?.day_type === "rest" // Auto-complete rest days
+        if (pg === 'fat_loss') return 'weight_loss';
+        if (pg === 'muscle_gain') return 'weight_gain';
+        return 'maintain';
       };
 
-      // 4. Idempotent Save: Check for existing plan for this date
-      console.log(`[GENERATION] Deterministic data ready. Saving plan for user ${userId} on ${date}`);
+      const mapDiet = (dp: string) => {
+        const d = dp.toLowerCase();
+        if (d === 'veg') return 'veg';
+        return 'non_veg';
+      };
 
+      const engineProfile = {
+        goal: mapGoal(profile.primaryGoal),
+        dietType: mapDiet(profile.dietaryPreferences),
+        regionPreference: (profile as any).regionPreference || 'north_indian'
+      };
+
+      // Log warning if regionPreference is missing
+      if (!(profile as any).regionPreference) {
+        console.warn(`[GENERATION] User ${userId} missing regionPreference, using default: north_indian`);
+      }
+
+      const pPlan = generatePersonalizedPlan(engineProfile);
+
+      // Persistence: Save to database
+      const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
       let targetPlan;
-      const existingPlan = await storage.getDailyPlanMeta(userId, date);
 
-      if (existingPlan) {
-        console.log(`[GENERATION] Found existing plan ${existingPlan.id}. Updating targets.`);
-        targetPlan = await storage.updateDailyPlanTargets(existingPlan.id, totalCalories, totalProtein);
+      const caloriesTarget = (pPlan.breakfast?.calories || 0) + (pPlan.lunch?.calories || 0) + (pPlan.dinner?.calories || 0);
+      const proteinTarget = (pPlan.breakfast?.protein || 0) + (pPlan.lunch?.protein || 0) + (pPlan.dinner?.protein || 0);
 
-        // Remove old meals and workouts to replace with new Indian ones
-        // We'll add methods to storage for this if needed, but for now we can just push new ones?
-        // Actually, it's better to just delete them to avoid duplicates.
-        await storage.clearPlanDetails(existingPlan.id);
+      if (existingPlanMeta) {
+        // Update existing plan metadata
+        targetPlan = await storage.updateDailyPlanTargets(existingPlanMeta.id, caloriesTarget, proteinTarget);
       } else {
+        // Create new plan
         targetPlan = await storage.createDailyPlan({
           userId,
           date,
-          caloriesTarget: totalCalories,
-          proteinTarget: totalProtein,
+          caloriesTarget,
+          proteinTarget,
           status: "active"
         });
       }
 
       const planId = targetPlan.id;
 
-      try {
-        // Save Meals
-        console.log(`[GENERATION] Saving ${selectedMeals.length} meals for plan ${planId}`);
-        for (const m of selectedMeals) {
-          await storage.createMeal({
-            planId: planId,
-            type: m.type,
-            name: m.name,
-            calories: m.calories,
-            protein: m.protein,
-            ingredients: m.ingredients,
-            instructions: m.instructions
-          });
-        }
-
-        // Save Workout
-        console.log(`[GENERATION] Saving workout for plan ${planId}`);
-        await storage.createWorkout({
-          planId: planId,
-          type: workout.type as any,
-          name: workout.name,
-          duration: workout.duration,
-          difficulty: workout.difficulty as any,
-          exercises: workout.exercises || []
+      // Save Meals
+      const mealsToSave = [pPlan.breakfast, pPlan.lunch, pPlan.dinner].filter(Boolean);
+      for (const m of mealsToSave) {
+        await storage.createMeal({
+          planId,
+          type: m.mealType,
+          name: m.name,
+          calories: m.calories,
+          protein: m.protein,
+          ingredients: [m.name], // Simplified
+          instructions: `Region: ${m.region}. Goal: ${m.goal?.join(', ')}.`
         });
-
-        // Carry forward adaptation state if active
-        if (yesterdayPlan?.adaptationActive && (yesterdayPlan.adaptationDaysRemaining ?? 0) > 0) {
-          await storage.activateAdaptation(planId, (yesterdayPlan.adaptationDaysRemaining ?? 1) - 1);
-        }
-
-        // Return full plan
-        const fullPlan = await storage.getDailyPlan(userId, date);
-        console.log(`[GENERATION] Successfully generated deterministic plan ${planId} for user ${userId}`);
-        res.status(201).json(fullPlan);
-
-      } catch (saveError) {
-        console.error(`[GENERATION] Failed to save plan details for ${planId}:`, saveError);
-        throw saveError;
       }
 
+      // Save Workout
+      if (pPlan.workout) {
+        const durationMin = parseInt(pPlan.workout.duration) || 30;
+        await storage.createWorkout({
+          planId,
+          type: 'strength', // Default
+          name: pPlan.workout.name,
+          duration: durationMin,
+          difficulty: pPlan.workout.level === 'beginner' ? 'easy' : 'medium',
+          exercises: [{ name: pPlan.workout.name, duration: durationMin * 60, instruction: "Follow routine", phase: 'main' }]
+        });
+      }
+
+      const fullPlan = await storage.getDailyPlan(userId, date);
+      console.log(`[GENERATION] Successfully generated and saved personalized plan ${planId} for user ${userId}`);
+      res.status(201).json(fullPlan);
+
     } catch (error: any) {
-      console.error("Plan generation error:", error);
-      console.error("Stack trace:", error?.stack);
-      res.status(500).json({
-        message: "Failed to generate plan. Please try again.",
-        details: error?.message,
-        stack: error?.stack
-      });
+      console.error("Personalized Plan generation error:", error);
+      res.status(500).json({ message: "Failed to generate personalized plan", details: error?.message });
     }
   });
 

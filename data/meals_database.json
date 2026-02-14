@@ -1,0 +1,512 @@
+[
+    {
+        "id": "m1",
+        "name": "Poha",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 250,
+        "protein": 5
+    },
+    {
+        "id": "m2",
+        "name": "Idli Sambar",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 300,
+        "protein": 8
+    },
+    {
+        "id": "m3",
+        "name": "Paneer Tikka with Roti",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "calories": 500,
+        "protein": 25
+    },
+    {
+        "id": "m4",
+        "name": "Chicken Curry with Rice",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "calories": 600,
+        "protein": 35
+    },
+    {
+        "id": "m5",
+        "name": "Fish Moilee with Appam",
+        "mealType": "dinner",
+        "region": "south_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 450,
+        "protein": 30
+    },
+    {
+        "id": "m6",
+        "name": "Moong Dal Khichdi",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 350,
+        "protein": 12
+    },
+    {
+        "id": "m7",
+        "name": "Masala Dosa",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 400,
+        "protein": 10
+    },
+    {
+        "id": "m8",
+        "name": "Chole Bhature",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 700,
+        "protein": 15
+    },
+    {
+        "id": "m9",
+        "name": "Aloo Paratha with Curd",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "calories": 450,
+        "protein": 12
+    },
+    {
+        "id": "m10",
+        "name": "Egg Curry with Roti",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 500,
+        "protein": 20
+    },
+    {
+        "id": "m11",
+        "name": "Vegetable Biryani",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 550,
+        "protein": 12
+    },
+    {
+        "id": "m12",
+        "name": "Tandoori Chicken",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 400,
+        "protein": 40
+    },
+    {
+        "id": "m13",
+        "name": "Avial with Brown Rice",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 450,
+        "protein": 10
+    },
+    {
+        "id": "m14",
+        "name": "Besan Chilla",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 250,
+        "protein": 10
+    },
+    {
+        "id": "m15",
+        "name": "Grilled Fish",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 350,
+        "protein": 35
+    },
+    {
+        "id": "m16",
+        "name": "Sambar Rice with Thuvayal",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain"
+        ],
+        "calories": 500,
+        "protein": 10
+    },
+    {
+        "id": "m17",
+        "name": "Oats Upma",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 300,
+        "protein": 8
+    },
+    {
+        "id": "m18",
+        "name": "Butter Chicken with Naan",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 800,
+        "protein": 45
+    },
+    {
+        "id": "m19",
+        "name": "Quinoa Pulao",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 400,
+        "protein": 12
+    },
+    {
+        "id": "m20",
+        "name": "Mutton Rogan Josh with Roti",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 750,
+        "protein": 40
+    },
+    {
+        "id": "m21",
+        "name": "Rava Upma",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 350,
+        "protein": 7
+    },
+    {
+        "id": "m22",
+        "name": "Dal Tadka with Rice",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_loss"
+        ],
+        "calories": 450,
+        "protein": 15
+    },
+    {
+        "id": "m23",
+        "name": "Chicken Biryani",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 700,
+        "protein": 30
+    },
+    {
+        "id": "m24",
+        "name": "Methi Paratha with Curd",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain"
+        ],
+        "calories": 380,
+        "protein": 10
+    },
+    {
+        "id": "m25",
+        "name": "Rasam with Rice",
+        "mealType": "dinner",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 320,
+        "protein": 6
+    },
+    {
+        "id": "m26",
+        "name": "Rajma Chawal",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 550,
+        "protein": 18
+    },
+    {
+        "id": "m27",
+        "name": "Pongal with Chutney",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain"
+        ],
+        "calories": 380,
+        "protein": 9
+    },
+    {
+        "id": "m28",
+        "name": "Prawn Curry with Rice",
+        "mealType": "dinner",
+        "region": "south_indian",
+        "diet": "non_veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 550,
+        "protein": 32
+    },
+    {
+        "id": "m29",
+        "name": "Boiled Egg with Toast",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 280,
+        "protein": 18
+    },
+    {
+        "id": "m30",
+        "name": "Palak Paneer with Roti",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 480,
+        "protein": 20
+    },
+    {
+        "id": "m31",
+        "name": "Curd Rice with Pickle",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 350,
+        "protein": 8
+    },
+    {
+        "id": "m32",
+        "name": "Keema Paratha",
+        "mealType": "breakfast",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 600,
+        "protein": 28
+    },
+    {
+        "id": "m33",
+        "name": "Mixed Vegetable Curry with Chapati",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 400,
+        "protein": 10
+    },
+    {
+        "id": "m34",
+        "name": "Pesarattu",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 280,
+        "protein": 12
+    },
+    {
+        "id": "m35",
+        "name": "Fish Fry with Rice",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "non_veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 520,
+        "protein": 35
+    },
+    {
+        "id": "m36",
+        "name": "Aloo Gobi with Roti",
+        "mealType": "lunch",
+        "region": "north_indian",
+        "diet": "veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 420,
+        "protein": 9
+    },
+    {
+        "id": "m37",
+        "name": "Chicken Tikka with Salad",
+        "mealType": "dinner",
+        "region": "north_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "calories": 380,
+        "protein": 38
+    },
+    {
+        "id": "m38",
+        "name": "Bisi Bele Bath",
+        "mealType": "lunch",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "calories": 500,
+        "protein": 11
+    },
+    {
+        "id": "m39",
+        "name": "Uttapam",
+        "mealType": "breakfast",
+        "region": "south_indian",
+        "diet": "veg",
+        "goal": [
+            "maintain"
+        ],
+        "calories": 320,
+        "protein": 8
+    },
+    {
+        "id": "m40",
+        "name": "Mutton Curry with Rice",
+        "mealType": "dinner",
+        "region": "south_indian",
+        "diet": "non_veg",
+        "goal": [
+            "weight_gain"
+        ],
+        "calories": 720,
+        "protein": 42
+    }
+]

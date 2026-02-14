@@ -28,6 +28,7 @@ import { CoachProvider } from "@/hooks/use-coach-chat";
 import { CoachFAB } from "@/components/CoachFAB";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeWrapper } from "@/components/ThemeWrapper";
 
 // Protected Route Wrapper
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -43,12 +44,24 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     }
   }, [authLoading, profileLoading, isAuthenticated, profile, setLocation]);
 
+  console.log(`[ProtectedRoute] STATE: authLoading=${authLoading}, profileLoading=${profileLoading}, isAuthenticated=${isAuthenticated}, profileExists=${!!profile}`);
+
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <p className="text-sm text-muted-foreground animate-pulse">Securing your session...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] relative overflow-hidden">
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
+          <div className="h-full w-full" style={{ backgroundImage: 'linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        </div>
+        <div className="flex flex-col items-center gap-8 relative z-10 text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent shadow-[0_0_20px_rgba(142,214,63,0.3)]"
+          />
+          <div>
+            <p className="text-[10px] font-mono text-primary font-bold uppercase tracking-[0.4em] animate-pulse">Establishing_Secure_Link</p>
+            <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em] mt-2">Auth_Node: {authLoading ? "SCANNING" : "VERIFIED"} // Profile_Node: {profileLoading ? "SCANNING" : "VERIFIED"}</p>
+          </div>
         </div>
       </div>
     );
@@ -153,7 +166,9 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <CoachProvider>
-          <Router />
+          <ThemeWrapper>
+            <Router />
+          </ThemeWrapper>
           <CoachFAB />
           <Toaster />
         </CoachProvider>

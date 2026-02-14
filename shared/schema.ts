@@ -22,6 +22,7 @@ export const userProfiles = pgTable("user_profiles", {
   dailyMealCount: integer("daily_meal_count").default(3), // Fixed for the day
   activityLevel: text("activity_level").notNull(), // 'sedentary', 'moderate', 'active'
   dietaryPreferences: text("dietary_preferences").notNull(), // 'veg', 'non-veg', 'egg'
+  regionPreference: text("region_preference").default("north_indian"), // 'north_indian', 'south_indian'
   cookingAccess: text("cooking_access").notNull(), // 'full', 'basic', 'none'
   timeAvailability: integer("time_availability").notNull(), // minutes per day
   gymAccess: boolean("gym_access").default(false),

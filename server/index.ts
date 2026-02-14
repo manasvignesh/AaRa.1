@@ -34,9 +34,17 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+import { setupAuth } from "./auth";
+
+setupAuth(app);
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
+  const requestId = (req.headers['x-request-id'] as string) || Math.random().toString(36).substring(7);
+  const sessionId = req.sessionID;
+  console.log(`[REQUEST:${requestId}] ${req.method} ${path} START - SessionID: ${sessionId}`);
+
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -47,22 +55,15 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
+    const logLine = `[REQUEST:${requestId}] ${req.method} ${path} ${res.statusCode} in ${duration}ms`;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      log(logLine);
+      console.log(logLine);
     }
   });
 
   next();
 });
 
-import { setupAuth } from "./auth";
-
-setupAuth(app);
 registerRoutes(httpServer, app);
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

@@ -1,0 +1,148 @@
+[
+    {
+        "id": "w1",
+        "name": "Morning Yoga Flow",
+        "level": "beginner",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "duration": "20"
+    },
+    {
+        "id": "w2",
+        "name": "Bodyweight Circuit",
+        "level": "intermediate",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "duration": "25"
+    },
+    {
+        "id": "w3",
+        "name": "Core Strengthening",
+        "level": "beginner",
+        "goal": [
+            "maintain",
+            "weight_gain"
+        ],
+        "duration": "15"
+    },
+    {
+        "id": "w4",
+        "name": "HIIT Cardio Blast",
+        "level": "intermediate",
+        "goal": [
+            "weight_loss"
+        ],
+        "duration": "20"
+    },
+    {
+        "id": "w5",
+        "name": "Push-Pull Strength",
+        "level": "intermediate",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "duration": "30"
+    },
+    {
+        "id": "w6",
+        "name": "Stretching & Mobility",
+        "level": "beginner",
+        "goal": [
+            "maintain"
+        ],
+        "duration": "15"
+    },
+    {
+        "id": "w7",
+        "name": "Full Body Toning",
+        "level": "beginner",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "duration": "20"
+    },
+    {
+        "id": "w8",
+        "name": "Lower Body Strength",
+        "level": "intermediate",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "duration": "25"
+    },
+    {
+        "id": "w9",
+        "name": "Cardio Walk & Jog",
+        "level": "beginner",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "duration": "30"
+    },
+    {
+        "id": "w10",
+        "name": "Upper Body Focus",
+        "level": "intermediate",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "duration": "25"
+    },
+    {
+        "id": "w11",
+        "name": "Tabata Training",
+        "level": "intermediate",
+        "goal": [
+            "weight_loss"
+        ],
+        "duration": "20"
+    },
+    {
+        "id": "w12",
+        "name": "Pilates Core",
+        "level": "beginner",
+        "goal": [
+            "maintain",
+            "weight_loss"
+        ],
+        "duration": "20"
+    },
+    {
+        "id": "w13",
+        "name": "Resistance Band Workout",
+        "level": "beginner",
+        "goal": [
+            "weight_gain",
+            "maintain"
+        ],
+        "duration": "25"
+    },
+    {
+        "id": "w14",
+        "name": "Burpee Challenge",
+        "level": "intermediate",
+        "goal": [
+            "weight_loss",
+            "maintain"
+        ],
+        "duration": "15"
+    },
+    {
+        "id": "w15",
+        "name": "Evening Relaxation Yoga",
+        "level": "beginner",
+        "goal": [
+            "maintain"
+        ],
+        "duration": "20"
+    }
+]

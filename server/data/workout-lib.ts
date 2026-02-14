@@ -32,16 +32,34 @@ interface WorkflowFile {
 
 let cachedWorkouts: WorkflowFile | null = null;
 
-function loadWorkouts(): WorkflowFile {
+export function loadWorkouts(): WorkflowFile {
     if (cachedWorkouts) return cachedWorkouts;
 
-    const p = path.join(process.cwd(), "data", "workouts main.json");
+    const p = path.join(process.cwd(), "data", "workouts_database.json");
     if (!fs.existsSync(p)) {
-        throw new Error("Workouts file not found: workouts main.json");
+        console.warn(`[WORKOUT_LIB] Workouts file not found at ${p}. Using empty fallback.`);
+        return { meta: {}, workouts: [] };
     }
 
-    const content = fs.readFileSync(p, "utf8");
-    cachedWorkouts = JSON.parse(content);
+    try {
+        const content = fs.readFileSync(p, "utf8");
+        const parsed = JSON.parse(content);
+
+        // Handle both object { workouts: [] } and direct array [] patterns
+        if (Array.isArray(parsed)) {
+            cachedWorkouts = { meta: {}, workouts: parsed };
+        } else {
+            cachedWorkouts = parsed;
+        }
+
+        if (!cachedWorkouts || !cachedWorkouts.workouts) {
+            cachedWorkouts = { meta: {}, workouts: [] };
+        }
+    } catch (err) {
+        console.error(`[WORKOUT_LIB] Error parsing workouts database:`, err);
+        cachedWorkouts = { meta: {}, workouts: [] };
+    }
+
     return cachedWorkouts!;
 }
 

@@ -1,25 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { Navigation } from "@/components/Navigation";
-import { useDailyPlan } from "@/hooks/use-plans";
 import { useUserProfile } from "@/hooks/use-user";
 import { useCoachChat } from "@/hooks/use-coach-chat";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, MessageCircle, Sparkles, TrendingUp, Utensils, Dumbbell, Heart, Send, User } from "lucide-react";
-import { format } from "date-fns";
+import { Loader2, Sparkles, Send, Cpu, Zap, Activity, ShieldCheck, Terminal, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CoachPage() {
     const { data: user, isLoading: userLoading } = useUserProfile();
     const { chatMessages, isSending, streamingMessage, sendMessage } = useCoachChat();
 
-    // Local input state (still needed for typing)
     const [chatInput, setChatInput] = useState("");
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chatMessages, streamingMessage]);
@@ -33,77 +26,148 @@ export default function CoachPage() {
 
     if (userLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-secondary/30">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <div className="flex flex-col md:flex-row min-h-screen bg-background relative overflow-hidden">
+                <Navigation />
+                <main className="flex-1 flex flex-col items-center justify-center gap-8 z-10">
+                    <motion.div
+                        animate={{
+                            rotate: 360,
+                            scale: [1, 1.1, 1]
+                        }}
+                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                        className="w-20 h-20 rounded-full border-2 border-primary border-t-transparent shadow-[0_0_30px_rgba(142,214,63,0.3)] flex items-center justify-center"
+                    >
+                        <Bot className="w-8 h-8 text-primary animate-pulse" />
+                    </motion.div>
+                </main>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-screen bg-white dark:bg-black overflow-hidden font-sans">
+        <div className="flex flex-col md:flex-row h-screen bg-[#050505] overflow-hidden selection:bg-primary/30">
             <Navigation />
 
-            <main className="flex-1 flex flex-col h-full bg-[#F2F2F7] dark:bg-black relative">
-                {/* Header */}
-                <header className="px-6 py-4 glass-panel sticky top-0 z-20 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
-                            <Sparkles className="w-5 h-5 fill-current" />
+            <main className="flex-1 flex flex-col h-full relative">
+                {/* Background Cybergrid */}
+                <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
+                    <div className="h-full w-full" style={{ backgroundImage: 'linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+                </div>
+
+                {/* Status Header */}
+                <header className="px-8 py-6 glass-card border-none border-b border-white/5 bg-white/[0.02] flex items-center justify-between z-20">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="absolute -inset-2 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary relative">
+                                <Bot className="w-6 h-6" />
+                            </div>
                         </div>
                         <div>
-                            <p className="text-[17px] font-semibold tracking-tight">Coach</p>
-                            <p className="text-[12px] text-primary font-medium">Assistant</p>
+                            <h2 className="text-xl font-display font-bold text-white uppercase tracking-tight">NEURAL_AI_COACH</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                                <p className="text-[9px] font-mono text-primary font-bold uppercase tracking-[0.3em]">Status: ONLINE_LINK_ESTABLISHED</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="hidden md:flex items-center gap-6">
+                        <div className="flex flex-col items-end">
+                            <p className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Processing_Core</p>
+                            <p className="text-[10px] font-mono text-white/60">V.4.2_GEN_N</p>
+                        </div>
+                        <div className="h-8 w-[1px] bg-white/10" />
+                        <div className="flex flex-col items-end">
+                            <p className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Security_Level</p>
+                            <p className="text-[10px] font-mono text-primary font-bold">ALPHA_ENCRYPTED</p>
                         </div>
                     </div>
                 </header>
 
-                {/* Chat Section */}
-                <div className="flex-1 overflow-y-auto px-4 pt-6 pb-52 md:pb-40 scrollbar-hide">
-                    <div className="max-w-2xl mx-auto space-y-2">
-                        {/* Welcome Message */}
+                {/* Chat Feed */}
+                <div className="flex-1 overflow-y-auto px-6 pt-10 pb-56 md:pb-44 scrollbar-hide z-10">
+                    <div className="max-w-3xl mx-auto space-y-8">
+                        {/* Initial State */}
                         {chatMessages.length === 0 && !streamingMessage && (
-                            <div className="text-center py-20 px-6">
-                                <span className="text-4xl mb-4 block">✨</span>
-                                <h2 className="text-2xl font-bold tracking-tight mb-2">How can I help you?</h2>
-                                <p className="text-[15px] text-muted-foreground leading-snug">
-                                    I'm your personal health & wellness guide. Ask me about your nutrition, workouts, or track your progress.
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Messages */}
-                        {chatMessages.map((msg, index) => (
                             <motion.div
-                                key={index}
-                                initial={{ opacity: 0, scale: 0.95, y: 5 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className={cn(
-                                    "flex flex-col w-full mb-1",
-                                    msg.role === "user" ? "items-end" : "items-start"
-                                )}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-center py-24 space-y-6"
                             >
-                                <div className={cn(
-                                    "px-4 py-2.5 rounded-[20px] max-w-[85%] text-[16px] leading-[1.3] shadow-sm",
-                                    msg.role === "user"
-                                        ? "bg-[#2CC0D8] text-white rounded-tr-md"
-                                        : "bg-[#E9E9EB] dark:bg-[#1C1C1E] text-black dark:text-white rounded-tl-md"
-                                )}>
-                                    {msg.content}
+                                <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/5 mx-auto flex items-center justify-center">
+                                    <Terminal className="w-8 h-8 text-primary opacity-40" />
+                                </div>
+                                <div>
+                                    <h2 className="text-3xl font-display font-bold text-white uppercase tracking-tight mb-2">Awaiting_Instructions</h2>
+                                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed">
+                                        Input your nutritional, kinetic, or morphological queries for immediate processing.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto pt-8">
+                                    {[
+                                        "OPTIMIZE_MY_MEAL_PLAN",
+                                        "ADJUST_INTENSITY_WORKOUT",
+                                        "RECOVERY_PROTOCOL_REQUEST",
+                                        "DIETARY_RESTRICTION_LOG"
+                                    ].map(cmd => (
+                                        <button
+                                            key={cmd}
+                                            onClick={() => setChatInput(cmd.toLowerCase().replace(/_/g, ' '))}
+                                            className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-primary/40 hover:bg-primary/5 transition-all text-left group"
+                                        >
+                                            <p className="text-[9px] font-mono text-white/40 group-hover:text-primary transition-colors tracking-widest uppercase">{cmd}</p>
+                                        </button>
+                                    ))}
                                 </div>
                             </motion.div>
-                        ))}
+                        )}
 
-                        {/* Streaming message */}
+                        {/* Message Stream */}
+                        <AnimatePresence>
+                            {chatMessages.map((msg, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: msg.role === "user" ? 20 : -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className={cn(
+                                        "flex flex-col max-w-[85%] relative",
+                                        msg.role === "user" ? "ml-auto items-end" : "mr-auto items-start"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "px-6 py-4 rounded-[2rem] text-sm leading-relaxed border relative",
+                                        msg.role === "user"
+                                            ? "bg-primary text-black font-medium border-primary shadow-[0_0_20px_rgba(142,214,63,0.2)] rounded-tr-sm"
+                                            : "bg-white/[0.03] text-white/90 border-white/5 rounded-tl-sm hover:border-white/20 transition-all shadow-xl"
+                                    )}>
+                                        {msg.content}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2 px-2">
+                                        <p className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{msg.role === "user" ? "Bio_Source" : "AI_Core"} // {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+
+                        {/* Streaming Feedback */}
                         {streamingMessage && (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="flex flex-col items-start w-full mb-1"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex flex-col items-start mr-auto max-w-[85%]"
                             >
-                                <div className="px-4 py-2.5 rounded-[20px] rounded-tl-md bg-[#E9E9EB] dark:bg-[#1C1C1E] text-black dark:text-white max-w-[85%] text-[16px] leading-[1.3] shadow-sm">
+                                <div className="px-6 py-4 rounded-[2rem] rounded-tl-sm bg-white/[0.05] border border-primary/20 text-white/90 text-sm leading-relaxed shadow-xl">
                                     {streamingMessage}
-                                    <span className="inline-block w-1.5 h-4 bg-primary/40 ml-1 animate-pulse" />
+                                    <motion.span
+                                        animate={{ opacity: [0, 1, 0] }}
+                                        transition={{ repeat: Infinity, duration: 1 }}
+                                        className="inline-block w-2 h-4 bg-primary ml-1 align-middle"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 mt-2 px-2">
+                                    <Loader2 className="w-2.5 h-2.5 text-primary animate-spin" />
+                                    <p className="text-[8px] font-mono text-primary font-bold uppercase tracking-widest">Synthesizing_Response...</p>
                                 </div>
                             </motion.div>
                         )}
@@ -112,33 +176,53 @@ export default function CoachPage() {
                     </div>
                 </div>
 
-                {/* Chat Input - iOS Style */}
-                <div className="absolute bottom-[72px] md:bottom-0 left-0 right-0 glass-panel p-4 pb-[calc(env(safe-area-inset-bottom,20px)+12px)] md:pb-4 z-20">
-                    <div className="max-w-2xl mx-auto flex items-center gap-2">
-                        <div className="flex-1 bg-white/50 dark:bg-white/10 rounded-[22px] border border-black/5 dark:border-white/10 p-1 flex items-center pr-1 overflow-hidden">
+                {/* Tactical Input Unit */}
+                <div className="absolute bottom-[80px] md:bottom-6 left-0 right-0 px-6 z-20">
+                    <div className="max-w-3xl mx-auto relative group">
+                        <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/30 via-transparent to-primary/30 rounded-[2.5rem] -z-10 blur-sm opacity-50 transition-opacity" />
+                        <div className="glass-card p-2 rounded-[2.5rem] bg-black/60 shadow-2xl border-white/5 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/20 group-focus-within:text-primary transition-colors">
+                                <Terminal className="w-5 h-5" />
+                            </div>
                             <input
-                                placeholder="iMessage"
+                                placeholder="TYPE_COMMAND_HERE..."
                                 value={chatInput}
                                 onChange={(e) => setChatInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                 disabled={isSending}
-                                className="flex-1 h-9 bg-transparent px-4 py-2 text-[16px] outline-none placeholder:text-muted-foreground/50"
+                                className="flex-1 bg-transparent border-none outline-none py-4 text-white font-mono text-xs uppercase tracking-[0.2em] placeholder:text-white/10"
                             />
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={handleSend}
                                 disabled={!chatInput.trim() || isSending}
                                 className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90",
-                                    chatInput.trim() ? "bg-[#2CC0D8] text-white" : "bg-muted text-muted-foreground/30"
+                                    "w-14 h-14 rounded-full flex items-center justify-center transition-all",
+                                    chatInput.trim() ? "bg-primary text-black shadow-[0_0_20px_rgba(142,214,63,0.4)]" : "bg-white/5 text-white/10"
                                 )}
                             >
                                 {isSending ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <Loader2 className="w-6 h-6 animate-spin" />
                                 ) : (
-                                    <Send className="w-4 h-4 fill-current" />
+                                    <Send className="w-6 h-6" />
                                 )}
-                            </button>
+                            </motion.button>
                         </div>
+                    </div>
+                    {/* Input Status Sub-bar */}
+                    <div className="max-w-3xl mx-auto flex justify-between px-8 mt-3">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-3 h-3 text-primary opacity-40" />
+                                <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Latency: 24ms</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="w-3 h-3 text-primary opacity-40" />
+                                <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Secure_Layer: ON</span>
+                            </div>
+                        </div>
+                        <span className="text-[8px] font-mono text-white/10 uppercase tracking-[0.3em]">AI_Core_Link_v4.2</span>
                     </div>
                 </div>
             </main>

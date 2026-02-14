@@ -18,7 +18,7 @@ import {
   type GpsRoute, type InsertGpsRoute,
   type UserGamification, type InsertUserGamification
 } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -98,18 +98,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
+    if (!email) return undefined;
+    const cleanEmail = email.toLowerCase().trim();
+    console.log(`[STORAGE] getUserByEmail called with: "${cleanEmail}"`);
+    try {
+      // Use SQL template for case-insensitive match if needed, but since we store them clean, simple eq is fine if we clean before insert too.
+      // For now, let's just make sure we check exactly what's passed after cleaning.
+      const [user] = await db.select().from(users).where(eq(sql`LOWER(${users.email})`, cleanEmail));
+      console.log(`[STORAGE] getUserByEmail result:`, user ? `Found user id=${user.id}` : 'NOT FOUND');
+      return user;
+    } catch (err) {
+      console.error(`[STORAGE] getUserByEmail error:`, err);
+      throw err;
+    }
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
+    const [newUser] = await db.insert(users).values({
+      ...user,
+      email: user.email.toLowerCase().trim()
+    }).returning();
     return newUser;
   }
 
   async getUserProfile(userId: number): Promise<UserProfile | undefined> {
-    const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId));
-    return profile;
+    try {
+      const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId));
+      return profile;
+    } catch (err) {
+      console.error(`[STORAGE] getUserProfile CRITICAL ERROR for userId ${userId}:`, err);
+      throw err;
+    }
   }
 
   async createUserProfile(profile: InsertUserProfile & { userId: number }): Promise<UserProfile> {
@@ -432,11 +451,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTodayActivity(userId: number): Promise<ActivityLog | undefined> {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const [log] = await db.select()
-      .from(activityLogs)
-      .where(and(eq(activityLogs.userId, userId), eq(activityLogs.date, todayStr)));
-    return log;
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const [log] = await db.select().from(activityLogs).where(
+        and(eq(activityLogs.userId, userId), eq(activityLogs.date, todayStr))
+      );
+      return log;
+    } catch (err) {
+      console.error(`[STORAGE] getTodayActivity error for userId ${userId}:`, err);
+      return undefined;
+    }
   }
 
   async saveGpsRoute(route: InsertGpsRoute): Promise<GpsRoute> {
@@ -445,12 +469,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getGamificationProfile(userId: number): Promise<UserGamification> {
-    const [profile] = await db.select().from(userGamification).where(eq(userGamification.userId, userId));
-    if (profile) return profile;
+    try {
+      const [profile] = await db.select().from(userGamification).where(eq(userGamification.userId, userId));
 
-    // Create default if not exists
-    const [newProfile] = await db.insert(userGamification).values({ userId }).returning();
-    return newProfile;
+      if (profile) return profile;
+
+      // Create default if not exists
+      const [newProfile] = await db.insert(userGamification).values({ userId }).returning();
+      return newProfile;
+    } catch (err) {
+      console.error(`[STORAGE] getGamificationProfile error for userId ${userId}:`, err);
+      // Return a dummy object if DB fails entirely to prevent 500
+      return {
+        userId,
+        xp: 0,
+        level: 1,
+        currentStreak: 0,
+        longestStreak: 0,
+        badges: []
+      } as any;
+    }
   }
 
   async updateGamification(userId: number, updates: Partial<InsertUserGamification>): Promise<UserGamification> {

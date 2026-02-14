@@ -7,10 +7,27 @@ export function useUserProfile() {
   return useQuery({
     queryKey: [api.user.getProfile.path],
     queryFn: async () => {
-      const res = await fetch(api.user.getProfile.path, { credentials: "include" });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      return api.user.getProfile.responses[200].parse(await res.json());
+      const requestId = Math.random().toString(36).substring(7);
+      console.log(`[useUserProfile:${requestId}] Fetching ${api.user.getProfile.path}`);
+      try {
+        const res = await fetch(api.user.getProfile.path, {
+          credentials: "include",
+          headers: { 'X-Request-ID': requestId }
+        });
+        console.log(`[useUserProfile:${requestId}] Status: ${res.status}`);
+        if (res.status === 404) return null;
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(`[useUserProfile:${requestId}] Error: ${res.status} ${text}`);
+          throw new Error("Failed to fetch profile");
+        }
+        const data = await res.json();
+        console.log(`[useUserProfile:${requestId}] Success!`);
+        return api.user.getProfile.responses[200].parse(data);
+      } catch (err) {
+        console.error(`[useUserProfile:${requestId}] Fetch Exception:`, err);
+        throw err;
+      }
     },
     retry: false,
   });
@@ -42,10 +59,10 @@ export function useCreateProfile() {
       toast({ title: "Profile Created", description: "Welcome to your new journey!" });
     },
     onError: (err) => {
-      toast({ 
-        title: "Error", 
-        description: err.message, 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive"
       });
     }
   });

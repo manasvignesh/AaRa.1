@@ -5,15 +5,17 @@ import { useUserProfile } from "@/hooks/use-user";
 import { useMeals, useToggleMealConsumed, useLogAlternativeMeal } from "@/hooks/use-meals";
 import { Navigation } from "@/components/Navigation";
 import { MacroRing } from "@/components/MacroRing";
+import { CountUp } from "@/components/CountUp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, ChevronRight, CheckCircle, Utensils, Dumbbell, Calendar, ChevronLeft, Check, X, Footprints } from "lucide-react";
+import { Loader2, Plus, ChevronRight, CheckCircle, Utensils, Dumbbell, Calendar, ChevronLeft, Check, X, Footprints, Flame, Trophy, Zap, Activity, Cpu, Coffee, Apple, Croissant, ShieldCheck, Heart, Info, ArrowRight } from "lucide-react";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +23,7 @@ export default function Dashboard() {
   const { data: plan, isLoading: planLoading } = usePlanMeta(selectedDate);
   const { data: meals = [], isLoading: mealsLoading } = useMeals(selectedDate);
   const { data: workouts = [], isLoading: workoutsLoading } = useWorkouts(selectedDate);
-  const { mutate: generatePlan, isPending: isGenerating, error: genMutationError } = useGeneratePlan();
+  const { mutate: generatePlan, isPending: isGenerating } = useGeneratePlan();
   const { mutate: updateWater } = useUpdateWater();
   const { mutate: toggleConsumed, isPending: isToggling } = useToggleMealConsumed();
   const { mutate: logAlternative, isPending: isLoggingAlt } = useLogAlternativeMeal();
@@ -36,7 +38,6 @@ export default function Dashboard() {
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [expandedMealIds, setExpandedMealIds] = useState<number[]>([]);
 
-  // Derive totals from meals state
   const caloriesProgress = meals.reduce((sum: number, m: any) => {
     if (m.consumedAlternative) return sum + (m.alternativeCalories || 0);
     if (m.isConsumed) return sum + (m.calories || 0);
@@ -50,9 +51,7 @@ export default function Dashboard() {
   }, 0);
 
   useEffect(() => {
-    // Only auto-trigger if we have NO plan, NO local error, and NOT currently generating
     if (!userLoading && user && !planLoading && !plan && !isGenerating && !generationError) {
-      console.log("Dashboard: Triggering auto-plan generation for", user.userId);
       generatePlan(selectedDate, {
         onError: (err: any) => {
           setGenerationError(err.message || "Failed to generate your plan. Please try again.");
@@ -61,7 +60,6 @@ export default function Dashboard() {
     }
   }, [plan, planLoading, isGenerating, selectedDate, generatePlan, user, userLoading, generationError]);
 
-  // Reset error when date changes
   useEffect(() => {
     setGenerationError(null);
   }, [selectedDate]);
@@ -84,10 +82,6 @@ export default function Dashboard() {
     if (!plan || (plan.waterIntake || 0) <= 0) return;
     updateWater({ date: format(selectedDate, "yyyy-MM-dd"), amount: -250 });
   };
-
-  const waterLimit = 4000;
-  const isHydrated = plan ? (plan.waterIntake || 0) >= 2000 : false;
-  const isExcessive = plan ? (plan.waterIntake || 0) >= waterLimit : false;
 
   const handleMealCardClick = (mealId: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -112,19 +106,7 @@ export default function Dashboard() {
 
   const estimateCalories = (description: string, portion: string) => {
     const portionMultiplier: Record<string, number> = { small: 0.7, medium: 1.0, large: 1.4 };
-    const baseCalories = description.toLowerCase().includes('salad') ? 250 :
-      description.toLowerCase().includes('pizza') ? 450 :
-        description.toLowerCase().includes('burger') ? 550 :
-          description.toLowerCase().includes('sandwich') ? 400 :
-            description.toLowerCase().includes('rice') ? 350 :
-              description.toLowerCase().includes('pasta') ? 450 :
-                description.toLowerCase().includes('fruit') ? 150 :
-                  description.toLowerCase().includes('snack') ? 200 :
-                    description.toLowerCase().includes('dessert') ? 350 :
-                      description.toLowerCase().includes('chicken') ? 350 :
-                        description.toLowerCase().includes('fish') ? 300 :
-                          description.toLowerCase().includes('soup') ? 200 :
-                            350;
+    const baseCalories = 350;
     const multiplier = portionMultiplier[portion] || 1.0;
     const calories = Math.round(baseCalories * multiplier);
     const protein = Math.round(calories * 0.15 / 4);
@@ -147,7 +129,6 @@ export default function Dashboard() {
           setShowAlternativeForm(false);
           setShowPreview(false);
           setAltDescription("");
-          setAltPortionSize("medium");
           setPreviewData(null);
           setActiveMealId(null);
         }
@@ -164,19 +145,36 @@ export default function Dashboard() {
     setActiveMealId(null);
   };
 
-  if (userLoading || planLoading || isGenerating) {
+  if (userLoading || (planLoading && !plan) || isGenerating) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-secondary/30">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background relative overflow-hidden">
         <Navigation />
-        <main className="flex-1 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <div className="text-center">
-            <h3 className="font-bold text-lg">
-              {isGenerating ? "Assembling your Indian-inspired plan..." : "Loading your progress..."}
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 z-10">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+              borderColor: ["hsl(var(--primary))", "hsl(var(--primary)/0.3)", "hsl(var(--primary))"]
+            }}
+            transition={{ repeat: Infinity, duration: 3 }}
+            className="w-24 h-24 rounded-full border-4 border-primary border-t-transparent shadow-[0_0_50px_rgba(142,214,63,0.3)] flex items-center justify-center"
+          >
+            <Zap className="w-10 h-10 text-primary animate-pulse" />
+          </motion.div>
+          <div className="text-center space-y-4">
+            <h3 className="font-display font-bold text-2xl text-white uppercase tracking-[0.2em] animate-pulse">
+              Synthesizing_Life_Cycle
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {isGenerating ? "I'm optimizing your meals for best results." : "Just a moment."}
-            </p>
+            <div className="flex justify-center gap-1">
+              {[0, 1, 2].map(i => (
+                <motion.div
+                  key={i}
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                  className="w-2 h-2 bg-primary rounded-full"
+                />
+              ))}
+            </div>
           </div>
         </main>
       </div>
@@ -185,372 +183,394 @@ export default function Dashboard() {
 
   if (generationError || (!plan && !isGenerating)) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-secondary/30">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background relative overflow-hidden">
         <Navigation />
-        <main className="flex-1 flex flex-col items-center justify-center gap-6 p-6 max-w-md mx-auto text-center">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-            <X className="w-8 h-8 text-red-600" />
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 p-6 max-w-md mx-auto text-center z-10">
+          <div className="w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+            <X className="w-10 h-10 text-red-500" />
           </div>
-          <div>
-            <h3 className="font-bold text-xl">Something went wrong</h3>
-            <p className="text-muted-foreground mt-2">
-              {generationError || "I couldn't prepare your plan for today."}
+          <div className="space-y-2">
+            <h3 className="font-display font-bold text-2xl text-white uppercase tracking-tight">LINK_FAILURE</h3>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-60 leading-relaxed">
+              {generationError || "CRITICAL_MISSING_PLAN_EXCEPTION: UNABLE_TO_SYNCHRONIZE_BIO_ROUTINE"}
             </p>
           </div>
-          <Button size="lg" className="w-full" onClick={handleRetryGeneration}>
-            Retry Generation
+          <Button
+            size="lg"
+            className="w-full h-14 rounded-2xl bg-primary text-black font-display font-bold text-lg uppercase tracking-widest shadow-[0_0_30px_rgba(142,214,63,0.3)]"
+            onClick={handleRetryGeneration}
+          >
+            RE-ESTABLISH_LINK
           </Button>
-          <div className="text-xs text-muted-foreground">
-            Error: {genMutationError instanceof Error ? genMutationError.message : "Network/Server Failure"}
-          </div>
         </main>
       </div>
     );
   }
 
-  // At this point plan is guaranteed to exist due to the checks above
-  if (!plan) return null;
-
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground selection:bg-primary/30">
       <Navigation />
 
-      <main className="flex-1 pb-32 md:pb-8 overflow-y-auto">
-        <header className="px-6 pt-10 pb-6 md:pt-16">
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-[13px] font-semibold text-primary uppercase tracking-wider mb-1">
-                {format(selectedDate, "EEEE, MMMM do")}
-              </p>
-              <h1 className="text-4xl font-bold tracking-tight text-foreground">
-                Hello, {user?.displayName || "Champion"}
-              </h1>
+      <main className="flex-1 pb-48 md:pb-12 overflow-y-auto px-4 md:px-8">
+        <header className="pt-10 pb-10 md:pt-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-10 relative">
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] -z-10 rounded-full" />
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <p className="text-[10px] font-mono font-bold text-primary uppercase tracking-[0.4em]">Node_Active // Logged_In</p>
             </div>
-            <div className="flex items-center gap-2 mb-1">
-              <button
-                onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-                className="w-10 h-10 rounded-full bg-white dark:bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-                className="w-10 h-10 rounded-full bg-white dark:bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter text-white leading-none mb-4">
+              WELCOME, <span className="text-primary">{user?.displayName?.split(' ')[0] || "OPERATOR"}</span>
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest">
+                <Flame className="w-3.5 h-3.5 text-orange-500" /> Thermogenic_Phase
+              </span>
+              <span className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-mono font-bold text-primary uppercase tracking-widest">
+                <Trophy className="w-3.5 h-3.5" /> Rank: Alpha_Core
+              </span>
             </div>
-          </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-4 glass-card p-3 rounded-3xl border-white/5 bg-white/[0.02]"
+          >
+            <button
+              onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+              className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group"
+            >
+              <ChevronLeft className="w-6 h-6 text-white/40 group-hover:text-primary transition-colors" />
+            </button>
+            <div className="px-6 text-center min-w-[140px]">
+              <p className="font-display font-bold text-xl text-white">{isToday(selectedDate) ? "TODAY" : format(selectedDate, "MMM d")}</p>
+              <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">{format(selectedDate, "EEEE")}</p>
+            </div>
+            <button
+              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group"
+            >
+              <ChevronRight className="w-6 h-6 text-white/40 group-hover:text-primary transition-colors" />
+            </button>
+          </motion.div>
         </header>
 
-        <div className="ios-inset-grouped p-6 shadow-sm mb-6">
-          <div className="flex items-center justify-around">
-            <MacroRing
-              current={caloriesProgress}
-              target={plan.caloriesTarget}
-              label="Calories"
-              unit="kcal"
-              color="#007AFF"
-            />
-            <MacroRing
-              current={proteinProgress}
-              target={plan.proteinTarget}
-              label="Protein"
-              unit="g"
-              color="#5856D6"
-            />
-          </div>
-        </div>
-
-        {/* Walk & Run Feature Card */}
-        <div className="px-6 mb-8">
-          <Link href="/walk-run">
-            <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:bg-accent/5 transition-all duration-300 border-none shadow-sm active:scale-[0.98] cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                    <Footprints className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-foreground">Walk & Run</h3>
-                    <p className="text-sm text-muted-foreground">Track steps, routes & earn badges</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </Card>
-          </Link>
-        </div>
-
-        <section className="mb-8">
-          <h2 className="px-6 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Hydration & Weight</h2>
-          <div className="grid grid-cols-2 gap-4 px-4">
-            <div className="rounded-xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all border border-black/5 dark:border-white/5">
-              <div className="flex items-center gap-4 mb-2">
-                <button
-                  onClick={handleSubtractWater}
-                  className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-primary font-bold"
-                  disabled={(plan.waterIntake || 0) <= 0}
-                >
-                  −
-                </button>
-                <span className="text-2xl font-bold text-primary">{plan.waterIntake || 0}</span>
-                <button
-                  onClick={handleAddWater}
-                  className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-primary font-bold"
-                >
-                  +
-                </button>
-              </div>
-              <span className="text-xs font-medium text-muted-foreground">Water (ml)</span>
+        {/* Tactical Overview */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 relative">
+          <div className="lg:col-span-2 glass-card rounded-[3rem] p-10 md:p-14 relative overflow-hidden group border-white/5">
+            <div className="absolute top-0 right-0 p-12 opacity-5">
+              <Zap className="w-48 h-48 text-primary" />
             </div>
 
-            <Link href="/weight/log">
-              <div className="rounded-xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all h-full border border-black/5 dark:border-white/5">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <Plus className="w-5 h-5 text-primary" />
+            <div className="flex flex-col md:flex-row items-center gap-16 relative z-10">
+              <div className="relative">
+                <MacroRing
+                  current={caloriesProgress}
+                  target={plan.caloriesTarget}
+                  label=""
+                  unit=""
+                  color="hsl(var(--primary))"
+                  size={window.innerWidth < 768 ? 180 : 260}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em]">Total_Net</p>
+                  <p className="text-4xl font-display font-bold text-white tracking-tighter"><CountUp value={caloriesProgress} /></p>
                 </div>
-                <span className="text-xs font-medium text-muted-foreground">Log Weight</span>
               </div>
+
+              <div className="flex-1 space-y-10">
+                <div className="space-y-2">
+                  <h3 className="text-[10px] font-mono font-bold text-primary uppercase tracking-[0.4em]">Energy_Adherence</h3>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-6xl font-display font-bold text-white tracking-tighter">
+                      <CountUp value={Math.max(0, plan.caloriesTarget - caloriesProgress)} />
+                    </span>
+                    <span className="text-xl font-display font-medium text-white/30 uppercase tracking-tighter italic font-light">Remaining</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3 h-3 text-primary" />
+                      <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Molecular_Mass</p>
+                    </div>
+                    <p className="text-3xl font-display font-bold text-white">
+                      <CountUp value={proteinProgress} /> <span className="text-xs text-white/20 uppercase ml-1">/ {plan.proteinTarget}g</span>
+                    </p>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, (proteinProgress / plan.proteinTarget) * 100)}%` }}
+                        className="h-full bg-primary"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-3 h-3 text-orange-500" />
+                      <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Consistency_Index</p>
+                    </div>
+                    <p className="text-3xl font-display font-bold text-white">
+                      <CountUp value={88} /> <span className="text-xs text-white/20 uppercase ml-1">%</span>
+                    </p>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "88%" }}
+                        className="h-full bg-orange-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats Pods */}
+          <div className="flex flex-col gap-8">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="glass-card rounded-[2.5rem] p-8 border-white/5 bg-blue-500/[0.02] flex flex-col justify-between"
+            >
+              <div className="flex justify-between items-start">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                  <Zap className="w-6 h-6 opacity-60" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleSubtractWater} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all text-sm font-bold">-</button>
+                  <button onClick={handleAddWater} className="w-8 h-8 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 flex items-center justify-center text-blue-400 transition-all text-sm font-bold">+</button>
+                </div>
+              </div>
+              <div>
+                <p className="text-4xl font-display font-bold text-white tracking-tighter mb-1">
+                  <CountUp value={plan.waterIntake || 0} />
+                  <span className="text-sm font-medium text-white/20 uppercase ml-2 italic tracking-tighter">ml</span>
+                </p>
+                <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Hydration_Flow</p>
+              </div>
+            </motion.div>
+
+            <Link href="/weight/log">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-[2.5rem] p-8 border-white/5 bg-purple-500/[0.02] flex flex-col justify-between cursor-pointer group"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+                    <Cpu className="w-6 h-6 opacity-60" />
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-white/10 group-hover:text-purple-400 transition-all group-hover:translate-x-1" />
+                </div>
+                <div>
+                  <p className="text-4xl font-display font-bold text-white tracking-tighter mb-1">
+                    {user?.currentWeight?.toFixed(1) || "--"}
+                    <span className="text-sm font-medium text-white/20 uppercase ml-2 italic tracking-tighter">kg</span>
+                  </p>
+                  <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Current_System_Mass</p>
+                </div>
+              </motion.div>
             </Link>
           </div>
         </section>
 
-        {/* Adaptive Plan Adjustment Message */}
-        {plan && (plan.caloriesConsumed || 0) > plan.caloriesTarget && (
-          <div className="ios-inset-grouped p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 mb-8">
-            <div className="flex items-start gap-4">
-              <div className="text-2xl mt-1">🌿</div>
-              <div>
-                <p className="font-semibold text-orange-900 dark:text-orange-200">Balanced Approach</p>
-                <p className="text-sm text-orange-800 dark:text-orange-300">
-                  You're over today's target. I'll smooth this out over your next few meals. Keep going!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <section className="mb-8">
-          <div className="px-6 flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">Today's Meals</h2>
-            <p className="text-[11px] font-medium text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
-              {meals.filter((m: any) => m.isConsumed || m.consumedAlternative).length}/{meals.length} Completed
-            </p>
+        {/* Nutritional Timeline */}
+        <section className="mb-20">
+          <div className="flex items-center gap-4 px-2 mb-10">
+            <Utensils className="w-4 h-4 text-primary opacity-60" />
+            <h2 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.4em]">Thermodynamic_Sequence</h2>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-white/5 to-transparent" />
+            <Link href="/meals">
+              <button className="text-[10px] font-mono text-primary font-bold uppercase hover:underline tracking-widest">Full_Registry</button>
+            </Link>
           </div>
 
-          <div className="space-y-4 px-4 relative">
-            {/* Timeline Vertical Line */}
-            <div className="absolute left-[2.25rem] top-4 bottom-4 w-[2px] bg-black/5 dark:bg-white/5 z-0" />
+          <div className="space-y-8 relative">
+            <div className="absolute left-[2.2rem] top-10 bottom-10 w-[1px] bg-gradient-to-b from-primary/40 via-white/5 to-transparent z-0" />
 
-            {meals.map((meal: any, index: number) => {
-              const isLogged = meal.isConsumed || meal.consumedAlternative;
-              const isExpanded = expandedMealIds.includes(meal.id);
+            <AnimatePresence>
+              {meals.map((meal: any, idx: number) => {
+                const isLogged = meal.isConsumed || meal.consumedAlternative;
+                const isExpanded = expandedMealIds.includes(meal.id);
 
-              const toggleExpand = (e: React.MouseEvent) => {
-                e.stopPropagation();
-                setExpandedMealIds(prev =>
-                  prev.includes(meal.id) ? prev.filter(id => id !== meal.id) : [...prev, meal.id]
-                );
-              };
+                const mealIcons: Record<string, any> = {
+                  breakfast: Coffee,
+                  lunch: Apple,
+                  dinner: Croissant,
+                  snack: Zap
+                };
+                const Icon = mealIcons[meal.type?.toLowerCase()] || Utensils;
 
-              const getMealStyles = (type: string) => {
-                switch (type.toLowerCase()) {
-                  case 'breakfast': return { color: '#F59E0B', bg: 'bg-amber-500/10', micro: 'Fuel your morning with high-quality protein.' };
-                  case 'lunch': return { color: '#10B981', bg: 'bg-emerald-500/10', micro: 'Stay energized for the rest of your day.' };
-                  case 'dinner': return { color: '#3B82F6', bg: 'bg-blue-500/10', micro: 'Recovery starts here. End your day strong.' };
-                  default: return { color: '#007AFF', bg: 'bg-primary/10', micro: 'Keep your metabolism active.' };
-                }
-              };
-
-              const styles = getMealStyles(meal.type);
-
-              return (
-                <div key={meal.id} className="relative z-10 flex gap-4">
-                  {/* Timeline Dot */}
-                  <div className="flex flex-col items-center mt-4">
-                    <div className={cn(
-                      "w-4 h-4 rounded-full border-4 border-background flex items-center justify-center transition-all duration-300",
-                      isLogged ? "bg-primary scale-110" : "bg-muted"
-                    )}>
-                      {isLogged && <div className="w-1 h-1 bg-white rounded-full" />}
+                return (
+                  <motion.div
+                    key={meal.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="relative z-10 flex gap-8"
+                  >
+                    <div className="mt-6">
+                      <div className={cn(
+                        "w-7 h-7 rounded-full border-4 border-background flex items-center justify-center transition-all duration-700 relative",
+                        isLogged ? "bg-primary shadow-[0_0_20px_rgba(142,214,63,0.4)]" : "bg-white/10"
+                      )}>
+                        {isLogged && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [1, 1.8, 1] }}
+                            transition={{ repeat: Infinity, duration: 2.5 }}
+                            className="absolute inset-0 rounded-full bg-primary/20 -z-10"
+                          />
+                        )}
+                        {isLogged && <Check className="w-3.5 h-3.5 text-black" />}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Meal Card */}
-                  <Card className={cn(
-                    "flex-1 overflow-hidden transition-all duration-300 border-none shadow-sm",
-                    isExpanded ? "ring-1 ring-primary/20" : "hover:bg-accent/5"
-                  )}>
                     <div
                       onClick={(e) => handleMealCardClick(meal.id, e)}
-                      className="p-4 cursor-pointer"
+                      className={cn(
+                        "flex-1 glass-card rounded-[2.5rem] p-8 border-white/5 transition-all duration-300 relative group cursor-pointer",
+                        isLogged ? "opacity-50 grayscale-[0.5]" : "hover:border-primary/20"
+                      )}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full", styles.bg)} style={{ color: styles.color }}>
-                              {meal.type}
-                            </span>
-                            {isLogged && (
-                              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <Check className="w-2.5 h-2.5" /> Logged
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="font-semibold text-[17px] text-foreground leading-tight">
-                            {meal.consumedAlternative ? meal.alternativeDescription : meal.name}
-                          </h3>
-                          <p className="text-[12px] text-muted-foreground italic opacity-70">
-                            {styles.micro}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-2">
-                          <div className="text-right">
-                            <span className="text-lg font-bold text-primary">
-                              {meal.consumedAlternative ? meal.alternativeProtein : meal.protein}g
-                            </span>
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase border-l border-muted ml-2 pl-2">
-                              Protein
-                            </span>
-                          </div>
-                          <button
-                            onClick={toggleExpand}
-                            className="p-1 rounded-full hover:bg-secondary transition-colors"
-                          >
-                            <ChevronRight className={cn("w-4 h-4 transition-transform duration-300", isExpanded && "rotate-90")} />
-                          </button>
-                        </div>
+                      <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 transition-opacity">
+                        <Icon className="w-20 h-20 text-primary" />
                       </div>
 
-                      {isExpanded && (
-                        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-secondary/50 p-3 rounded-xl border border-black/5 dark:border-white/5">
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Calories</p>
-                              <p className="text-xl font-bold">{meal.consumedAlternative ? meal.alternativeCalories : meal.calories} <span className="text-xs font-normal opacity-60">kcal</span></p>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-mono font-bold text-white/40 uppercase tracking-widest group-hover:text-primary transition-colors">
+                              PROTOCOL_{meal.type?.toUpperCase()}
+                            </span>
+                            {isLogged && <span className="text-[9px] font-mono font-bold text-primary uppercase tracking-widest">SYNTHESIZED</span>}
+                          </div>
+                          <h3 className="text-2xl font-display font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">
+                            {meal.consumedAlternative ? meal.alternativeDescription : meal.name}
+                          </h3>
+                          <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2">
+                              <Flame className="w-3 h-3 text-orange-500" />
+                              <span className="text-xs font-mono font-bold text-white/60 uppercase">{meal.consumedAlternative ? meal.alternativeCalories : meal.calories} <span className="text-[9px] opacity-40">KCAL</span></span>
                             </div>
-                            <div className="bg-secondary/50 p-3 rounded-xl border border-black/5 dark:border-white/5">
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Status</p>
-                              <p className={cn("text-sm font-semibold", isLogged ? "text-emerald-600" : "text-amber-600")}>
-                                {isLogged ? "Ready to Burn" : "Pending Energy"}
-                              </p>
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-3 h-3 text-primary" />
+                              <span className="text-xs font-mono font-bold text-white/60 uppercase">{meal.consumedAlternative ? meal.alternativeProtein : meal.protein} <span className="text-[9px] opacity-40">G PROTEIN</span></span>
                             </div>
                           </div>
-
-                          {!isLogged && (
-                            <Button className="w-full h-10 rounded-xl bg-primary shadow-sm hover:shadow-md transition-all">
-                              Log This Meal
-                            </Button>
-                          )}
                         </div>
-                      )}
+                        <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center opacity-20 group-hover:opacity-100 group-hover:border-primary/30 transition-all">
+                          <ChevronRight className="w-5 h-5 group-hover:text-primary transition-colors" />
+                        </div>
+                      </div>
                     </div>
-                  </Card>
-                </div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         </section>
 
-        <section className="mb-8">
-          <h2 className="px-6 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Workout Plan</h2>
-          <div className="space-y-4 px-4 relative">
-            {/* Timeline Vertical Line (Continuing from meals) */}
-            <div className="absolute left-[2.25rem] top-0 bottom-4 w-[2px] bg-black/5 dark:bg-white/5 z-0" />
+        {/* Tactical Training Pod */}
+        <section className="mb-20">
+          <div className="flex items-center gap-4 px-2 mb-10">
+            <Dumbbell className="w-4 h-4 text-primary opacity-60" />
+            <h2 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.4em]">Kinetic_Workloads</h2>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-white/5 to-transparent" />
+          </div>
 
-            {workouts.map((workout: any) => (
-              <div key={workout.id} className="relative z-10 flex gap-4">
-                {/* Timeline Dot */}
-                <div className="flex flex-col items-center mt-4">
-                  <div className="w-4 h-4 rounded-full border-4 border-background bg-slate-400 dark:bg-slate-600 flex items-center justify-center transition-all duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {workouts.map((workout: any, idx: number) => (
+              <Link key={workout.id} href={`/workout/${workout.id}`}>
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-card rounded-[2.5rem] p-10 border-white/5 relative overflow-hidden group cursor-pointer bg-indigo-500/[0.01]"
+                >
+                  <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Activity className="w-32 h-32 text-indigo-400" />
                   </div>
-                </div>
 
-                {/* Workout Card */}
-                <Link href={`/workout/${workout.id}`} className="flex-1">
-                  <Card className="p-4 hover:bg-accent/5 transition-all duration-300 border-none shadow-sm active:scale-[0.98]">
-                    <div className="flex items-start justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                            Workout
-                          </span>
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-widest">STAMINA_PROTOCOL_ACTIVE</span>
+                    </div>
+                    <h3 className="text-3xl font-display font-bold text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors">
+                      {workout.name}
+                    </h3>
+                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                      <div className="flex gap-8">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Duration</p>
+                          <p className="text-xl font-display font-bold text-white uppercase">{workout.duration} Min</p>
                         </div>
-                        <h3 className="font-semibold text-[17px] text-foreground leading-tight">
-                          {workout.name}
-                        </h3>
-                        <p className="text-[12px] text-muted-foreground italic opacity-70">
-                          Build strength and resilience. Every rep counts.
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Intensity</p>
+                          <p className="text-xl font-display font-bold text-primary uppercase">Flow</p>
+                        </div>
                       </div>
-
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="text-right">
-                          <span className="text-lg font-bold text-slate-700 dark:text-slate-300">
-                            {workout.duration}
-                          </span>
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase border-l border-muted ml-2 pl-2">
-                            Mins
-                          </span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
+                      <div className="w-14 h-14 rounded-full bg-indigo-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.3)] group-hover:scale-110 transition-transform">
+                        <ArrowRight className="w-6 h-6" />
                       </div>
                     </div>
-                  </Card>
-                </Link>
-              </div>
+                  </div>
+                </motion.div>
+              </Link>
             ))}
 
             {workouts.length === 0 && (
-              <div className="relative z-10 flex gap-4 opacity-60">
-                <div className="flex flex-col items-center mt-4">
-                  <div className="w-4 h-4 rounded-full border-4 border-background bg-muted flex items-center justify-center"></div>
-                </div>
-                <div className="flex-1 p-8 text-center bg-card rounded-xl border-2 border-dashed border-muted flex flex-col items-center">
-                  <span className="text-2xl mb-2">🧘</span>
-                  <p className="text-sm font-medium">Rest day — Enjoy your recovery!</p>
-                </div>
+              <div className="col-span-full h-64 glass-card rounded-[3rem] border-dashed border-white/10 flex flex-col items-center justify-center opacity-40">
+                <Heart className="w-10 h-10 mb-4 animate-pulse text-red-500" />
+                <p className="text-xl font-display font-bold uppercase tracking-widest text-white">REGENERATIVE_PHASE_ACTIVE</p>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] mt-2">Homeostatic stabilization in progress...</p>
               </div>
             )}
           </div>
         </section>
       </main>
 
+      {/* Consumption Dialogs */}
       <Dialog open={showConsumptionPrompt} onOpenChange={(open) => !open && handleCloseDialogs()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Did you eat this meal?</DialogTitle>
+        <DialogContent className="glass-card border-white/10 bg-black/90 p-8 rounded-[2.5rem] outline-none">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-2xl font-display font-bold text-white uppercase tracking-tight">Fuel_Status_Report</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             {activeMeal && (
-              <p className="text-muted-foreground">
-                <strong>{activeMeal.name}</strong> - {activeMeal.calories} cal, {activeMeal.protein}g protein
-              </p>
+              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+                <p className="text-lg font-display font-bold text-white uppercase mb-2">{activeMeal.name}</p>
+                <div className="flex gap-6">
+                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">{activeMeal.calories} KCAL</span>
+                  <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">{activeMeal.protein} G</span>
+                </div>
+              </div>
             )}
-            <div className="flex flex-col gap-3">
-              <Button
+            <div className="flex flex-col gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleYesConsumed}
                 disabled={isToggling}
-                className="w-full h-12"
-                data-testid="button-yes-consumed"
+                className="w-full h-16 rounded-2xl bg-primary text-black font-display font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(142,214,63,0.3)] flex items-center justify-center gap-3 border-none outline-none"
               >
-                {isToggling ? <Loader2 className="animate-spin mr-2" /> : <Check className="mr-2" />}
-                Yes, I ate this
-              </Button>
+                {isToggling ? <Loader2 className="animate-spin w-5 h-5" /> : <Check className="w-5 h-5" />}
+                CONFIRM_CONSUMPTION
+              </motion.button>
               <Button
                 variant="outline"
                 onClick={handleConsumedSomethingElse}
-                className="w-full h-12"
-                data-testid="button-ate-something-else"
+                className="w-full h-16 rounded-2xl border-white/10 hover:border-white/20 text-white font-display font-bold uppercase tracking-widest"
               >
-                <X className="mr-2 w-4 h-4" />
-                No, I ate something else
+                UNPLANNED_FUEL_INPUT
               </Button>
               <Link href={activeMeal ? `/meal/${format(selectedDate, 'yyyy-MM-dd')}/${activeMeal.id}` : "#"}>
-                <Button variant="ghost" className="w-full text-muted-foreground" data-testid="button-view-details">
-                  View meal details & Regenerate
+                <Button variant="ghost" className="w-full h-12 text-white/30 hover:text-white uppercase font-mono text-[9px] tracking-widest">
+                  VIEW_FULL_MOLECULAR_DATA
                 </Button>
               </Link>
             </div>
@@ -559,40 +579,40 @@ export default function Dashboard() {
       </Dialog>
 
       <Dialog open={showAlternativeForm} onOpenChange={(open) => !open && handleCloseDialogs()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>What did you eat instead?</DialogTitle>
+        <DialogContent className="glass-card border-white/10 bg-black/90 p-8 rounded-[2.5rem] outline-none">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-2xl font-display font-bold text-white uppercase tracking-tight">Manual_Data_Override</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Textarea
-              placeholder="Describe what you ate (e.g., 'chicken salad with dressing', 'two slices of pizza')"
-              value={altDescription}
-              onChange={(e) => setAltDescription(e.target.value)}
-              className="min-h-[80px]"
-              data-testid="textarea-alt-description"
-            />
-
+          <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Portion Size</Label>
+              <Label className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">Input_Description</Label>
+              <Textarea
+                placeholder="DESCRIBE_SUBSTANCE..."
+                value={altDescription}
+                onChange={(e) => setAltDescription(e.target.value)}
+                className="h-28 bg-white/[0.03] border-white/10 rounded-2xl focus:border-primary/50 text-white font-mono text-xs uppercase"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <Label className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">Volumetric_Mass</Label>
               <RadioGroup
                 value={altPortionSize}
                 onValueChange={(v) => setAltPortionSize(v as "small" | "medium" | "large")}
                 className="grid grid-cols-3 gap-3"
               >
                 {[
-                  { value: "small", label: "Small", desc: "Light portion" },
-                  { value: "medium", label: "Medium", desc: "Regular portion" },
-                  { value: "large", label: "Large", desc: "Generous serving" }
+                  { value: "small", label: "LOW" },
+                  { value: "medium", label: "MOD" },
+                  { value: "large", label: "HIGH" }
                 ].map((opt) => (
                   <div key={opt.value}>
-                    <RadioGroupItem value={opt.value} id={`dash-${opt.value}`} className="peer sr-only" data-testid={`radio-portion-${opt.value}`} />
+                    <RadioGroupItem value={opt.value} id={`dash-${opt.value}`} className="peer sr-only" />
                     <Label
                       htmlFor={`dash-${opt.value}`}
-                      className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
-                      data-testid={`label-portion-${opt.value}`}
+                      className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] p-4 hover:bg-white/5 peer-data-[state=checked]:border-primary/50 peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
                     >
-                      <span className="text-sm font-medium">{opt.label}</span>
-                      <span className="text-xs text-muted-foreground">{opt.desc}</span>
+                      <span className="text-[10px] font-mono font-bold text-white uppercase tracking-widest">{opt.label}</span>
                     </Label>
                   </div>
                 ))}
@@ -600,35 +620,35 @@ export default function Dashboard() {
             </div>
 
             {showPreview && previewData && (
-              <Card className="p-4 bg-secondary/50">
-                <p className="text-sm font-medium">Estimated Values</p>
-                <p className="text-lg font-bold text-primary">~{previewData.calories} calories</p>
-                <p className="text-sm text-muted-foreground">~{previewData.protein}g protein</p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  This is a rough estimate. We focus on the big picture, not exact numbers.
-                </p>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-6 rounded-2xl bg-primary/10 border border-primary/20"
+              >
+                <p className="text-2xl font-display font-bold text-primary tracking-tighter">~{previewData.calories} KCAL</p>
+                <p className="text-[10px] font-mono text-primary/60 uppercase tracking-widest">ESTIMATED_THERMAL_LOAD</p>
+              </motion.div>
             )}
 
             {!showPreview ? (
               <Button
                 onClick={handleShowPreview}
                 disabled={!altDescription.trim()}
-                className="w-full"
-                data-testid="button-preview"
+                className="w-full h-16 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-display font-bold uppercase tracking-widest"
               >
-                Preview Estimate
+                SCAN_DATA_POINTS
               </Button>
             ) : (
-              <Button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleConfirmAlternative}
                 disabled={isLoggingAlt}
-                className="w-full"
-                data-testid="button-confirm-alt"
+                className="w-full h-16 rounded-2xl bg-primary text-black font-display font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(142,214,63,0.3)] flex items-center justify-center gap-3 border-none outline-none"
               >
-                {isLoggingAlt ? <Loader2 className="animate-spin mr-2" /> : <Check className="mr-2" />}
-                Confirm and Log
-              </Button>
+                {isLoggingAlt ? <Loader2 className="animate-spin w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+                CALIBRATE_AND_LOG
+              </motion.button>
             )}
           </div>
         </DialogContent>
