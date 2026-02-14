@@ -1,4 +1,4 @@
-import { loadMeals } from "../../src/api/diet";
+import { loadMeals } from "./loadMeals";
 import { loadWorkouts } from "./workout-lib";
 
 export interface UserProfile {
@@ -7,9 +7,10 @@ export interface UserProfile {
     regionPreference: string;
 }
 
-export function generatePersonalizedPlan(userProfile: UserProfile) {
+export async function generatePersonalizedPlan(userProfile: UserProfile) {
     // 1. Load Data
-    const allMeals = loadMeals();
+    const mealLib = await loadMeals();
+    const allMeals = mealLib.meals;
     const workoutLib = loadWorkouts();
     const allWorkouts = workoutLib.workouts;
 

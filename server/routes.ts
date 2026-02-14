@@ -363,7 +363,7 @@ export function registerRoutes(
         console.warn(`[GENERATION] User ${userId} missing regionPreference, using default: north_indian`);
       }
 
-      const pPlan = generatePersonalizedPlan(engineProfile);
+      const pPlan = await generatePersonalizedPlan(engineProfile);
 
       // Persistence: Save to database
       const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
