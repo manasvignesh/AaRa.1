@@ -185,13 +185,13 @@ export default function WorkoutExecution() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="p-4 border-b bg-white flex items-center justify-between sticky top-0 z-10">
+      <header className="p-4 border-b bg-card flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => setShowEndConfirm(true)} data-testid="button-back">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="font-bold text-lg">{workout.name}</h1>
+            <h1 className="font-semibold text-lg">{workout.name}</h1>
             <p className="text-xs text-muted-foreground">{format(workoutDate, "MMM do")} • {workout.duration} mins</p>
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function WorkoutExecution() {
             {/* Current Exercise Card */}
             <Card className={cn(
               "p-8 w-full text-center space-y-6 transition-all",
-              isResting ? "bg-blue-50 border-blue-200" : "bg-white"
+              isResting ? "bg-blue-50 border-blue-200" : "bg-card"
             )}>
               <div className="space-y-2">
                 <span className={cn(
@@ -286,7 +286,7 @@ export default function WorkoutExecution() {
           <Card className="p-6 max-w-sm w-full space-y-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-6 h-6 text-orange-500" />
-              <h3 className="font-bold text-lg">End workout early?</h3>
+              <h3 className="font-semibold text-lg">End workout early?</h3>
             </div>
             <p className="text-muted-foreground text-sm">
               It's okay — we'll record what you've done. Every minute counts.

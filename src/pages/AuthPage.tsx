@@ -53,11 +53,11 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-green-50 flex flex-col items-center justify-center p-4">
             {/* Decorative background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-72 h-72 bg-sky-200/30 rounded-full blur-3xl" />
-                <div className="absolute top-40 right-20 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl" />
+                <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl" />
+                <div className="absolute top-40 right-20 w-96 h-96 bg-green-200/20 rounded-full blur-3xl" />
             </div>
 
             <motion.div
@@ -70,16 +70,16 @@ export default function AuthPage() {
                     <img src={aaraLogo} alt="AaRa" className="h-24 w-auto drop-shadow-md" />
                 </div>
 
-                <Card className="border-white/50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 shadow-2xl">
+                <Card className="border-border backdrop-blur-md bg-card/90 shadow-2xl">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-sky-100/50 dark:bg-slate-800/50">
-                            <TabsTrigger value="login" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-sky-600 data-[state=active]:shadow-sm">Login</TabsTrigger>
-                            <TabsTrigger value="register" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-sky-600 data-[state=active]:shadow-sm">Register</TabsTrigger>
+                        <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-secondary/50">
+                            <TabsTrigger value="login" className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">Login</TabsTrigger>
+                            <TabsTrigger value="register" className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">Register</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="login">
                             <CardHeader>
-                                <CardTitle className="text-2xl font-bold text-slate-800 dark:text-white">Welcome Back</CardTitle>
+                                <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
                                 <CardDescription>Enter your credentials to access your personal plan</CardDescription>
                             </CardHeader>
                             <form onSubmit={handleLogin}>
@@ -87,7 +87,7 @@ export default function AuthPage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 id="email"
                                                 type="email"
@@ -102,7 +102,7 @@ export default function AuthPage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="password">Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 id="password"
                                                 type="password"
@@ -115,7 +115,7 @@ export default function AuthPage() {
                                     </div>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-bold h-11" disabled={isLoggingIn}>
+                                    <Button type="submit" className="w-full brand-gradient text-white font-bold h-11 border-0" disabled={isLoggingIn}>
                                         {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
                                         Log In
                                     </Button>
@@ -125,7 +125,7 @@ export default function AuthPage() {
 
                         <TabsContent value="register">
                             <CardHeader>
-                                <CardTitle className="text-2xl font-bold text-slate-800 dark:text-white">Create Account</CardTitle>
+                                <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
                                 <CardDescription>Join AaRa and start your personalized wellness journey</CardDescription>
                             </CardHeader>
                             <form onSubmit={handleRegister}>
@@ -153,7 +153,7 @@ export default function AuthPage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="regEmail">Email</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 id="regEmail"
                                                 type="email"
@@ -168,7 +168,7 @@ export default function AuthPage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="regPassword">Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 id="regPassword"
                                                 type="password"
@@ -183,7 +183,7 @@ export default function AuthPage() {
                                     </div>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold h-11" disabled={isRegistering}>
+                                    <Button type="submit" className="w-full brand-gradient text-white font-bold h-11 border-0" disabled={isRegistering}>
                                         {isRegistering ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
                                         Create Account
                                     </Button>

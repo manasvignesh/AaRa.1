@@ -78,12 +78,12 @@ export default function LogManualMeal() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="p-4 border-b bg-white flex items-center gap-4 sticky top-0 z-10">
+      <header className="p-4 border-b bg-card flex items-center gap-4 sticky top-0 z-10">
         <Button variant="ghost" size="icon" onClick={() => setLocation("/dashboard")} data-testid="button-back">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="font-bold text-lg">Log Outside Meal</h1>
+          <h1 className="font-semibold text-lg">Log Outside Meal</h1>
           <p className="text-xs text-muted-foreground">Had something not on your plan?</p>
         </div>
       </header>
@@ -172,7 +172,7 @@ export default function LogManualMeal() {
                   <RadioGroupItem value={opt.value} id={opt.value} className="peer sr-only" />
                   <Label
                     htmlFor={opt.value}
-                    className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                    className="flex flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-4 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
                   >
                     <span className="text-sm font-medium">{opt.label}</span>
                     <span className="text-xs text-muted-foreground">{opt.desc}</span>
@@ -197,7 +197,7 @@ export default function LogManualMeal() {
                   <RadioGroupItem value={opt.value} id={opt.value} className="peer sr-only" />
                   <Label
                     htmlFor={opt.value}
-                    className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                    className="flex flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-4 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
                   >
                     <span className="font-medium">{opt.label}</span>
                     <span className="text-xs text-muted-foreground">{opt.desc}</span>

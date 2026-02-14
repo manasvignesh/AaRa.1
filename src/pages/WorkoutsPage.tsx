@@ -43,12 +43,12 @@ export default function WorkoutsPage() {
 
     if (userLoading || (planLoading && !plan) || isGenerating) {
         return (
-            <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+            <div className="flex flex-col md:flex-row min-h-screen bg-background">
                 <Navigation />
                 <main className="flex-1 flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     <div className="text-center">
-                        <h3 className="font-bold text-lg text-foreground">
+                        <h3 className="font-semibold text-lg text-foreground">
                             {isGenerating ? "Crafting your session..." : "Fetching plan..."}
                         </h3>
                     </div>
@@ -59,10 +59,10 @@ export default function WorkoutsPage() {
 
     if (generationError || (!plan && !isGenerating)) {
         return (
-            <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+            <div className="flex flex-col md:flex-row min-h-screen bg-background">
                 <Navigation />
                 <main className="flex-1 flex flex-col items-center justify-center gap-6 p-6 max-w-md mx-auto text-center">
-                    <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
                         <X className="w-8 h-8 text-red-600" />
                     </div>
                     <div>
@@ -85,18 +85,18 @@ export default function WorkoutsPage() {
     });
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+        <div className="flex flex-col md:flex-row min-h-screen bg-background">
             <Navigation />
 
             <main className="flex-1 pb-48 md:pb-12 overflow-y-auto">
                 <header className="px-6 pt-10 pb-6 md:pt-16">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Workouts</h1>
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">Workouts</h1>
                     <p className="text-sm text-muted-foreground mt-1">Focus on form and intensity.</p>
                 </header>
 
                 {/* Weekly Strip */}
                 <section className="px-4 mb-8">
-                    <div className="ios-inset-grouped p-3 flex justify-between items-center shadow-sm">
+                    <div className="wellness-card p-3 flex justify-between items-center shadow-sm">
                         {weekDays.map((day, idx) => {
                             const active = isSameDay(day, selectedDate);
                             const today = isToday(day);
@@ -129,7 +129,7 @@ export default function WorkoutsPage() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="px-4"
                         >
-                            <div className="ios-inset-grouped p-10 flex flex-col items-center justify-center text-center">
+                            <div className="wellness-card p-10 flex flex-col items-center justify-center text-center">
                                 <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
                                     <Clock className="w-10 h-10 text-blue-500/50" />
                                 </div>
@@ -152,14 +152,14 @@ export default function WorkoutsPage() {
                             {/* Today's Highlight */}
                             <section className="px-4">
                                 {workouts.map((workout: any) => (
-                                    <div key={workout.id} className="ios-inset-grouped p-6 bg-white dark:bg-[#1C1C1E] shadow-sm border-none">
+                                    <div key={workout.id} className="wellness-card p-6 bg-card shadow-sm border-none">
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <div className="w-2 h-2 rounded-full bg-primary" />
                                                     <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{workout.type} Session</span>
                                                 </div>
-                                                <h2 className="text-2xl font-bold tracking-tight text-foreground">{workout.name}</h2>
+                                                <h2 className="text-2xl font-semibold tracking-tight text-foreground">{workout.name}</h2>
                                                 <p className="text-[13px] text-muted-foreground mt-1">
                                                     {workout.type === 'cardio' ? 'Builds stamina and burns fat' :
                                                         workout.type === 'strength' ? 'Increases strength and metabolic rate' :
@@ -167,7 +167,7 @@ export default function WorkoutsPage() {
                                                 </p>
                                             </div>
                                             {workout.isCompleted && (
-                                                <div className="flex items-center gap-1.5 py-1 px-3 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
+                                                <div className="flex items-center gap-1.5 py-1 px-3 rounded-full bg-green-500/10 text-green-600">
                                                     <CheckCircle className="w-3.5 h-3.5" />
                                                     <span className="text-[11px] font-bold uppercase">Completed</span>
                                                 </div>
@@ -176,7 +176,7 @@ export default function WorkoutsPage() {
 
                                         <div className="grid grid-cols-2 gap-4 mb-8">
                                             <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30">
-                                                <div className="w-8 h-8 rounded-full bg-white dark:bg-black flex items-center justify-center shadow-sm">
+                                                <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center shadow-sm">
                                                     <Clock className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <div>
@@ -185,7 +185,7 @@ export default function WorkoutsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30">
-                                                <div className="w-8 h-8 rounded-full bg-white dark:bg-black flex items-center justify-center shadow-sm">
+                                                <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center shadow-sm">
                                                     <Flame className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <div>
@@ -229,7 +229,7 @@ export default function WorkoutsPage() {
                                             {(workout.exercises || []).map((ex: any, idx: number) => {
                                                 const hasDetails = typeof ex === 'object' && (ex.sets || ex.reps || ex.duration);
                                                 return (
-                                                    <div key={idx} className="ios-inset-grouped p-4 flex items-center justify-between border-none shadow-sm bg-white dark:bg-[#1C1C1E]">
+                                                    <div key={idx} className="wellness-card p-4 flex items-center justify-between border-none shadow-sm bg-card">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-10 h-10 rounded-2xl bg-secondary/50 flex items-center justify-center text-sm font-bold text-muted-foreground/60">
                                                                 {idx + 1}
@@ -258,24 +258,24 @@ export default function WorkoutsPage() {
 
                             {/* Flexibility & Tips */}
                             <section className="px-4 pb-8 space-y-4">
-                                <div className="ios-inset-grouped p-5 bg-[#FF9500]/5 flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white dark:bg-black flex items-center justify-center shrink-0 shadow-sm border border-[#FF9500]/10">
-                                        <Zap className="w-5 h-5 text-[#FF9500]" />
+                                <div className="wellness-card p-5 bg-amber-50 flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shrink-0 shadow-sm border border-amber-100">
+                                        <Zap className="w-5 h-5 text-amber-500" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-[#FF9500] mb-1">Coach Tip</h4>
-                                        <p className="text-[13px] text-[#FF9500]/80 leading-snug">
+                                        <h4 className="text-sm font-bold text-amber-500 mb-1">Coach Tip</h4>
+                                        <p className="text-[13px] text-amber-500/80 leading-snug">
                                             Focus on the tempo. Slow down the lowering phase of each rep to increase muscle recruitment.
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-3">
-                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-black/5 dark:border-white/5 bg-white dark:bg-[#1C1C1E]">
+                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-border bg-card">
                                         <span className="font-semibold">Swap this workout</span>
                                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
                                     </Button>
-                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-black/5 dark:border-white/5 bg-white dark:bg-[#1C1C1E]">
+                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-border bg-card">
                                         <span className="font-semibold">Need an easier option?</span>
                                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
                                     </Button>

@@ -9,13 +9,13 @@ interface MacroRingProps {
   size?: number;
 }
 
-export function MacroRing({ 
-  current, 
-  target, 
-  label, 
-  unit, 
-  color = "#10B981",
-  size = 120 
+export function MacroRing({
+  current,
+  target,
+  label,
+  unit,
+  color = "#27AE60",
+  size = 120
 }: MacroRingProps) {
   const percentage = Math.min(100, Math.max(0, (current / target) * 100));
   const radius = size * 0.4;

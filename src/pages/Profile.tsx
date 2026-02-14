@@ -82,8 +82,8 @@ export default function Profile() {
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="space-y-2">
       <h3 className="px-4 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
-      <Card className="mx-4 overflow-hidden shadow-sm border-0 bg-white dark:bg-[#1C1C1E] rounded-2xl">
-        <div className="divide-y divide-black/5 dark:divide-white/5">
+      <Card className="mx-4 overflow-hidden shadow-sm border-0 bg-card rounded-2xl">
+        <div className="divide-y divide-border">
           {children}
         </div>
       </Card>
@@ -94,7 +94,7 @@ export default function Profile() {
     <div className="flex items-center justify-between p-4 min-h-[56px]">
       <div className="flex items-center gap-3">
         {Icon && (
-          <div className="w-7 h-7 rounded-lg bg-secondary/50 dark:bg-white/5 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-secondary/50 flex items-center justify-center">
             <Icon className="w-4 h-4 text-primary" />
           </div>
         )}
@@ -108,7 +108,7 @@ export default function Profile() {
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black font-sans scroll-smooth">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background font-sans scroll-smooth">
       <Navigation />
 
       <main className="flex-1 pb-32 md:pb-8 overflow-y-auto">
@@ -117,10 +117,10 @@ export default function Profile() {
             {/* Header / Avatar */}
             <header className="px-6 pt-12 text-center space-y-4">
               <div className="relative inline-block">
-                <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-white dark:border-[#1C1C1E] shadow-xl flex items-center justify-center mx-auto overflow-hidden">
+                <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-white shadow-xl flex items-center justify-center mx-auto overflow-hidden">
                   <span className="text-3xl font-bold text-primary">{getUserInitials()}</span>
                 </div>
-                <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-white dark:bg-[#1C1C1E] rounded-full shadow-lg border border-black/5 flex items-center justify-center text-primary active:scale-95 transition-transform">
+                <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-card rounded-full shadow-lg border border-black/5 flex items-center justify-center text-primary active:scale-95 transition-transform">
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
@@ -161,7 +161,7 @@ export default function Profile() {
                       <SelectTrigger className="w-24 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-black/5">
+                      <SelectContent className="rounded-2xl border-black/5">
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
@@ -207,7 +207,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="sedentary">Low</SelectItem>
                         <SelectItem value="moderate">Moderate</SelectItem>
                         <SelectItem value="active">High</SelectItem>
@@ -237,7 +237,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="moderate">Medium</SelectItem>
                         <SelectItem value="high">High</SelectItem>
@@ -255,7 +255,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="veg">Vegetarian</SelectItem>
                         <SelectItem value="non-veg">Non-Veg</SelectItem>
                         <SelectItem value="egg">Eggetarian</SelectItem>
@@ -278,7 +278,7 @@ export default function Profile() {
                       <SelectTrigger className="w-40 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="fat_loss">Fat Loss</SelectItem>
                         <SelectItem value="recomposition">Recomposition</SelectItem>
                         <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
@@ -308,7 +308,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="slow">Slow</SelectItem>
                         <SelectItem value="balanced">Balanced</SelectItem>
                         <SelectItem value="aggressive">Aggressive</SelectItem>
@@ -330,7 +330,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="supportive">Supportive</SelectItem>
                         <SelectItem value="direct">Direct</SelectItem>
                         <SelectItem value="neutral">Neutral</SelectItem>
@@ -348,7 +348,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="normal">Normal</SelectItem>
                         <SelectItem value="high">High</SelectItem>
@@ -373,7 +373,7 @@ export default function Profile() {
                       <SelectTrigger className="w-20 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="kg">Metric (kg)</SelectItem>
                         <SelectItem value="lbs">US (lbs)</SelectItem>
                       </SelectContent>
@@ -390,7 +390,7 @@ export default function Profile() {
                       <SelectTrigger className="w-32 border-0 bg-transparent p-0 justify-end focus:ring-0 text-muted-foreground h-auto shadow-none">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl">
                         <SelectItem value="light">Light</SelectItem>
                         <SelectItem value="dark">Dark</SelectItem>
                         <SelectItem value="system">System</SelectItem>

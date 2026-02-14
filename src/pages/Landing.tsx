@@ -6,12 +6,12 @@ import aaraLogo from "@/assets/aara-logo.png";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-green-50 flex flex-col overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-sky-200/30 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-cyan-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-40 right-20 w-96 h-96 bg-green-200/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-200/15 rounded-full blur-3xl" />
       </div>
 
       {/* Header */}
@@ -20,7 +20,7 @@ export default function Landing() {
           <img src={aaraLogo} alt="AaRa" className="h-20 md:h-24 w-auto" data-testid="img-logo-header" />
         </div>
         <Link href="/auth?tab=login">
-          <Button variant="outline" className="rounded-full px-6 bg-white/80 backdrop-blur-sm border-sky-200 hover:bg-white hover:border-sky-300 text-sky-700" data-testid="button-login">
+          <Button variant="outline" className="rounded-full px-6 bg-card/80 backdrop-blur-sm border-brand-blue/20 hover:bg-card hover:border-brand-blue/40 text-brand-blue" data-testid="button-login">
             Log In
           </Button>
         </Link>
@@ -50,17 +50,17 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="space-y-5"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-sky-100 to-teal-100 dark:from-sky-900/50 dark:to-teal-900/50 text-sky-700 dark:text-sky-300 text-sm font-medium border border-sky-200/50">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-green-50 text-brand-blue text-sm font-medium border border-brand-blue/10">
               <ShieldCheck className="w-4 h-4" />
               <span>Science-backed Safety Protocols</span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-slate-800 dark:text-white leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
               Your Personal <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-cyan-500 to-teal-500">
+              <span className="brand-gradient-text">
                 Wellness Journey
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               No crash diets. No extreme measures. Just an intelligent, adaptive plan designed for your body, your lifestyle, and your goals.
             </p>
           </motion.div>
@@ -74,7 +74,7 @@ export default function Landing() {
             <Link href="/auth?tab=register" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto rounded-full text-lg px-10 py-7 h-auto bg-gradient-to-r from-sky-500 via-cyan-500 to-teal-500 hover:from-sky-600 hover:via-cyan-600 hover:to-teal-600 shadow-xl shadow-cyan-500/25 hover:shadow-2xl hover:shadow-cyan-500/30 hover:-translate-y-1 transition-all border-0"
+                className="w-full sm:w-auto rounded-full text-lg px-10 py-7 h-auto brand-gradient hover:opacity-90 shadow-xl shadow-brand-blue/20 hover:shadow-2xl hover:shadow-brand-blue/25 hover:-translate-y-1 transition-all border-0 text-white"
                 data-testid="button-start-journey"
               >
                 <Sparkles className="mr-2 w-5 h-5" />
@@ -96,19 +96,19 @@ export default function Landing() {
                 title: "Safe & Sustainable",
                 desc: "We prioritize your metabolic health. No starvation, just smart nutrition.",
                 icon: Heart,
-                gradient: "from-rose-400 to-pink-500"
+                gradient: "from-rose-400 to-orange-400"
               },
               {
                 title: "Personalized Plans",
                 desc: "Adaptive meal and workout plans that fit your lifestyle and preferences.",
                 icon: Sparkles,
-                gradient: "from-sky-400 to-cyan-500"
+                gradient: "from-brand-blue to-blue-400"
               },
               {
                 title: "Real-time Coaching",
                 desc: "Smart adjustments based on your daily progress and feedback.",
                 icon: Activity,
-                gradient: "from-teal-400 to-emerald-500"
+                gradient: "from-brand-green to-teal-400"
               }
             ].map((feature, idx) => (
               <motion.div
@@ -116,13 +116,13 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 + idx * 0.1 }}
-                className="p-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 group"
+                className="p-6 rounded-2xl bg-card/70 backdrop-blur-sm border border-white/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 group"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
                   <feature.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-slate-800 dark:text-white">{feature.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{feature.desc}</p>
+                <h3 className="text-lg font-bold mb-2 text-foreground">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -130,7 +130,7 @@ export default function Landing() {
       </main>
 
       {/* Footer accent */}
-      <div className="relative h-2 bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400" />
+      <div className="relative h-2 brand-gradient" />
     </div>
   );
 }

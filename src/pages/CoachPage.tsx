@@ -6,7 +6,7 @@ import { useCoachChat } from "@/hooks/use-coach-chat";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MessageCircle, Sparkles, TrendingUp, Utensils, Dumbbell, Heart, Send, User } from "lucide-react";
+import { Loader2, MessageCircle, Sparkles, TrendingUp, Utensils, Dumbbell, Heart, Send, User, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -40,10 +40,10 @@ export default function CoachPage() {
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-screen bg-white dark:bg-black overflow-hidden font-sans">
+        <div className="flex flex-col md:flex-row h-screen bg-card overflow-hidden font-sans">
             <Navigation />
 
-            <main className="flex-1 flex flex-col h-full bg-[#F2F2F7] dark:bg-black relative">
+            <main className="flex-1 flex flex-col h-full bg-background relative">
                 {/* Header */}
                 <header className="px-6 py-4 glass-panel sticky top-0 z-20 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function CoachPage() {
                                     "px-4 py-2.5 rounded-[20px] max-w-[85%] text-[16px] leading-[1.3] shadow-sm",
                                     msg.role === "user"
                                         ? "bg-[#2CC0D8] text-white rounded-tr-md"
-                                        : "bg-[#E9E9EB] dark:bg-[#1C1C1E] text-black dark:text-white rounded-tl-md"
+                                        : "bg-[#E9E9EB] text-black rounded-tl-md"
                                 )}>
                                     {msg.content}
                                 </div>
@@ -101,7 +101,7 @@ export default function CoachPage() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="flex flex-col items-start w-full mb-1"
                             >
-                                <div className="px-4 py-2.5 rounded-[20px] rounded-tl-md bg-[#E9E9EB] dark:bg-[#1C1C1E] text-black dark:text-white max-w-[85%] text-[16px] leading-[1.3] shadow-sm">
+                                <div className="px-4 py-2.5 rounded-[20px] rounded-tl-md bg-[#E9E9EB] text-black max-w-[85%] text-[16px] leading-[1.3] shadow-sm">
                                     {streamingMessage}
                                     <span className="inline-block w-1.5 h-4 bg-primary/40 ml-1 animate-pulse" />
                                 </div>
@@ -112,36 +112,30 @@ export default function CoachPage() {
                     </div>
                 </div>
 
-                {/* Chat Input - iOS Style */}
-                <div className="absolute bottom-[72px] md:bottom-0 left-0 right-0 glass-panel p-4 pb-[calc(env(safe-area-inset-bottom,20px)+12px)] md:pb-4 z-20">
-                    <div className="max-w-2xl mx-auto flex items-center gap-2">
-                        <div className="flex-1 bg-white/50 dark:bg-white/10 rounded-[22px] border border-black/5 dark:border-white/10 p-1 flex items-center pr-1 overflow-hidden">
-                            <input
-                                placeholder="iMessage"
-                                value={chatInput}
-                                onChange={(e) => setChatInput(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                disabled={isSending}
-                                className="flex-1 h-9 bg-transparent px-4 py-2 text-[16px] outline-none placeholder:text-muted-foreground/50"
-                            />
-                            <button
-                                onClick={handleSend}
-                                disabled={!chatInput.trim() || isSending}
-                                className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90",
-                                    chatInput.trim() ? "bg-[#2CC0D8] text-white" : "bg-muted text-muted-foreground/30"
-                                )}
-                            >
-                                {isSending ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Send className="w-4 h-4 fill-current" />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                {/* Chat Input Placeholder (Empty since locked) */}
+                <div className="h-20" />
             </main>
+
+            {/* Premium Lock Overlay */}
+            <div className="absolute inset-0 z-[100] backdrop-blur-md bg-white/40 flex flex-col items-center justify-center p-6 text-center">
+                <div className="bg-card p-10 rounded-3xl shadow-2xl max-w-sm border border-border animate-in fade-in zoom-in duration-500">
+                    <div className="w-20 h-20 rounded-full brand-gradient flex items-center justify-center text-white mb-6 mx-auto shadow-lg shadow-brand-blue/20">
+                        <Lock className="w-10 h-10" />
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight mb-3">Premium Feature</h2>
+                    <p className="text-lg text-muted-foreground mb-8">
+                        Our intelligent Chat Coaching is coming soon for Premium members. Start your journey today!
+                    </p>
+                    <Button
+                        size="lg"
+                        className="w-full brand-gradient text-white rounded-full h-14 text-lg font-bold"
+                        onClick={() => window.history.back()}
+                    >
+                        Go Back
+                    </Button>
+                    <p className="mt-6 text-sm text-primary font-semibold tracking-wider uppercase">Coming Q1 2026</p>
+                </div>
+            </div>
         </div>
     );
 }

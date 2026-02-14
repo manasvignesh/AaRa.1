@@ -174,7 +174,7 @@ export default function MealsPage() {
                 <main className="flex-1 flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     <div className="text-center">
-                        <h3 className="font-bold text-lg">
+                        <h3 className="font-semibold text-lg">
                             {isGenerating ? "Preparing your Indian-inspired meals..." : "Loading your meals..."}
                         </h3>
                     </div>
@@ -223,7 +223,7 @@ export default function MealsPage() {
                         </Link>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4 bg-white dark:bg-card p-3 rounded-xl shadow-sm">
+                    <div className="flex items-center justify-center gap-4 bg-card p-3 rounded-2xl shadow-sm border border-border">
                         <button
                             onClick={() => setSelectedDate(subDays(selectedDate, 1))}
                             className="p-2 hover:bg-secondary rounded-lg transition-colors"
@@ -272,10 +272,10 @@ export default function MealsPage() {
                     if (typeMeals.length === 0) return null;
 
                     const mealTypeConfig: Record<string, { label: string; icon: string; color: string }> = {
-                        breakfast: { label: '🌅 Breakfast', icon: '☀️', color: 'from-orange-100 to-amber-50 border-orange-200' },
-                        lunch: { label: '🍽️ Lunch', icon: '🌤️', color: 'from-green-100 to-emerald-50 border-green-200' },
-                        dinner: { label: '🌙 Dinner', icon: '🌆', color: 'from-indigo-100 to-purple-50 border-indigo-200' },
-                        snack: { label: '🍎 Snack', icon: '✨', color: 'from-pink-100 to-rose-50 border-pink-200' },
+                        breakfast: { label: '🌅 Breakfast', icon: '☀️', color: 'from-orange-50 to-amber-50 border-orange-200' },
+                        lunch: { label: '🍽️ Lunch', icon: '🌤️', color: 'from-green-50 to-green-100 border-green-200' },
+                        dinner: { label: '🌙 Dinner', icon: '🌆', color: 'from-blue-50 to-blue-100 border-blue-200' },
+                        snack: { label: '🍎 Snack', icon: '✨', color: 'from-teal-50 to-cyan-50 border-teal-200' },
                     };
 
                     const config = mealTypeConfig[mealType] || { label: mealType, icon: '🍴', color: 'from-gray-100 to-gray-50 border-gray-200' };
@@ -449,7 +449,7 @@ export default function MealsPage() {
                                         <RadioGroupItem value={opt.value} id={`meals-${opt.value}`} className="peer sr-only" />
                                         <Label
                                             htmlFor={`meals-${opt.value}`}
-                                            className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                                            className="flex flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
                                         >
                                             <span className="text-sm font-medium">{opt.label}</span>
                                         </Label>

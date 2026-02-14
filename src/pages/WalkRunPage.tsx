@@ -184,8 +184,8 @@ export default function WalkRunPage() {
                                     </Badge>
                                 )}
                                 {badges.includes("10k_club") && (
-                                    <Badge variant="outline" className="h-24 flex flex-col items-center justify-center bg-purple-500/10 border-purple-500/50 gap-2">
-                                        <Trophy className="w-6 h-6 text-purple-600" />
+                                    <Badge variant="outline" className="h-24 flex flex-col items-center justify-center bg-brand-blue/10 border-brand-blue/30 gap-2">
+                                        <Trophy className="w-6 h-6 text-brand-blue" />
                                         <span className="text-xs font-bold text-center">10K Master</span>
                                     </Badge>
                                 )}
@@ -205,14 +205,14 @@ export default function WalkRunPage() {
                     <TabsContent value="run" className="space-y-4">
                         <Card className="h-[400px] relative overflow-hidden flex flex-col">
                             {isGpsActive ? (
-                                <div className="flex-1 bg-slate-100 dark:bg-slate-900 flex items-center justify-center relative">
+                                <div className="flex-1 bg-secondary flex items-center justify-center relative">
                                     {/* Placeholder for Map - replacing full map for MVP battery/complexity reasons */}
                                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-500 via-transparent to-transparent" />
 
                                     <div className="text-center z-10 p-6">
                                         <Navigation className="w-12 h-12 text-blue-500 animate-pulse mx-auto mb-4" />
                                         <h3 className="text-xl font-bold mb-2">GPS Tracking Active</h3>
-                                        <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">
+                                        <p className="text-xs text-orange-600 font-medium mb-1">
                                             Stay outdoors for best accuracy
                                         </p>
                                         <p className="text-sm text-muted-foreground mb-4">

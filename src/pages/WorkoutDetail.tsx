@@ -15,7 +15,7 @@ export default function WorkoutDetail() {
 
   if (workoutLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F2F2F7] dark:bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
@@ -23,9 +23,9 @@ export default function WorkoutDetail() {
 
   if (!workout) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#F2F2F7] dark:bg-black gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background gap-4">
         <p className="text-muted-foreground font-medium">Workout session not found.</p>
-        <Button onClick={() => setLocation("/workouts")} variant="outline" className="rounded-xl">Return to Workouts</Button>
+        <Button onClick={() => setLocation("/workouts")} variant="outline" className="rounded-2xl">Return to Workouts</Button>
       </div>
     );
   }
@@ -34,20 +34,20 @@ export default function WorkoutDetail() {
   const dateStr = workout.plan?.date || format(new Date(), "yyyy-MM-dd");
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] dark:bg-black flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-10 pb-6 md:pt-16 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => setLocation("/workouts")} className="rounded-full bg-white/50 dark:bg-white/10 hover:bg-white/80 transition-all">
+        <Button variant="ghost" size="icon" onClick={() => setLocation("/workouts")} className="rounded-full bg-card/50 hover:bg-card/80 transition-all">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Workout Details</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Workout Details</h1>
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{format(workoutDate, "EEEE, MMMM do")}</p>
         </div>
       </header>
 
       <main className="flex-1 px-4 pb-24 md:pb-8 max-w-2xl mx-auto w-full space-y-6">
         {/* Highlight Card */}
-        <div className="ios-inset-grouped p-8 flex flex-col items-center text-center bg-white dark:bg-[#1C1C1E]">
+        <div className="wellness-card p-8 flex flex-col items-center text-center bg-card">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-widest text-primary/70">{workout.type}</span>
           </div>
@@ -75,11 +75,11 @@ export default function WorkoutDetail() {
         {workout.description && (
           <section>
             <h3 className="px-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Coach's Guidance</h3>
-            <div className="ios-inset-grouped p-5 bg-[#007AFF]/5 border-none flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-white dark:bg-black flex items-center justify-center shrink-0 shadow-sm">
-                <Info className="w-5 h-5 text-[#007AFF]" />
+            <div className="wellness-card p-5 bg-primary/5 border-none flex gap-4">
+              <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shrink-0 shadow-sm">
+                <Info className="w-5 h-5 text-primary" />
               </div>
-              <p className="text-[14px] text-[#007AFF]/90 leading-relaxed font-medium">
+              <p className="text-[14px] text-primary/90 leading-relaxed font-medium">
                 {workout.description}
               </p>
             </div>
@@ -91,8 +91,8 @@ export default function WorkoutDetail() {
           <h3 className="px-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Exercises</h3>
           <div className="space-y-3">
             {Array.isArray(workout.exercises) && (workout.exercises as any[]).map((ex: any, idx: number) => (
-              <div key={idx} className="ios-inset-grouped p-5 flex items-center gap-4 bg-white dark:bg-[#1C1C1E] border-none shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-[#F2F2F7] dark:bg-black flex items-center justify-center font-bold text-muted-foreground/50 shrink-0">
+              <div key={idx} className="wellness-card p-5 flex items-center gap-4 bg-card border-none shadow-sm">
+                <div className="w-10 h-10 rounded-2xl bg-background flex items-center justify-center font-bold text-muted-foreground/50 shrink-0">
                   {idx + 1}
                 </div>
                 <div className="flex-1">
@@ -104,7 +104,7 @@ export default function WorkoutDetail() {
               </div>
             ))}
             {(!workout.exercises || workout.exercises.length === 0) && (
-              <div className="ios-inset-grouped p-8 text-center text-muted-foreground italic">
+              <div className="wellness-card p-8 text-center text-muted-foreground italic">
                 No specific exercises listed for this session.
               </div>
             )}
@@ -112,7 +112,7 @@ export default function WorkoutDetail() {
         </section>
 
         {/* Actions */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 md:relative md:p-0 md:pt-8 bg-gradient-to-t from-[#F2F2F7] via-[#F2F2F7] to-transparent md:bg-none">
+        <div className="fixed bottom-0 left-0 right-0 p-6 md:relative md:p-0 md:pt-8 bg-gradient-to-t from-background via-background to-transparent md:bg-none">
           <div className="max-w-2xl mx-auto space-y-3">
             {!workout.isCompleted && (
               <Button
@@ -128,7 +128,7 @@ export default function WorkoutDetail() {
               variant={workout.isCompleted ? "secondary" : "outline"}
               className={cn(
                 "w-full h-14 text-lg font-bold rounded-2xl transition-all",
-                !workout.isCompleted && "bg-white dark:bg-black border-none shadow-sm"
+                !workout.isCompleted && "bg-card border-none shadow-sm"
               )}
               onClick={() => completeWorkout({ id: workout.id, isCompleted: !workout.isCompleted, date: dateStr })}
               disabled={isPending}

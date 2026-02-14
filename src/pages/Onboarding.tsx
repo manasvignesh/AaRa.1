@@ -132,7 +132,7 @@ export default function Onboarding() {
                           key={g}
                           type="button"
                           variant={watch("gender") === g ? "default" : "outline"}
-                          className="rounded-xl h-12 capitalize"
+                          className="rounded-2xl h-12 capitalize"
                           onClick={() => handleGenderSelect(g)}
                         >
                           {g}
@@ -221,7 +221,7 @@ export default function Onboarding() {
                       {['veg', 'non-veg', 'egg'].map((opt) => (
                         <div key={opt}>
                           <RadioGroupItem value={opt} id={opt} className="peer sr-only" />
-                          <Label htmlFor={opt} className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary cursor-pointer transition-all capitalize">
+                          <Label htmlFor={opt} className="flex flex-col items-center justify-between rounded-2xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary cursor-pointer transition-all capitalize">
                             {opt.replace('-', ' ')}
                           </Label>
                         </div>

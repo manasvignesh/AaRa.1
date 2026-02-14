@@ -89,12 +89,12 @@ export default function ProgressTracker() {
     const hasError = !profileLoading && !weightLoading && !statsLoading && (!profile || !stats || statsError);
 
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background">
         <Navigation />
         <main className="flex-1 flex items-center justify-center">
           {hasError ? (
-            <div className="text-center p-8 ios-inset-grouped bg-white dark:bg-[#1C1C1E] max-w-sm">
-              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-6">
+            <div className="text-center p-8 wellness-card bg-card max-w-sm">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
                 <Info className="w-8 h-8 text-red-600" />
               </div>
               <h3 className="font-bold text-xl mb-2 text-foreground">Data Unavailable</h3>
@@ -129,13 +129,13 @@ export default function ProgressTracker() {
       : chartData;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background">
       <Navigation />
 
       <main className="flex-1 pb-32 md:pb-8 overflow-y-auto">
         <header className="px-6 pt-10 pb-6 md:pt-16 flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Progress</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Progress</h1>
             <p className="text-sm text-muted-foreground mt-1">Consistency over perfection.</p>
           </div>
           <Dialog open={showLogDialog} onOpenChange={setShowLogDialog}>
@@ -161,7 +161,7 @@ export default function ProgressTracker() {
                   <span className="text-lg font-semibold text-muted-foreground pr-4">kg</span>
                 </div>
                 <Button
-                  className="w-full h-12 rounded-xl text-lg font-semibold"
+                  className="w-full h-12 rounded-2xl text-lg font-semibold"
                   onClick={handleLogWeight}
                   disabled={logWeightMutation.isPending || !newWeight}
                 >
@@ -175,7 +175,7 @@ export default function ProgressTracker() {
 
         {/* Top Highlight Card */}
         <section className="px-4 mb-8">
-          <div className="ios-inset-grouped p-6 flex flex-col items-center text-center">
+          <div className="wellness-card p-6 flex flex-col items-center text-center">
             <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Current Weight</p>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-5xl font-bold tracking-tighter">{stats.currentWeight}</span>
@@ -196,7 +196,7 @@ export default function ProgressTracker() {
         <section className="px-4 mb-8">
           <div className="px-2 mb-4 flex items-center justify-between">
             <h2 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">Weight Trend</h2>
-            <div className="flex bg-white dark:bg-[#1C1C1E] rounded-full p-1 shadow-sm border border-black/5 dark:border-white/5">
+            <div className="flex bg-card rounded-full p-1 shadow-sm border border-border">
               {(["7 days", "30 days", "all time"] as ViewType[]).map((v) => (
                 <button
                   key={v}
@@ -212,14 +212,14 @@ export default function ProgressTracker() {
             </div>
           </div>
 
-          <div className="ios-inset-grouped p-6 h-[260px] relative">
+          <div className="wellness-card p-6 h-[260px] relative">
             {filteredChartData.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={filteredChartData}>
                   <defs>
                     <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#007AFF" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#2F80ED" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#2F80ED" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" opacity={0.5} />
@@ -239,12 +239,12 @@ export default function ProgressTracker() {
                       fontSize: '12px',
                       fontWeight: '600'
                     }}
-                    cursor={{ stroke: '#007AFF', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    cursor={{ stroke: '#2F80ED', strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
                   <Area
                     type="monotone"
                     dataKey="weight"
-                    stroke="#007AFF"
+                    stroke="#2F80ED"
                     strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#colorWeight)"
@@ -265,7 +265,7 @@ export default function ProgressTracker() {
         <section className="px-4 mb-8">
           <h2 className="px-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Goal Consistency</h2>
           <div className="grid grid-cols-1 gap-4">
-            <Card className="ios-inset-grouped p-4 flex items-center justify-between border-none shadow-sm">
+            <Card className="wellness-card p-4 flex items-center justify-between border-none shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                   <Target className="w-5 h-5 text-blue-500" />
@@ -283,7 +283,7 @@ export default function ProgressTracker() {
               </div>
             </Card>
 
-            <Card className="ios-inset-grouped p-4 flex items-center justify-between border-none shadow-sm">
+            <Card className="wellness-card p-4 flex items-center justify-between border-none shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-[#5856D6]/10 flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-[#5856D6]" />
@@ -301,7 +301,7 @@ export default function ProgressTracker() {
               </div>
             </Card>
 
-            <Card className="ios-inset-grouped p-4 flex items-center justify-between border-none shadow-sm">
+            <Card className="wellness-card p-4 flex items-center justify-between border-none shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
                   <Scale className="w-5 h-5 text-orange-500" />
@@ -325,14 +325,14 @@ export default function ProgressTracker() {
         <section className="px-4 mb-8">
           <h2 className="px-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Streaks & Insights</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="ios-inset-grouped p-4 flex flex-col items-center justify-center gap-1">
+            <div className="wellness-card p-4 flex flex-col items-center justify-center gap-1">
               <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center mb-1">
                 <Flame className="w-6 h-6 text-orange-500 fill-orange-500" />
               </div>
               <span className="text-2xl font-bold">{stats.currentStreak}</span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Current Streak</span>
             </div>
-            <div className="ios-inset-grouped p-4 flex flex-col items-center justify-center gap-1">
+            <div className="wellness-card p-4 flex flex-col items-center justify-center gap-1">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-1">
                 <Trophy className="w-5 h-5 text-amber-500" />
               </div>
@@ -341,13 +341,13 @@ export default function ProgressTracker() {
             </div>
           </div>
 
-          <Card className="mt-4 ios-inset-grouped p-5 bg-[#007AFF]/5 border-none flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-white dark:bg-black flex items-center justify-center shrink-0 shadow-sm">
+          <Card className="mt-4 wellness-card p-5 bg-primary/5 border-none flex gap-4">
+            <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shrink-0 shadow-sm">
               <span className="text-xl">✨</span>
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#007AFF] mb-1">Coach Insight</h4>
-              <p className="text-[13px] text-[#007AFF]/80 leading-snug">
+              <h4 className="text-sm font-bold text-primary mb-1">Coach Insight</h4>
+              <p className="text-[13px] text-primary/80 leading-snug">
                 {stats.caloriesConsistency > 80
                   ? "Your energy levels are looking stable due to great calorie matching. Keep this pace."
                   : stats.workoutConsistency > 50

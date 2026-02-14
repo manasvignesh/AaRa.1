@@ -6,13 +6,16 @@ export interface Meal {
     id: string;
     name: string;
     mealType: string;
-    dietType: string;
+    dietType?: string; // Legacy
+    diet?: string;     // New
+    region?: string;   // New
     calorieTier: number;
     calories: number;
     protein: number;
     carbs: number;
     fats: number;
     prep?: string;
+    goal?: string[];   // New
 }
 
 export interface MealLibrary {
@@ -32,38 +35,70 @@ export interface DailyPlanIDs {
 // Map: Day (1-28) -> CalorieTier (1600/1800/2000) -> MealIDs
 export type MonthlyPlan = Record<string, Record<number, DailyPlanIDs>>;
 
-// --- Data Loading ---
-const libraries: Record<string, string> = {
-    'veg': 'data/veg.json',
-    'non-veg': 'data/non_veg.json',
-    'egg': 'data/egg.json'
-};
-
 function normalizeDietType(input: string): string {
-    const lower = input.toLowerCase().trim();
+    const lower = input?.toLowerCase().trim() || 'veg';
     if (lower.includes('non') || lower.includes('meat')) return 'non-veg';
     if (lower.includes('egg')) return 'egg';
     return 'veg';
 }
 
-// REMOVED CACHING: Always read fresh from disk
-function loadLibrary(dietType: string): MealLibrary | null {
-    const key = normalizeDietType(dietType);
-    const fileName = libraries[key];
-    if (!fileName) return null;
-
+// --- Data Loading ---
+// Unified loader for the new meals database
+export function loadMeals(): any[] {
     try {
-        const filePath = path.resolve(process.cwd(), fileName);
+        const filePath = path.resolve(process.cwd(), 'data/meals_database.json');
         if (!fs.existsSync(filePath)) {
-            console.error(`[Meals] Library file not found: ${fileName}`);
-            return null;
+            console.warn(`[Meals] Database file not found: ${filePath}. Returning empty.`);
+            return [];
         }
-        // Reading synchronously is fine for this scale/requirement
+
         const data = fs.readFileSync(filePath, 'utf-8');
-        return JSON.parse(data);
+        const allMeals = JSON.parse(data);
+
+        return Array.isArray(allMeals) ? allMeals : [];
     } catch (error) {
-        console.error(`Error loading meal library ${dietType}:`, error);
-        return null;
+        console.error(`Error loading meals database:`, error);
+        return [];
+    }
+}
+
+export function loadLibrary(dietType: string): MealLibrary | null {
+    try {
+        const filePath = path.resolve(process.cwd(), 'data/meals_database.json');
+        if (!fs.existsSync(filePath)) {
+            console.warn(`[Meals] Database file not found: ${filePath}. Using empty fallback.`);
+            return { dietType, country: 'unified', meals: [] };
+        }
+
+        const data = fs.readFileSync(filePath, 'utf-8');
+        const allMeals: Meal[] = JSON.parse(data);
+
+        // If the database is a direct array, filter it. 
+        // If it's empty, we return an empty library.
+        if (!Array.isArray(allMeals)) {
+            console.error(`[Meals] Invalid database format: expected Array`);
+            return { dietType, country: 'unified', meals: [] };
+        }
+
+        const targetDiet = normalizeDietType(dietType);
+
+        // Filter meals by diet type (basic implementation)
+        // Note: Real personalization engine will have more complex filtering
+        const filteredMeals = allMeals.filter(m => {
+            const mealDiet = normalizeDietType(m.diet || m.dietType || 'veg');
+            if (targetDiet === 'non-veg') return true; // Non-veg can eat anything
+            if (targetDiet === 'egg') return mealDiet === 'veg' || mealDiet === 'egg';
+            return mealDiet === 'veg';
+        });
+
+        return {
+            dietType: targetDiet,
+            country: 'unified',
+            meals: filteredMeals
+        };
+    } catch (error) {
+        console.error(`Error loading meals database:`, error);
+        return { dietType, country: 'unified', meals: [] };
     }
 }
 
@@ -170,7 +205,8 @@ export function selectDeterministicMeals(
     userDietType: string,
     age: number,
     goal: string, // 'fat_loss', 'maintenance', 'muscle_gain'
-    day: number = 1 // 1-28
+    day: number = 1, // 1-28
+    mealCount: number = 4
 ) {
     // 1. Identify Tier
     const tier = getCalorieTier(age);
@@ -187,26 +223,50 @@ export function selectDeterministicMeals(
         return [];
     }
 
-    const slots = ['breakfast', 'lunch', 'snack', 'dinner'] as const;
+    // Define slots in order of precedence
+    const allSlots = ['breakfast', 'lunch', 'snack', 'dinner', 'snack_2'] as const;
+
+    // Determine which slots to use based on mealCount
+    let slots: string[] = [];
+    if (mealCount <= 3) {
+        slots = ['breakfast', 'lunch', 'dinner'];
+    } else if (mealCount === 4) {
+        slots = ['breakfast', 'lunch', 'snack', 'dinner'];
+    } else {
+        slots = ['breakfast', 'lunch', 'snack', 'dinner', 'snack_2'];
+    }
+
     const selectedMeals: any[] = [];
 
+    // Load libraries once for the whole selection process to improve performance
+    const libraryCache: Record<string, MealLibrary | null> = {
+        'veg': loadLibrary('veg'),
+        'non-veg': loadLibrary('non-veg'),
+        'egg': loadLibrary('egg')
+    };
+
+    function getCachedMealById(id: string): Meal | null {
+        for (const type in libraryCache) {
+            const found = libraryCache[type]?.meals.find(m => m.id === id);
+            if (found) return found;
+        }
+        return null;
+    }
+
     for (const slot of slots) {
-        const mealId = dayPlan[slot];
-        let meal = getMealById(mealId);
+        const mealId = (dayPlan as any)[slot];
+        if (!mealId) continue;
+
+        let meal = getCachedMealById(mealId);
 
         if (!meal) {
-            console.warn(`[DietEngine] Meal ID ${mealId} not found in DB`);
+            console.warn(`[DietEngine] Meal ID ${mealId} not found in libraries`);
             continue;
         }
 
         // 4. Apply Diet Preference Filtering
-        // Rules:
-        // veg -> allow "veg" only
-        // egg -> allow "veg" or "egg"
-        // non_veg -> allow all
-
         let isValid = false;
-        const mealDiet = normalizeDietType(meal.dietType);
+        const mealDiet = normalizeDietType(meal.diet || meal.dietType || 'veg');
         const userDiet = normalizeDietType(userDietType);
 
         if (userDiet === 'non-veg') {
@@ -214,7 +274,6 @@ export function selectDeterministicMeals(
         } else if (userDiet === 'egg') {
             isValid = (mealDiet === 'veg' || mealDiet === 'egg');
         } else {
-            // User is Veg
             isValid = (mealDiet === 'veg');
         }
 
@@ -225,13 +284,13 @@ export function selectDeterministicMeals(
 
         // Add to result
         selectedMeals.push({
-            type: slot,
+            type: slot === 'snack_2' ? 'snack' : slot, // Map snack_2 back to 'snack' for display/storage
             name: meal.name,
             calories: meal.calories,
             protein: meal.protein,
             carbs: meal.carbs,
             fats: meal.fats,
-            ingredients: [meal.prep], // Using prep as ingredients/desc
+            ingredients: [meal.prep],
             instructions: `Preparation: ${meal.prep || "Standard preparation"}.`,
             quantity: "1 Serving",
             why: `Selected based on ${age}y/${userDiet}/${goal} profile.`

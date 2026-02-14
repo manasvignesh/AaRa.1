@@ -171,7 +171,7 @@ export default function Dashboard() {
         <main className="flex-1 flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
           <div className="text-center">
-            <h3 className="font-bold text-lg">
+            <h3 className="font-semibold text-lg">
               {isGenerating ? "Assembling your Indian-inspired plan..." : "Loading your progress..."}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -212,7 +212,7 @@ export default function Dashboard() {
   if (!plan) return null;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F2F2F7] dark:bg-black">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background">
       <Navigation />
 
       <main className="flex-1 pb-32 md:pb-8 overflow-y-auto">
@@ -222,20 +222,20 @@ export default function Dashboard() {
               <p className="text-[13px] font-semibold text-primary uppercase tracking-wider mb-1">
                 {format(selectedDate, "EEEE, MMMM do")}
               </p>
-              <h1 className="text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
                 Hello, {user?.displayName || "Champion"}
               </h1>
             </div>
             <div className="flex items-center gap-2 mb-1">
               <button
                 onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-                className="w-10 h-10 rounded-full bg-white dark:bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all border border-border"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-                className="w-10 h-10 rounded-full bg-white dark:bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full bg-card flex items-center justify-center shadow-sm text-primary active:scale-95 transition-all border border-border"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -243,21 +243,21 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="ios-inset-grouped p-6 shadow-sm mb-6">
+        <div className="wellness-card p-6 shadow-sm mb-6">
           <div className="flex items-center justify-around">
             <MacroRing
               current={caloriesProgress}
               target={plan.caloriesTarget}
               label="Calories"
               unit="kcal"
-              color="#007AFF"
+              color="#2F80ED"
             />
             <MacroRing
               current={proteinProgress}
               target={plan.proteinTarget}
               label="Protein"
               unit="g"
-              color="#5856D6"
+              color="#27AE60"
             />
           </div>
         </div>
@@ -265,14 +265,14 @@ export default function Dashboard() {
         {/* Walk & Run Feature Card */}
         <div className="px-6 mb-8">
           <Link href="/walk-run">
-            <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:bg-accent/5 transition-all duration-300 border-none shadow-sm active:scale-[0.98] cursor-pointer">
+            <Card className="p-4 bg-gradient-to-r from-brand-blue/10 to-brand-green/10 hover:bg-accent/5 transition-all duration-300 border border-border shadow-sm active:scale-[0.98] cursor-pointer">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 rounded-full brand-gradient flex items-center justify-center shadow-md">
                     <Footprints className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-foreground">Walk & Run</h3>
+                    <h3 className="font-semibold text-lg text-foreground">Walk & Run</h3>
                     <p className="text-sm text-muted-foreground">Track steps, routes & earn badges</p>
                   </div>
                 </div>
@@ -285,7 +285,7 @@ export default function Dashboard() {
         <section className="mb-8">
           <h2 className="px-6 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Hydration & Weight</h2>
           <div className="grid grid-cols-2 gap-4 px-4">
-            <div className="rounded-xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all border border-black/5 dark:border-white/5">
+            <div className="rounded-2xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all border border-border">
               <div className="flex items-center gap-4 mb-2">
                 <button
                   onClick={handleSubtractWater}
@@ -306,7 +306,7 @@ export default function Dashboard() {
             </div>
 
             <Link href="/weight/log">
-              <div className="rounded-xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all h-full border border-black/5 dark:border-white/5">
+              <div className="rounded-2xl bg-card p-4 shadow-sm flex flex-col items-center justify-center group active:scale-95 transition-all h-full border border-border">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                   <Plus className="w-5 h-5 text-primary" />
                 </div>
@@ -318,12 +318,12 @@ export default function Dashboard() {
 
         {/* Adaptive Plan Adjustment Message */}
         {plan && (plan.caloriesConsumed || 0) > plan.caloriesTarget && (
-          <div className="ios-inset-grouped p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 mb-8">
+          <div className="mx-4 my-2 rounded-2xl overflow-hidden p-4 bg-orange-50 border border-orange-200 mb-8">
             <div className="flex items-start gap-4">
               <div className="text-2xl mt-1">🌿</div>
               <div>
-                <p className="font-semibold text-orange-900 dark:text-orange-200">Balanced Approach</p>
-                <p className="text-sm text-orange-800 dark:text-orange-300">
+                <p className="font-semibold text-orange-900">Balanced Approach</p>
+                <p className="text-sm text-orange-800">
                   You're over today's target. I'll smooth this out over your next few meals. Keep going!
                 </p>
               </div>
@@ -341,7 +341,7 @@ export default function Dashboard() {
 
           <div className="space-y-4 px-4 relative">
             {/* Timeline Vertical Line */}
-            <div className="absolute left-[2.25rem] top-4 bottom-4 w-[2px] bg-black/5 dark:bg-white/5 z-0" />
+            <div className="absolute left-[2.25rem] top-4 bottom-4 w-[2px] bg-border z-0" />
 
             {meals.map((meal: any, index: number) => {
               const isLogged = meal.isConsumed || meal.consumedAlternative;
@@ -356,10 +356,10 @@ export default function Dashboard() {
 
               const getMealStyles = (type: string) => {
                 switch (type.toLowerCase()) {
-                  case 'breakfast': return { color: '#F59E0B', bg: 'bg-amber-500/10', micro: 'Fuel your morning with high-quality protein.' };
-                  case 'lunch': return { color: '#10B981', bg: 'bg-emerald-500/10', micro: 'Stay energized for the rest of your day.' };
-                  case 'dinner': return { color: '#3B82F6', bg: 'bg-blue-500/10', micro: 'Recovery starts here. End your day strong.' };
-                  default: return { color: '#007AFF', bg: 'bg-primary/10', micro: 'Keep your metabolism active.' };
+                  case 'breakfast': return { color: '#E6A817', bg: 'bg-amber-100', micro: 'Fuel your morning with high-quality protein.' };
+                  case 'lunch': return { color: '#27AE60', bg: 'bg-green-50', micro: 'Stay energized for the rest of your day.' };
+                  case 'dinner': return { color: '#2F80ED', bg: 'bg-blue-50', micro: 'Recovery starts here. End your day strong.' };
+                  default: return { color: '#36B5A0', bg: 'bg-teal-50', micro: 'Keep your metabolism active.' };
                 }
               };
 
@@ -373,7 +373,7 @@ export default function Dashboard() {
                       "w-4 h-4 rounded-full border-4 border-background flex items-center justify-center transition-all duration-300",
                       isLogged ? "bg-primary scale-110" : "bg-muted"
                     )}>
-                      {isLogged && <div className="w-1 h-1 bg-white rounded-full" />}
+                      {isLogged && <div className="w-1 h-1 bg-card rounded-full" />}
                     </div>
                   </div>
 
@@ -393,7 +393,7 @@ export default function Dashboard() {
                               {meal.type}
                             </span>
                             {isLogged && (
-                              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="text-[10px] font-medium text-brand-green bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <Check className="w-2.5 h-2.5" /> Logged
                               </span>
                             )}
@@ -425,22 +425,22 @@ export default function Dashboard() {
                       </div>
 
                       {isExpanded && (
-                        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mt-4 pt-4 border-t border-border space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-secondary/50 p-3 rounded-xl border border-black/5 dark:border-white/5">
+                            <div className="bg-secondary/50 p-3 rounded-2xl border border-border">
                               <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Calories</p>
                               <p className="text-xl font-bold">{meal.consumedAlternative ? meal.alternativeCalories : meal.calories} <span className="text-xs font-normal opacity-60">kcal</span></p>
                             </div>
-                            <div className="bg-secondary/50 p-3 rounded-xl border border-black/5 dark:border-white/5">
+                            <div className="bg-secondary/50 p-3 rounded-2xl border border-border">
                               <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Status</p>
-                              <p className={cn("text-sm font-semibold", isLogged ? "text-emerald-600" : "text-amber-600")}>
+                              <p className={cn("text-sm font-semibold", isLogged ? "text-brand-green" : "text-amber-600")}>
                                 {isLogged ? "Ready to Burn" : "Pending Energy"}
                               </p>
                             </div>
                           </div>
 
                           {!isLogged && (
-                            <Button className="w-full h-10 rounded-xl bg-primary shadow-sm hover:shadow-md transition-all">
+                            <Button className="w-full h-10 rounded-2xl bg-primary shadow-sm hover:shadow-md transition-all">
                               Log This Meal
                             </Button>
                           )}
@@ -458,13 +458,13 @@ export default function Dashboard() {
           <h2 className="px-6 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Workout Plan</h2>
           <div className="space-y-4 px-4 relative">
             {/* Timeline Vertical Line (Continuing from meals) */}
-            <div className="absolute left-[2.25rem] top-0 bottom-4 w-[2px] bg-black/5 dark:bg-white/5 z-0" />
+            <div className="absolute left-[2.25rem] top-0 bottom-4 w-[2px] bg-border z-0" />
 
             {workouts.map((workout: any) => (
               <div key={workout.id} className="relative z-10 flex gap-4">
                 {/* Timeline Dot */}
                 <div className="flex flex-col items-center mt-4">
-                  <div className="w-4 h-4 rounded-full border-4 border-background bg-slate-400 dark:bg-slate-600 flex items-center justify-center transition-all duration-300">
+                  <div className="w-4 h-4 rounded-full border-4 border-background bg-muted-foreground/40 flex items-center justify-center transition-all duration-300">
                   </div>
                 </div>
 
@@ -474,7 +474,7 @@ export default function Dashboard() {
                     <div className="flex items-start justify-between">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
                             Workout
                           </span>
                         </div>
@@ -488,7 +488,7 @@ export default function Dashboard() {
 
                       <div className="flex flex-col items-end gap-2">
                         <div className="text-right">
-                          <span className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                          <span className="text-lg font-bold text-foreground">
                             {workout.duration}
                           </span>
                           <span className="text-[10px] font-bold text-muted-foreground uppercase border-l border-muted ml-2 pl-2">
@@ -508,7 +508,7 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center mt-4">
                   <div className="w-4 h-4 rounded-full border-4 border-background bg-muted flex items-center justify-center"></div>
                 </div>
-                <div className="flex-1 p-8 text-center bg-card rounded-xl border-2 border-dashed border-muted flex flex-col items-center">
+                <div className="flex-1 p-8 text-center bg-card rounded-2xl border-2 border-dashed border-muted flex flex-col items-center">
                   <span className="text-2xl mb-2">🧘</span>
                   <p className="text-sm font-medium">Rest day — Enjoy your recovery!</p>
                 </div>
@@ -588,7 +588,7 @@ export default function Dashboard() {
                     <RadioGroupItem value={opt.value} id={`dash-${opt.value}`} className="peer sr-only" data-testid={`radio-portion-${opt.value}`} />
                     <Label
                       htmlFor={`dash-${opt.value}`}
-                      className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                      className="flex flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
                       data-testid={`label-portion-${opt.value}`}
                     >
                       <span className="text-sm font-medium">{opt.label}</span>

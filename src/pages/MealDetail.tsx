@@ -130,12 +130,12 @@ export default function MealDetail() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="p-4 border-b bg-white dark:bg-background flex items-center gap-4 sticky top-0 z-10">
+      <header className="p-4 border-b bg-card flex items-center gap-4 sticky top-0 z-10">
         <Button variant="ghost" size="icon" onClick={() => setLocation(params?.date && params.date === format(new Date(), 'yyyy-MM-dd') ? "/dashboard" : "/meals")} data-testid="button-back">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="font-bold text-lg capitalize">{meal.type}</h1>
+          <h1 className="font-semibold text-lg capitalize">{meal.type}</h1>
           <p className="text-xs text-muted-foreground">{format(planDate, "MMM do")}</p>
         </div>
       </header>
@@ -152,11 +152,11 @@ export default function MealDetail() {
           </div>
 
           {meal.consumedAlternative && (
-            <Card className="p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-200">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
+            <Card className="p-4 bg-amber-50 border-amber-200">
+              <p className="text-sm text-amber-800">
                 You logged: <strong>{meal.alternativeDescription}</strong>
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+              <p className="text-xs text-amber-600 mt-1">
                 Approx. {meal.alternativeCalories} cal, {meal.alternativeProtein}g protein
               </p>
             </Card>
@@ -167,19 +167,19 @@ export default function MealDetail() {
               <span className="block text-xl font-bold text-primary">{meal.calories}</span>
               <span className="text-xs text-muted-foreground font-bold uppercase">Planned Cal</span>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg">
-              <span className="block text-xl font-bold text-blue-600 dark:text-blue-400">{meal.protein}g</span>
+            <div className="bg-blue-50 px-4 py-2 rounded-lg">
+              <span className="block text-xl font-bold text-blue-600">{meal.protein}g</span>
               <span className="text-xs text-blue-400 font-bold uppercase">Protein</span>
             </div>
             {meal.carbs && (
-              <div className="bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-lg">
-                <span className="block text-xl font-bold text-orange-600 dark:text-orange-400">{meal.carbs}g</span>
+              <div className="bg-orange-50 px-4 py-2 rounded-lg">
+                <span className="block text-xl font-bold text-orange-600">{meal.carbs}g</span>
                 <span className="text-xs text-orange-400 font-bold uppercase">Carbs</span>
               </div>
             )}
             {meal.fats && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-lg">
-                <span className="block text-xl font-bold text-yellow-600 dark:text-yellow-500">{meal.fats}g</span>
+              <div className="bg-yellow-50 px-4 py-2 rounded-lg">
+                <span className="block text-xl font-bold text-yellow-600">{meal.fats}g</span>
                 <span className="text-xs text-yellow-600 font-bold uppercase">Fats</span>
               </div>
             )}
@@ -187,7 +187,7 @@ export default function MealDetail() {
         </div>
 
         <Card className="p-6">
-          <h3 className="font-bold text-lg mb-4">Ingredients</h3>
+          <h3 className="font-semibold text-lg mb-4">Ingredients</h3>
           <ul className="space-y-2">
             {meal.ingredients?.map((ing: any, i: number) => (
               <li key={i} className="flex items-center gap-2 text-muted-foreground">
@@ -203,7 +203,7 @@ export default function MealDetail() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="font-bold text-lg mb-4">Preparation</h3>
+          <h3 className="font-semibold text-lg mb-4">Preparation</h3>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {meal.instructions || "No instructions provided."}
           </p>
@@ -352,7 +352,7 @@ export default function MealDetail() {
                     <RadioGroupItem value={opt.value} id={`alt-${opt.value}`} className="peer sr-only" />
                     <Label
                       htmlFor={`alt-${opt.value}`}
-                      className="flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                      className="flex flex-col items-center justify-center rounded-2xl border-2 border-muted bg-popover p-3 hover:bg-accent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
                     >
                       <span className="text-sm font-medium">{opt.label}</span>
                       <span className="text-xs text-muted-foreground">{opt.desc}</span>

@@ -36,7 +36,7 @@ export default function WeightLog() {
         <Button variant="ghost" size="icon" onClick={() => setLocation("/dashboard")}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-bold text-lg">Log Weight</h1>
+        <h1 className="font-semibold text-lg">Log Weight</h1>
       </header>
 
       <main className="flex-1 p-6 max-w-lg mx-auto w-full space-y-8">
