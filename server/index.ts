@@ -97,15 +97,26 @@ if (process.env.NODE_ENV === "production") {
 // It is the only port that is not firewalled.
 if (!process.env.VERCEL) {
   const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+
+  // Run safe startup migrations before accepting connections
+  (async () => {
+    try {
+      const { runStartupMigrations } = await import("./migrate");
+      await runStartupMigrations();
+    } catch (err) {
+      console.error("[STARTUP] Migration failed, continuing anyway:", err);
+    }
+
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+      },
+      () => {
+        log(`serving on port ${port}`);
+      },
+    );
+  })();
 }
 
 export default app;
