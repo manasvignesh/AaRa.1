@@ -5,6 +5,45 @@ import { pool } from "./db";
  * Each ALTER TABLE uses IF NOT EXISTS to prevent crashes on re-runs.
  */
 export async function runStartupMigrations(): Promise<void> {
+    // === Phase 1: Ensure required tables exist ===
+    const tableMigrations: { name: string; sql: string }[] = [
+        {
+            name: "activity_logs",
+            sql: `CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                date DATE NOT NULL,
+                steps INTEGER DEFAULT 0,
+                calories_burned INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT NOW()
+            )`,
+        },
+        {
+            name: "user_gamification",
+            sql: `CREATE TABLE IF NOT EXISTS user_gamification (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER UNIQUE NOT NULL,
+                xp INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1,
+                streak INTEGER DEFAULT 0,
+                badges JSONB DEFAULT '[]',
+                created_at TIMESTAMP DEFAULT NOW()
+            )`,
+        },
+    ];
+
+    console.log("[MIGRATION] Phase 1: Ensuring required tables exist...");
+
+    for (const table of tableMigrations) {
+        try {
+            await pool.query(table.sql);
+            console.log(`[MIGRATION] ✓ Table '${table.name}' ensured`);
+        } catch (error: any) {
+            console.error(`[MIGRATION] ✗ Failed to create table '${table.name}':`, error.message);
+        }
+    }
+
+    // === Phase 2: Ensure required columns exist ===
     const migrations: { column: string; sql: string }[] = [
         {
             column: "region_preference",
@@ -56,7 +95,7 @@ export async function runStartupMigrations(): Promise<void> {
         },
     ];
 
-    console.log("[MIGRATION] Running startup schema migrations...");
+    console.log("[MIGRATION] Phase 2: Ensuring required columns exist...");
 
     for (const migration of migrations) {
         try {
