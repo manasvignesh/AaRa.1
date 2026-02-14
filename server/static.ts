@@ -16,10 +16,20 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Serve static assets with proper cache headers
+  app.use(express.static(distPath, {
+    maxAge: '1d',
+    index: false,  // Don't auto-serve index.html for directory requests
+  }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use(/.*/, (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // SPA fallback: only for requests that don't have a file extension
+  // This prevents intercepting /assets/index-abc.css or /assets/index-abc.js
+  app.use((req, res, next) => {
+    // If the request has a file extension, it's a missing static asset — let it 404
+    if (path.extname(req.path)) {
+      return next();
+    }
+    // Otherwise serve index.html for SPA client-side routing
+    res.sendFile(path.join(distPath, "index.html"));
   });
 }
