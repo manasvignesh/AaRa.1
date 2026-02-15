@@ -1,136 +1,143 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Heart, Activity } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Heart, Activity, Target, Zap, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import aaraLogo from "@/assets/aara-logo.png";
+import { cn } from "@/lib/utils";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-green-50 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden selection:bg-primary/20">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-green-200/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-teal-200/15 rounded-full blur-3xl" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-brand-blue/5 blur-[120px]" />
+        <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] rounded-full bg-emerald-500/5 blur-[100px]" />
       </div>
 
       {/* Header */}
-      <header className="relative py-6 px-4 md:px-8 flex justify-between items-center max-w-7xl mx-auto w-full">
+      <header className="relative z-50 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto w-full">
         <div className="flex items-center">
-          <img src={aaraLogo} alt="AaRa" className="h-20 md:h-24 w-auto" data-testid="img-logo-header" />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-2"
+          >
+            <img src={aaraLogo} alt="AaRa" className="h-16 md:h-20 w-auto" />
+          </motion.div>
         </div>
         <Link href="/auth?tab=login">
-          <Button variant="outline" className="rounded-full px-6 bg-card/80 backdrop-blur-sm border-brand-blue/20 hover:bg-card hover:border-brand-blue/40 text-brand-blue" data-testid="button-login">
-            Log In
-          </Button>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <Button
+              variant="link"
+              className="rounded-full px-8 h-12 text-[13px] font-black uppercase tracking-[0.2em] text-foreground hover:text-primary transition-colors"
+            >
+              Member Login
+            </Button>
+          </motion.div>
         </Link>
       </header>
 
       {/* Hero */}
-      <main className="relative flex-1 flex items-center justify-center px-4 md:px-8 py-12 md:py-20">
-        <div className="max-w-5xl mx-auto text-center space-y-10">
-          {/* Large centered logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="flex justify-center mb-6"
-          >
-            <img
-              src={aaraLogo}
-              alt="AaRa Wellness Fitness App"
-              className="h-40 md:h-56 w-auto drop-shadow-lg"
-              data-testid="img-logo-hero"
-            />
-          </motion.div>
+      <main className="relative flex-1 flex flex-col items-center justify-center px-6 md:px-12 py-10 md:py-20 text-center">
+        <div className="max-w-4xl mx-auto space-y-12">
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-5"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="space-y-6"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-green-50 text-brand-blue text-sm font-medium border border-brand-blue/10">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Science-backed Safety Protocols</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-card/40 backdrop-blur-md border border-border/5 text-primary text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
+              <Sparkles className="w-4 h-4" />
+              <span>Intelligent Health Evolution</span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
-              Your Personal <br />
-              <span className="brand-gradient-text">
-                Wellness Journey
-              </span>
+
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.9] text-center">
+              Your Body,<br />
+              <span className="brand-gradient-text">Masterfully Optimized.</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              No crash diets. No extreme measures. Just an intelligent, adaptive plan designed for your body, your lifestyle, and your goals.
+
+            <p className="text-[17px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
+              AaRa is the next generation of wellness. An adaptive, AI-driven experience that transforms your biology without extreme measures.
             </p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
             <Link href="/auth?tab=register" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto rounded-full text-lg px-10 py-7 h-auto brand-gradient hover:opacity-90 shadow-xl shadow-brand-blue/20 hover:shadow-2xl hover:shadow-brand-blue/25 hover:-translate-y-1 transition-all border-0 text-white"
-                data-testid="button-start-journey"
+                className="w-full sm:w-auto rounded-[24px] text-lg px-12 h-20 brand-gradient hover:opacity-90 shadow-2xl shadow-brand-blue/30 hover:shadow-brand-blue/40 hover:-translate-y-1 transition-all border-0 text-white font-black"
               >
-                <Sparkles className="mr-2 w-5 h-5" />
-                Start Your Journey
-                <ArrowRight className="ml-2 w-5 h-5" />
+                Start Journey <ChevronRight className="ml-2 w-6 h-6" />
               </Button>
             </Link>
           </motion.div>
 
-          {/* Features Grid */}
+          {/* Features Strip */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="grid md:grid-cols-3 gap-6 mt-16 text-left"
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="grid md:grid-cols-3 gap-8 mt-12 text-center"
           >
             {[
               {
-                title: "Safe & Sustainable",
-                desc: "We prioritize your metabolic health. No starvation, just smart nutrition.",
-                icon: Heart,
-                gradient: "from-rose-400 to-orange-400"
-              },
-              {
-                title: "Personalized Plans",
-                desc: "Adaptive meal and workout plans that fit your lifestyle and preferences.",
-                icon: Sparkles,
-                gradient: "from-brand-blue to-blue-400"
-              },
-              {
-                title: "Real-time Coaching",
-                desc: "Smart adjustments based on your daily progress and feedback.",
+                title: "Precision Fuel",
+                desc: "Adaptive meal systems that align with your metabolic signature.",
                 icon: Activity,
-                gradient: "from-brand-green to-teal-400"
+                color: "text-primary bg-primary/5"
+              },
+              {
+                title: "Smart Training",
+                desc: "Workouts that evolve with your performance intensity.",
+                icon: Zap,
+                color: "text-brand-blue bg-brand-blue/5"
+              },
+              {
+                title: "Goal Precision",
+                desc: "High-fidelity progress tracking for meaningful transformations.",
+                icon: Target,
+                color: "text-emerald-500 bg-emerald-500/5"
               }
             ].map((feature, idx) => (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 + idx * 0.1 }}
-                className="p-6 rounded-2xl bg-card/70 backdrop-blur-sm border border-white/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 group"
+                className="group p-8 rounded-[40px] bg-card/30 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/[0.02] flex flex-col items-center gap-4 hover:bg-card/50 transition-all duration-500"
               >
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-6 h-6 text-white" />
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform", feature.color)}>
+                  <feature.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-foreground">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.desc}</p>
-              </motion.div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black tracking-tight text-foreground">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{feature.desc}</p>
+                </div>
+              </div>
             ))}
           </motion.div>
         </div>
       </main>
 
-      {/* Footer accent */}
-      <div className="relative h-2 brand-gradient" />
+      {/* Large visual element placeholder/accent */}
+      <div className="relative py-20 px-6 overflow-hidden">
+        <div className="max-w-6xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-border to-transparent opacity-20" />
+        <div className="mt-20 flex justify-center opacity-[0.03] select-none pointer-events-none">
+          <span className="text-[200px] font-black tracking-tighter leading-none grayscale blur-sm">AARA</span>
+        </div>
+      </div>
+
+      {/* Small footer */}
+      <footer className="py-10 px-6 border-t border-border/5 text-center">
+        <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.5em]">The Architecture of Human Vitality</p>
+      </footer>
     </div>
   );
 }

@@ -9,7 +9,10 @@ import {
   User,
   LogOut,
   TrendingUp,
-  Lock
+  Lock,
+  Compass,
+  Zap,
+  LayoutGrid
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -22,88 +25,124 @@ export function Navigation() {
   const { toast } = useToast();
 
   const navItems = [
-    { href: "/dashboard", label: "Home", icon: Home },
-    { href: "/meals", label: "Meals", icon: Utensils },
-    { href: "/workouts", label: "Workouts", icon: Dumbbell },
-    { href: "/progress", label: "Progress", icon: TrendingUp },
-    { href: "/coach", label: "Coach", icon: MessageCircle, isLocked: true },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/dashboard", label: "Home", icon: LayoutGrid },
+    { href: "/meals", label: "Fuel", icon: Utensils },
+    { href: "/workouts", label: "Train", icon: Dumbbell },
+    { href: "/progress", label: "Stats", icon: TrendingUp },
+    { href: "/coach", label: "AARA AI", icon: Zap, isLocked: true },
+    { href: "/profile", label: "You", icon: User },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel md:static md:block md:w-64 md:h-screen md:border-r md:border-b-0 md:bg-card/95 safe-area-bottom shadow-[0_-1px_0_0_rgba(0,0,0,0.05)]">
-      <div className="flex flex-row md:flex-col h-[64px] md:h-full items-center md:items-stretch justify-around md:justify-start md:p-6 md:space-y-4">
-        {/* Logo Area - Desktop Only */}
-        <div className="hidden md:flex items-center gap-3 mb-8">
-          <img src={aaraLogo} alt="AaRa" className="h-14 w-auto drop-shadow-sm" data-testid="img-logo-nav" />
+    <>
+      {/* Desktop Sidebar */}
+      <nav className="hidden md:flex flex-col w-72 h-screen bg-card border-r border-border/40 p-10 fixed left-0 top-0 overflow-y-auto selection:bg-primary/10">
+        <div className="mb-14">
+          <img src={aaraLogo} alt="AaRa" className="h-16 w-auto" />
+          <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] mt-3">Vitality OS v1.0</p>
         </div>
 
-        {/* Navigation Links */}
-        <div className="flex flex-row md:flex-col w-full px-2 md:px-0 justify-around md:justify-start h-full md:h-auto">
+        <div className="flex-1 space-y-2">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 px-4 opacity-40">Console</p>
           {navItems.map((item) => {
             const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
-            const isLocked = (item as any).isLocked;
-
-            const handleClick = (e: React.MouseEvent) => {
-              if (isLocked) {
-                e.preventDefault();
-                toast({
-                  title: "Premium Feature",
-                  description: "Chat Coaching is coming soon for Premium members! 🔒",
-                  variant: "default",
-                });
-              }
-            };
+            const isLocked = item.isLocked;
 
             return (
-              <Link key={item.href} href={item.href} onClick={handleClick}>
-                <a className={cn(
-                  "flex flex-col md:flex-row items-center justify-center md:justify-start flex-1 md:flex-none md:gap-3 py-1 md:py-3 md:px-4 rounded-xl transition-all duration-300 group relative",
-                  isActive
-                    ? "text-primary md:bg-primary/5"
-                    : "text-muted-foreground hover:text-foreground",
-                  isLocked && "opacity-50 grayscale-[0.5]"
-                )}>
-                  <div className="relative">
-                    <item.icon className={cn(
-                      "w-[24px] h-[24px] md:w-5 md:h-5 transition-all duration-300 group-active:scale-90",
-                      isActive ? "fill-current" : "stroke-[1.5px]"
-                    )} />
-                    {isLocked && (
-                      <div className="absolute -top-1.5 -right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-border/50">
-                        <Lock className="w-2.5 h-2.5 text-amber-500 fill-current" />
-                      </div>
-                    )}
-                  </div>
+              <Link key={item.href} href={isLocked ? "#" : item.href}>
+                <a
+                  className={cn(
+                    "flex items-center gap-4 px-5 py-4 rounded-[20px] transition-all duration-300 group relative overflow-hidden",
+                    isActive
+                      ? "bg-primary/5 text-primary"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                    isLocked && "opacity-40"
+                  )}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      e.preventDefault();
+                      toast({
+                        title: "Restricted Access",
+                        description: "AARA AI Coaching is reserved for elite subscribers. 💎",
+                      });
+                    }
+                  }}
+                >
+                  <item.icon className={cn(
+                    "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                  )} />
                   <span className={cn(
-                    "text-[10px] md:text-sm font-medium mt-0.5 md:mt-0 tracking-tight transition-colors",
-                    isActive ? "text-primary font-bold" : "text-muted-foreground"
+                    "text-[13px] uppercase tracking-widest font-black transition-colors",
+                    isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                   )}>
                     {item.label}
                   </span>
-
-                  {/* Subtle active indicator for mobile */}
                   {isActive && (
                     <motion.div
-                      layoutId="nav-active"
-                      className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary md:hidden"
+                      layoutId="nav-active-pill"
+                      className="absolute left-0 w-1 h-6 bg-primary rounded-full"
                     />
                   )}
+                  {isLocked && <Lock className="w-3.5 h-3.5 ml-auto opacity-40" />}
                 </a>
               </Link>
             );
           })}
         </div>
 
-        {/* Logout - Desktop Only */}
-        <button
-          onClick={() => logout()}
-          className="hidden md:flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/5 hover:text-destructive transition-all duration-200 mt-auto"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="text-sm font-medium">Log Out</span>
-        </button>
-      </div>
-    </nav>
+        <div className="pt-10 border-t border-border/5">
+          <button
+            onClick={() => logout()}
+            className="flex items-center gap-4 px-5 py-4 w-full rounded-[20px] text-muted-foreground/40 hover:text-red-500 hover:bg-red-50/50 transition-all group"
+          >
+            <LogOut className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[11px] font-black uppercase tracking-[0.2em]">Terminate Session</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Bottom Navigation - High Fidelity Glass Pill */}
+      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-sm">
+        <div className="bg-card/70 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-[32px] p-2 flex items-center justify-between">
+          {navItems.map((item) => {
+            const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
+            const isLocked = item.isLocked;
+
+            return (
+              <Link key={item.href} href={isLocked ? "#" : item.href}>
+                <a
+                  className={cn(
+                    "relative flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all group",
+                    isActive ? "bg-primary/10 text-primary" : "text-muted-foreground/60"
+                  )}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      e.preventDefault();
+                      toast({ title: "Premium Access Required" });
+                    }
+                  }}
+                >
+                  <item.icon className={cn(
+                    "w-5 h-5 transition-all",
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                  )} />
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-mobile"
+                      className="absolute -bottom-1.5 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]"
+                    />
+                  )}
+                  {isLocked && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-500 border-2 border-card" />}
+                </a>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Placeholder to prevent layout shift on desktop */}
+      <div className="hidden md:block w-72 h-screen shrink-0" />
+    </>
   );
 }

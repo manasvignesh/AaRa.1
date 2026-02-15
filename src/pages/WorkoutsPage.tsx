@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { usePlanMeta, useWorkouts, useGeneratePlan } from "@/hooks/use-plans";
 import { useUserProfile } from "@/hooks/use-user";
-import { Navigation } from "@/components/Navigation";
+import { PageLayout, SectionHeader } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ChevronRight, CheckCircle, Calendar, ChevronLeft, Dumbbell, Clock, Flame, Play, X, Zap, Info, ArrowRight } from "lucide-react";
+import { Loader2, ChevronRight, CheckCircle, Calendar, ChevronLeft, Dumbbell, Clock, Flame, Play, X, Zap, Info, ArrowRight, PlayCircle, CheckCircle2, Trophy, FlameIcon } from "lucide-react";
 import { format, addDays, subDays, isToday, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function WorkoutsPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [, setLocation] = useLocation();
     const { data: user, isLoading: userLoading } = useUserProfile();
     const { data: plan, isLoading: planLoading } = usePlanMeta(selectedDate);
     const { data: workouts = [], isLoading: workoutsLoading } = useWorkouts(selectedDate);
@@ -43,39 +44,56 @@ export default function WorkoutsPage() {
 
     if (userLoading || (planLoading && !plan) || isGenerating) {
         return (
-            <div className="flex flex-col md:flex-row min-h-screen bg-background">
-                <Navigation />
-                <main className="flex-1 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                    <div className="text-center">
-                        <h3 className="font-semibold text-lg text-foreground">
-                            {isGenerating ? "Crafting your session..." : "Fetching plan..."}
-                        </h3>
+            <PageLayout
+                header={
+                    <div>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">
+                            {format(selectedDate, "EEEE, MMMM do")}
+                        </p>
+                        <h1 className="text-4xl font-black tracking-tighter text-foreground">Workouts</h1>
                     </div>
-                </main>
-            </div>
+                }
+            >
+                <div className="flex flex-col items-center justify-center py-20 min-h-[50vh] gap-6 text-center">
+                    <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                    <div className="space-y-2">
+                        <p className="text-xl font-black tracking-tight animate-pulse">
+                            {isGenerating ? "Crafting Your Session" : "Reading Your Progress"}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-medium">AARA AI is optimizing your workout plan...</p>
+                    </div>
+                </div>
+            </PageLayout>
         );
     }
 
     if (generationError || (!plan && !isGenerating)) {
         return (
-            <div className="flex flex-col md:flex-row min-h-screen bg-background">
-                <Navigation />
-                <main className="flex-1 flex flex-col items-center justify-center gap-6 p-6 max-w-md mx-auto text-center">
-                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-                        <X className="w-8 h-8 text-red-600" />
-                    </div>
+            <PageLayout
+                header={
                     <div>
-                        <h3 className="font-bold text-xl text-foreground">Plan Unavailable</h3>
-                        <p className="text-muted-foreground mt-2">
-                            {generationError || "We couldn't prepare your plan for today."}
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">
+                            {format(selectedDate, "EEEE, MMMM do")}
+                        </p>
+                        <h1 className="text-4xl font-black tracking-tighter text-foreground">Workouts</h1>
+                    </div>
+                }
+            >
+                <div className="flex flex-col items-center justify-center py-20 gap-8 text-center max-w-sm mx-auto">
+                    <div className="w-24 h-24 rounded-[32px] bg-red-50 flex items-center justify-center shadow-lg border border-red-100">
+                        <X className="w-12 h-12 text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="font-black text-2xl tracking-tight text-foreground">Session Halted</h3>
+                        <p className="text-muted-foreground font-medium leading-relaxed">
+                            {generationError || "We couldn't synchronize your workout plan. This might be a connection issue."}
                         </p>
                     </div>
-                    <Button variant="outline" size="lg" className="w-full rounded-2xl" onClick={handleRetryGeneration}>
-                        Retry Generation
+                    <Button size="lg" className="w-full brand-gradient text-white rounded-[24px] h-16 text-lg font-black shadow-xl" onClick={handleRetryGeneration}>
+                        Reload Session
                     </Button>
-                </main>
-            </div>
+                </div>
+            </PageLayout>
         );
     }
 
@@ -85,19 +103,41 @@ export default function WorkoutsPage() {
     });
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-background">
-            <Navigation />
-
-            <main className="flex-1 pb-48 md:pb-12 overflow-y-auto">
-                <header className="px-6 pt-10 pb-6 md:pt-16">
-                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">Workouts</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Focus on form and intensity.</p>
-                </header>
-
+        <PageLayout
+            header={
+                <div className="flex justify-between items-end">
+                    <div>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">
+                            {format(selectedDate, "EEEE, MMMM do")}
+                        </p>
+                        <h1 className="text-4xl font-black tracking-tighter text-foreground">Training</h1>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+                            className="w-10 h-10 rounded-full bg-card border-none shadow-sm text-primary hover:bg-secondary/50"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+                            className="w-10 h-10 rounded-full bg-card border-none shadow-sm text-primary hover:bg-secondary/50"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </Button>
+                    </div>
+                </div>
+            }
+        >
+            <div className="space-y-10 pb-32">
                 {/* Weekly Strip */}
-                <section className="px-4 mb-8">
-                    <div className="wellness-card p-3 flex justify-between items-center shadow-sm">
-                        {weekDays.map((day, idx) => {
+                <section>
+                    <div className="wellness-card p-4 flex justify-between items-center shadow-sm bg-card border-none">
+                        {weekDays.map((day: Date, idx: number) => {
                             const active = isSameDay(day, selectedDate);
                             const today = isToday(day);
                             return (
@@ -105,15 +145,15 @@ export default function WorkoutsPage() {
                                     key={idx}
                                     onClick={() => setSelectedDate(day)}
                                     className={cn(
-                                        "flex flex-col items-center py-2 px-3 rounded-2xl transition-all",
-                                        active ? "bg-primary text-white shadow-md active:scale-95" : "hover:bg-secondary/50"
+                                        "flex flex-col items-center py-3 px-3 rounded-[20px] transition-all w-12 group",
+                                        active ? "brand-gradient text-white shadow-xl scale-105" : "hover:bg-secondary/30"
                                     )}
                                 >
-                                    <span className={cn("text-[10px] font-bold uppercase", active ? "text-white/70" : "text-muted-foreground")}>
+                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", active ? "text-white/80" : "text-muted-foreground/40")}>
                                         {format(day, "eee")}
                                     </span>
-                                    <span className="text-lg font-bold">{format(day, "d")}</span>
-                                    {today && !active && <div className="w-1 h-1 bg-primary rounded-full mt-1" />}
+                                    <span className="text-lg font-black tracking-tighter mt-1">{format(day, "d")}</span>
+                                    {today && !active && <div className="w-1 h-1 bg-primary rounded-full mt-1.5" />}
                                 </button>
                             );
                         })}
@@ -127,18 +167,23 @@ export default function WorkoutsPage() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="px-4"
+                            className="py-10"
                         >
-                            <div className="wellness-card p-10 flex flex-col items-center justify-center text-center">
-                                <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
-                                    <Clock className="w-10 h-10 text-blue-500/50" />
+                            <div className="wellness-card p-12 flex flex-col items-center justify-center text-center space-y-8 bg-card border-none shadow-lg group">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                                    <div className="w-24 h-24 rounded-[32px] bg-primary/5 flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform duration-700">
+                                        <Clock className="w-12 h-12 text-primary" />
+                                    </div>
                                 </div>
-                                <h2 className="text-2xl font-bold text-foreground">Recovery Day</h2>
-                                <p className="text-muted-foreground mt-2 max-w-[240px]">
-                                    Rest is as critical as the workout. Use today for mobility or light walking.
-                                </p>
-                                <Button variant="outline" className="mt-8 rounded-full px-6">
-                                    View Recovery Tips
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black tracking-tighter text-foreground">Regeneration Day</h2>
+                                    <p className="text-muted-foreground font-medium max-w-[240px] mx-auto leading-relaxed">
+                                        Recovery is where the magic happens. Your tissues are rebuilding. Stay mobile with light movement.
+                                    </p>
+                                </div>
+                                <Button variant="outline" className="h-14 rounded-full px-10 font-black border-primary/20 text-primary hover:bg-primary/5 shadow-sm text-xs uppercase tracking-widest transition-all">
+                                    Mobility Guidelines
                                 </Button>
                             </div>
                         </motion.section>
@@ -147,144 +192,95 @@ export default function WorkoutsPage() {
                             key="active-day"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="space-y-8"
+                            className="space-y-10"
                         >
-                            {/* Today's Highlight */}
-                            <section className="px-4">
+                            {/* Workout Feed */}
+                            <section className="space-y-6">
+                                <SectionHeader title="Active Sessions" />
                                 {workouts.map((workout: any) => (
-                                    <div key={workout.id} className="wellness-card p-6 bg-card shadow-sm border-none">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="w-2 h-2 rounded-full bg-primary" />
-                                                    <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{workout.type} Session</span>
-                                                </div>
-                                                <h2 className="text-2xl font-semibold tracking-tight text-foreground">{workout.name}</h2>
-                                                <p className="text-[13px] text-muted-foreground mt-1">
-                                                    {workout.type === 'cardio' ? 'Builds stamina and burns fat' :
-                                                        workout.type === 'strength' ? 'Increases strength and metabolic rate' :
-                                                            'Improves mobility and recovery'}
-                                                </p>
-                                            </div>
+                                    <Link key={workout.id} href={`/workout/${workout.id}`}>
+                                        <div className="wellness-card p-8 shadow-xl bg-card border-none hover:translate-y-[-4px] active:scale-[0.98] transition-all cursor-pointer group mb-6 overflow-hidden relative">
                                             {workout.isCompleted && (
-                                                <div className="flex items-center gap-1.5 py-1 px-3 rounded-full bg-green-500/10 text-green-600">
-                                                    <CheckCircle className="w-3.5 h-3.5" />
-                                                    <span className="text-[11px] font-bold uppercase">Completed</span>
+                                                <div className="absolute top-0 right-0 p-4">
+                                                    <div className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-emerald-500/10 text-emerald-600">
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">Mastered</span>
+                                                    </div>
                                                 </div>
                                             )}
-                                        </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-8">
-                                            <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30">
-                                                <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center shadow-sm">
-                                                    <Clock className="w-4 h-4 text-primary" />
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-2 h-2 rounded-full brand-gradient" />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{workout.type} Training</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <h2 className="text-3xl font-black tracking-tighter text-foreground leading-tight">{workout.name}</h2>
+                                                        <p className="text-[15px] font-medium text-muted-foreground max-w-[320px]">
+                                                            {workout.description || (workout.type === 'cardio' ? 'Ignite your metabolism and build endurance.' : 'Sculpt and strengthen your foundation.')}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-0.5">Duration</p>
-                                                    <p className="text-sm font-bold">{workout.duration} min</p>
+
+                                                <div className="flex items-center gap-8 bg-secondary/20 p-6 rounded-[28px] shrink-0 border border-border/5">
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <Clock className="w-5 h-5 text-primary mb-1" />
+                                                        <span className="text-lg font-black tracking-tighter leading-none">{workout.duration}</span>
+                                                        <span className="text-[8px] font-black text-muted-foreground uppercase opacity-40">Min</span>
+                                                    </div>
+                                                    <div className="w-px h-8 bg-border/40" />
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <FlameIcon className="w-5 h-5 text-primary mb-1" />
+                                                        <span className="text-lg font-black tracking-tighter leading-none">~{Math.round(workout.duration * 6.5)}</span>
+                                                        <span className="text-[8px] font-black text-muted-foreground uppercase opacity-40">Kcal</span>
+                                                    </div>
+                                                    <div className="pl-2">
+                                                        <div className="w-12 h-12 rounded-full brand-gradient flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                                                            {workout.isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <PlayCircle className="w-7 h-7 fill-current" />}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30">
-                                                <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center shadow-sm">
-                                                    <Flame className="w-4 h-4 text-primary" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-0.5">Intensity</p>
-                                                    <p className="text-sm font-bold capitalize">{workout.difficulty}</p>
-                                                </div>
-                                            </div>
                                         </div>
-
-                                        <div className="flex gap-3">
-                                            {!workout.isCompleted ? (
-                                                <Link href={`/workout/${workout.id}/start`} className="flex-1">
-                                                    <Button className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold border-none shadow-lg">
-                                                        <Play className="w-4 h-4 mr-2 fill-current" />
-                                                        Start Workout
-                                                    </Button>
-                                                </Link>
-                                            ) : (
-                                                <Link href={`/workout/${workout.id}/start`} className="flex-1">
-                                                    <Button variant="outline" className="w-full h-12 rounded-2xl border-primary/20 hover:bg-primary/5 text-primary font-bold">
-                                                        Redo Session
-                                                    </Button>
-                                                </Link>
-                                            )}
-                                            <Link href={`/workout/${workout.id}`}>
-                                                <Button variant="ghost" className="h-12 w-12 rounded-2xl bg-secondary/50 hover:bg-secondary text-muted-foreground border-none p-0">
-                                                    <Info className="w-5 h-5" />
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </section>
 
-                            {/* Workout Breakdown */}
-                            <section className="px-4">
-                                <h2 className="px-2 text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Exercise List</h2>
-                                <div className="space-y-3">
-                                    {workouts.map((workout: any) => (
-                                        <div key={`breakdown-${workout.id}`} className="space-y-2">
-                                            {(workout.exercises || []).map((ex: any, idx: number) => {
-                                                const hasDetails = typeof ex === 'object' && (ex.sets || ex.reps || ex.duration);
-                                                return (
-                                                    <div key={idx} className="wellness-card p-4 flex items-center justify-between border-none shadow-sm bg-card">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 rounded-2xl bg-secondary/50 flex items-center justify-center text-sm font-bold text-muted-foreground/60">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="text-sm font-bold text-foreground leading-tight">{typeof ex === 'string' ? ex : ex.name}</h4>
-                                                                {hasDetails && (
-                                                                    <p className="text-[11px] font-medium text-muted-foreground mt-1">
-                                                                        {[
-                                                                            ex.sets && `${ex.sets} sets`,
-                                                                            ex.reps && `${ex.reps} reps`,
-                                                                            ex.duration && `${ex.duration}s`
-                                                                        ].filter(Boolean).join(' • ')}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <ChevronRight className="w-4 h-4 text-muted-foreground/20" />
-                                                    </div>
-                                                );
-                                            })}
+                            {/* Performance Insights */}
+                            <section className="space-y-4">
+                                <SectionHeader title="Training Metrics" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="wellness-card p-6 bg-card border-none shadow-sm space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                                                <Trophy className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">+12%</span>
                                         </div>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* Flexibility & Tips */}
-                            <section className="px-4 pb-8 space-y-4">
-                                <div className="wellness-card p-5 bg-amber-50 flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shrink-0 shadow-sm border border-amber-100">
-                                        <Zap className="w-5 h-5 text-amber-500" />
+                                        <div>
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Weekly Volume</p>
+                                            <p className="text-2xl font-black tracking-tighter">240 <span className="text-xs font-bold text-muted-foreground/40">MIN</span></p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="text-sm font-bold text-amber-500 mb-1">Coach Tip</h4>
-                                        <p className="text-[13px] text-amber-500/80 leading-snug">
-                                            Focus on the tempo. Slow down the lowering phase of each rep to increase muscle recruitment.
-                                        </p>
+                                    <div className="wellness-card p-6 bg-card border-none shadow-sm space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="w-10 h-10 rounded-2xl bg-orange-500/5 flex items-center justify-center text-orange-500">
+                                                <Zap className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Active</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Peak Intensity</p>
+                                            <p className="text-2xl font-black tracking-tighter">8.5 <span className="text-xs font-bold text-muted-foreground/40">PWR</span></p>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-3">
-                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-border bg-card">
-                                        <span className="font-semibold">Swap this workout</span>
-                                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                    </Button>
-                                    <Button variant="outline" className="h-14 rounded-2xl justify-between px-6 border-border bg-card">
-                                        <span className="font-semibold">Need an easier option?</span>
-                                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                    </Button>
                                 </div>
                             </section>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </main>
-        </div>
+            </div>
+        </PageLayout>
     );
 }

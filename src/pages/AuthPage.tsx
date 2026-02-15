@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Mail, Lock, User as UserIcon } from "lucide-react";
+import { Loader2, Sparkles, Mail, Lock, User as UserIcon, ChevronRight, Fingerprint, Key, AtSign } from "lucide-react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import aaraLogo from "@/assets/aara-logo.png";
+import { cn } from "@/lib/utils";
 
 export default function AuthPage() {
     const { login, register, isLoggingIn, isRegistering } = useAuth();
@@ -53,145 +54,161 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-green-50 flex flex-col items-center justify-center p-4">
-            {/* Decorative background elements */}
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 sm:p-10 selection:bg-primary/20 relative overflow-hidden">
+            {/* Ambient Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl" />
-                <div className="absolute top-40 right-20 w-96 h-96 bg-green-200/20 rounded-full blur-3xl" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-brand-blue/5 blur-[120px]" />
             </div>
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="w-full max-w-md relative z-10"
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="w-full max-w-[420px] relative z-10 space-y-10"
             >
-                <div className="flex justify-center mb-8">
-                    <img src={aaraLogo} alt="AaRa" className="h-24 w-auto drop-shadow-md" />
+                <div className="flex flex-col items-center space-y-6">
+                    <img src={aaraLogo} alt="AaRa" className="h-24 md:h-28 w-auto" />
+                    <div className="text-center space-y-1">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Secure Access</p>
+                        <h1 className="text-2xl font-black tracking-tighter text-foreground uppercase">Wellness Console</h1>
+                    </div>
                 </div>
 
-                <Card className="border-border backdrop-blur-md bg-card/90 shadow-2xl">
+                <div className="wellness-card bg-card/40 backdrop-blur-2xl border-white/50 shadow-2xl p-2">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-secondary/50">
-                            <TabsTrigger value="login" className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">Login</TabsTrigger>
-                            <TabsTrigger value="register" className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">Register</TabsTrigger>
+                        <TabsList className="grid grid-cols-2 w-full h-14 p-1 bg-secondary/30 rounded-[20px] mb-2">
+                            <TabsTrigger
+                                value="login"
+                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
+                            >
+                                Member
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="register"
+                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
+                            >
+                                New Entry
+                            </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="login">
-                            <CardHeader>
-                                <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
-                                <CardDescription>Enter your credentials to access your personal plan</CardDescription>
-                            </CardHeader>
-                            <form onSubmit={handleLogin}>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="you@example.com"
-                                                className="pl-10"
-                                                value={loginEmail}
-                                                onChange={(e) => setLoginEmail(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="password">Password</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                                            <Input
-                                                id="password"
-                                                type="password"
-                                                className="pl-10"
-                                                value={loginPassword}
-                                                onChange={(e) => setLoginPassword(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button type="submit" className="w-full brand-gradient text-white font-bold h-11 border-0" disabled={isLoggingIn}>
-                                        {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
-                                        Log In
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </TabsContent>
-
-                        <TabsContent value="register">
-                            <CardHeader>
-                                <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
-                                <CardDescription>Join AaRa and start your personalized wellness journey</CardDescription>
-                            </CardHeader>
-                            <form onSubmit={handleRegister}>
-                                <CardContent className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input
-                                                id="firstName"
-                                                value={regFirstName}
-                                                onChange={(e) => setRegFirstName(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input
-                                                id="lastName"
-                                                value={regLastName}
-                                                onChange={(e) => setRegLastName(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="regEmail">Email</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                                            <Input
-                                                id="regEmail"
-                                                type="email"
-                                                placeholder="you@example.com"
-                                                className="pl-10"
-                                                value={regEmail}
-                                                onChange={(e) => setRegEmail(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="regPassword">Password</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                                            <Input
-                                                id="regPassword"
-                                                type="password"
-                                                className="pl-10"
-                                                value={regPassword}
-                                                onChange={(e) => setRegPassword(e.target.value)}
-                                                required
-                                                minLength={6}
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground italic">Minimum 6 characters</p>
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button type="submit" className="w-full brand-gradient text-white font-bold h-11 border-0" disabled={isRegistering}>
-                                        {isRegistering ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}
-                                        Create Account
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </TabsContent>
+                        <div className="p-6">
+                            <AnimatePresence mode="wait">
+                                {activeTab === "login" ? (
+                                    <motion.div
+                                        key="login-tab"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <form onSubmit={handleLogin} className="space-y-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Identification</Label>
+                                                <div className="relative group">
+                                                    <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                    <Input
+                                                        type="email"
+                                                        placeholder="Email Address"
+                                                        className="h-14 pl-12 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-card transition-all"
+                                                        value={loginEmail}
+                                                        onChange={(e) => setLoginEmail(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Access Key</Label>
+                                                <div className="relative group">
+                                                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="Password"
+                                                        className="h-14 pl-12 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-card transition-all"
+                                                        value={loginPassword}
+                                                        onChange={(e) => setLoginPassword(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="submit"
+                                                className="w-full brand-gradient text-white font-black text-sm uppercase tracking-widest h-16 rounded-[24px] shadow-xl shadow-brand-blue/30 mt-4 active:scale-[0.98] transition-all"
+                                                disabled={isLoggingIn}
+                                            >
+                                                {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Log In <ChevronRight className="ml-2 w-5 h-5" /></>}
+                                            </Button>
+                                        </form>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="register-tab"
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <form onSubmit={handleRegister} className="space-y-6">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">First Name</Label>
+                                                    <Input
+                                                        className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                        value={regFirstName}
+                                                        onChange={(e) => setRegFirstName(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Last Name</Label>
+                                                    <Input
+                                                        className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                        value={regLastName}
+                                                        onChange={(e) => setRegLastName(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Primary Email</Label>
+                                                <Input
+                                                    type="email"
+                                                    className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                    value={regEmail}
+                                                    onChange={(e) => setRegEmail(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Security Code</Label>
+                                                <Input
+                                                    type="password"
+                                                    className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                    value={regPassword}
+                                                    onChange={(e) => setRegPassword(e.target.value)}
+                                                    required
+                                                    minLength={6}
+                                                />
+                                                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest px-2">Minimum 6 characters required</p>
+                                            </div>
+                                            <Button
+                                                type="submit"
+                                                className="w-full brand-gradient text-white font-black text-sm uppercase tracking-widest h-16 rounded-[24px] shadow-xl shadow-brand-blue/30 mt-4 active:scale-[0.98] transition-all"
+                                                disabled={isRegistering}
+                                            >
+                                                {isRegistering ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Create Account <Sparkles className="ml-2 w-5 h-5" /></>}
+                                            </Button>
+                                        </form>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </Tabs>
-                </Card>
+                </div>
+
+                <div className="text-center">
+                    <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">Designed for Performance & Vitality</p>
+                </div>
             </motion.div>
         </div>
     );
