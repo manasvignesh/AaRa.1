@@ -75,18 +75,18 @@ export default function AuthPage() {
                     </div>
                 </div>
 
-                <div className="wellness-card bg-card/40 backdrop-blur-2xl border-white/50 shadow-2xl p-2">
+                <div className="wellness-card bg-white/60 backdrop-blur-2xl border-white/40 shadow-2xl p-2">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-2 w-full h-14 p-1 bg-secondary/30 rounded-[20px] mb-2">
+                        <TabsList className="grid grid-cols-2 w-full h-14 p-1 bg-slate-100 rounded-[20px] mb-2">
                             <TabsTrigger
                                 value="login"
-                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
+                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
                             >
                                 Member
                             </TabsTrigger>
                             <TabsTrigger
                                 value="register"
-                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
+                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
                             >
                                 New Entry
                             </TabsTrigger>
@@ -110,7 +110,7 @@ export default function AuthPage() {
                                                     <Input
                                                         type="email"
                                                         placeholder="Email Address"
-                                                        className="h-14 pl-12 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-card transition-all"
+                                                        className="h-14 pl-12 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-white transition-all"
                                                         value={loginEmail}
                                                         onChange={(e) => setLoginEmail(e.target.value)}
                                                         required
@@ -124,7 +124,7 @@ export default function AuthPage() {
                                                     <Input
                                                         type="password"
                                                         placeholder="Password"
-                                                        className="h-14 pl-12 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-card transition-all"
+                                                        className="h-14 pl-12 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-white transition-all"
                                                         value={loginPassword}
                                                         onChange={(e) => setLoginPassword(e.target.value)}
                                                         required
@@ -153,7 +153,7 @@ export default function AuthPage() {
                                                 <div className="space-y-2">
                                                     <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">First Name</Label>
                                                     <Input
-                                                        className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                        className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
                                                         value={regFirstName}
                                                         onChange={(e) => setRegFirstName(e.target.value)}
                                                         required
@@ -162,7 +162,7 @@ export default function AuthPage() {
                                                 <div className="space-y-2">
                                                     <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Last Name</Label>
                                                     <Input
-                                                        className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                        className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
                                                         value={regLastName}
                                                         onChange={(e) => setRegLastName(e.target.value)}
                                                         required
@@ -173,7 +173,7 @@ export default function AuthPage() {
                                                 <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Primary Email</Label>
                                                 <Input
                                                     type="email"
-                                                    className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                    className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
                                                     value={regEmail}
                                                     onChange={(e) => setRegEmail(e.target.value)}
                                                     required
@@ -183,7 +183,7 @@ export default function AuthPage() {
                                                 <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Security Code</Label>
                                                 <Input
                                                     type="password"
-                                                    className="h-14 rounded-[20px] border-none bg-secondary/40 font-bold focus-visible:ring-primary/20 shadow-inner"
+                                                    className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
                                                     value={regPassword}
                                                     onChange={(e) => setRegPassword(e.target.value)}
                                                     required

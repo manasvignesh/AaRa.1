@@ -5,84 +5,66 @@
 @tailwind utilities;
 
 :root {
-  /* AARA Wellness Theme — Blue → Green gradient identity */
+  /* AARA Wellness Theme — CALM & FUTURISTIC (Restored) */
 
-  /* Brand gradient anchors */
-  --brand-blue: 213 68% 55%;
+  /* Brand Colors (Exact requested values) */
+  --brand-blue: 213 85% 56%;
   /* #2F80ED */
-  --brand-green: 145 60% 42%;
+  --brand-green: 145 63% 42%;
   /* #27AE60 */
 
-  /* Core palette */
-  --background: 240 5% 96%;
-  /* iOS System Background — #F2F2F7 */
-  --foreground: 215 25% 17%;
-  /* Dark slate */
+  /* Core Palette — Light & Airy */
+  --background: 210 40% 98%;
+  /* Soft AliceBlue/White base */
+  --foreground: 222 47% 11%;
+  /* Deep slate text */
 
-  --primary: 213 68% 55%;
-  /* Calm blue */
+  --primary: 213 85% 56%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 150 15% 95%;
-  /* Soft green-gray */
-  --secondary-foreground: 215 20% 25%;
-
-  --accent: 145 50% 42%;
-  /* Wellness green */
-  --accent-foreground: 0 0% 100%;
-
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
-
-  --muted: 210 15% 95%;
-  /* Light blue-gray */
-  --muted-foreground: 215 12% 50%;
-
-  --border: 210 15% 90%;
-  /* Gentle border */
-  --input: 210 15% 90%;
-  --ring: 213 68% 55%;
-  /* Focus ring = brand blue */
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222 47% 11.2%;
 
   --card: 0 0% 100%;
-  /* White cards */
-  --card-foreground: 215 25% 17%;
-  --card-border: 210 15% 92%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 214 32% 91%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 215 25% 17%;
-  --popover-border: 210 15% 90%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 214 32% 91%;
 
-  --radius: 1.25rem;
-  /* Matches rounded-2xl */
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222 47% 11.2%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 213 85% 56%;
+
+  --radius: 1.5rem;
+  /* Rounded-3xl / 2xl feel */
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Chart colors — wellness palette */
-  --chart-1: 213 68% 55%;
-  --chart-2: 145 50% 42%;
-  --chart-3: 190 60% 50%;
-  --chart-4: 170 45% 55%;
-  --chart-5: 260 40% 60%;
-
-  /* Sidebar */
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: 215 25% 17%;
-  --sidebar-border: 210 15% 92%;
-  --sidebar-ring: 213 68% 55%;
-  --sidebar-primary: 213 68% 55%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 150 15% 96%;
-  --sidebar-accent-foreground: 215 20% 25%;
+  /* Chart colors - matched to brand */
+  --chart-1: 213 85% 56%;
+  --chart-2: 145 63% 42%;
+  --chart-3: 190 70% 50%;
+  --chart-4: 170 55% 55%;
+  --chart-5: 260 50% 60%;
 }
 
-/* Clean body — wellness background */
+/* Calm Wellness Body */
 body {
-  @apply text-foreground antialiased selection:bg-primary/20;
-  background: radial-gradient(circle at top left, hsl(var(--background)), hsl(var(--secondary) / 0.5)),
-    hsl(var(--background));
+  @apply text-foreground antialiased selection:bg-brand-blue/20;
+  /* Subtle light gradient background */
+  background: radial-gradient(circle at 50% 0%, #E0F2F1 0%, #F5F7FA 100%);
   background-attachment: fixed;
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -101,79 +83,39 @@ body {
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight text-foreground;
+    @apply font-bold tracking-tight text-slate-900;
     font-family: var(--font-display);
   }
 }
 
 @layer components {
 
-  /* Wellness card — white surface with soft shadow */
+  /* Restored Glass Cards */
   .wellness-card {
-    @apply bg-card rounded-2xl border border-card-border shadow-sm;
+    @apply bg-white/70 backdrop-blur-xl rounded-[24px] border border-white/40 shadow-lg shadow-slate-200/50;
   }
 
-  /* Brand gradient — blue→green (for buttons, progress bars, headers) */
+  /* AaRa Brand Gradient */
   .brand-gradient {
-    background: linear-gradient(135deg, hsl(var(--brand-blue)), hsl(var(--brand-green)));
+    background: linear-gradient(135deg, #2F80ED 0%, #27AE60 100%);
   }
 
   .brand-gradient-text {
-    background: linear-gradient(135deg, hsl(var(--brand-blue)), hsl(var(--brand-green)));
+    background: linear-gradient(135deg, #2F80ED 0%, #27AE60 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Soft card elevation variants */
-  .card-elevated {
-    @apply bg-card rounded-2xl shadow-md border border-card-border/50;
-  }
-
-  .card-flat {
-    @apply bg-card rounded-xl border border-card-border;
-  }
-
-  /* Glass panel — for nav, headers */
+  /* Glass Panels (for navigation, modals) */
   .glass-panel {
-    @apply bg-white/80 backdrop-blur-xl border-b border-border/50;
+    @apply bg-white/80 backdrop-blur-2xl border border-white/50 shadow-xl shadow-slate-200/40;
   }
 }
 
-/* Smooth Page Transitions */
-.page-fade-enter {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.page-fade-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 350ms ease-out, transform 350ms ease-out;
-}
-
-/* Gentle floating animation */
-@keyframes floating {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-4px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-.animate-floating {
-  animation: floating 4s ease-in-out infinite;
-}
-
-/* Scrollbar — minimal, clean */
+/* Scrollbar styling - soft and minimal */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -181,35 +123,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/30;
-}
-
-/* Card hover effect — subtle lift */
-.card-hover {
-  @apply transition-all duration-300 ease-out;
-}
-
-.card-hover:hover {
-  @apply shadow-lg -translate-y-0.5;
-}
-
-.card-hover:active {
-  @apply scale-[0.99];
-}
-
-/* Animation utilities */
-.animate-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-@keyframes fadeIn {
+/* Animations - Soft and Organic */
+@keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
 
   to {
@@ -218,98 +139,10 @@ body {
   }
 }
 
-@keyframes gentle-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-gentle-pulse {
-  animation: gentle-pulse 2s ease-in-out infinite;
-}
-
-/* Ring animation */
-@keyframes ring-fill {
-  from {
-    stroke-dashoffset: 100;
-  }
-
-  to {
-    stroke-dashoffset: var(--ring-offset);
-  }
-}
-
-/* Safe area */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
-
-/* Mobile touch improvements */
-@media (hover: none) and (pointer: coarse) {
-  .card-hover:hover {
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Hide scrollbar */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Navigation active state */
-.nav-link-active {
-  @apply text-primary font-bold;
-  position: relative;
-}
-
-.nav-link-active::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  @apply bg-primary;
-}
-
-/* 3D utilities (for onboarding cards, etc.) */
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-}
-
-/* Text gradient utility */
-.text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
-}
-
-/* Tab transition */
-.tab-transition {
-  @apply transition-all duration-200 ease-out;
+.page-transition {
+  @apply animate-in fade-in zoom-in-95 duration-500 ease-out;
 }
