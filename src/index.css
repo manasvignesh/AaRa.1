@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  /* AARA Wellness Theme — CALM & FUTURISTIC (Restored) */
+  /* AARA Wellness Theme — REFINED (iOS Inspired) */
 
   /* Brand Colors (Exact requested values) */
   --brand-blue: 213 85% 56%;
@@ -13,9 +13,9 @@
   --brand-green: 145 63% 42%;
   /* #27AE60 */
 
-  /* Core Palette — Light & Airy */
-  --background: 210 40% 98%;
-  /* Soft AliceBlue/White base */
+  /* Core Palette — Clean, Minimal, Neutrals */
+  --background: 210 20% 99%;
+  /* Very nearly white, slight cool tint */
   --foreground: 222 47% 11%;
   /* Deep slate text */
 
@@ -34,7 +34,7 @@
   --popover-border: 214 32% 91%;
 
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 215 25% 45%;
 
   --accent: 210 40% 96.1%;
   --accent-foreground: 222 47% 11.2%;
@@ -46,8 +46,9 @@
   --input: 214 32% 91%;
   --ring: 213 85% 56%;
 
+  /* Radius — Moving from 32px to 24px/16px for a more structured feel */
   --radius: 1.5rem;
-  /* Rounded-3xl / 2xl feel */
+  /* 24px Standard */
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
@@ -60,12 +61,11 @@
   --chart-5: 260 50% 60%;
 }
 
-/* Calm Wellness Body */
+/* Base Styles */
 body {
   @apply text-foreground antialiased selection:bg-brand-blue/20;
-  /* Subtle light gradient background */
-  background: radial-gradient(circle at 50% 0%, #E0F2F1 0%, #F5F7FA 100%);
-  background-attachment: fixed;
+  background-color: #F8FAFC;
+  /* Slate-50 equivalent */
   font-family: var(--font-sans);
   overflow-x: hidden;
   min-height: 100vh;
@@ -90,9 +90,13 @@ body {
 
 @layer components {
 
-  /* Restored Glass Cards */
+  /* Modern Clean Cards (iOS inspired) */
   .wellness-card {
-    @apply bg-white/70 backdrop-blur-xl rounded-[24px] border border-white/40 shadow-lg shadow-slate-200/50;
+    @apply bg-white rounded-3xl border border-slate-100 shadow-sm transition-all duration-200;
+  }
+
+  .wellness-card:hover {
+    @apply border-slate-200 shadow-md;
   }
 
   /* AaRa Brand Gradient */
@@ -107,30 +111,22 @@ body {
     background-clip: text;
   }
 
-  /* Glass Panels (for navigation, modals) */
+  /* Feature Card specialized */
+  .feature-card {
+    @apply bg-white rounded-2xl p-4 border border-slate-100 shadow-[0_2px_8px_-2px_rgba(0, 0, 0, 0.05)];
+  }
+
+  /* Glass Panels (reduced blur, more structure) */
   .glass-panel {
-    @apply bg-white/80 backdrop-blur-2xl border border-white/50 shadow-xl shadow-slate-200/40;
+    @apply bg-white/90 backdrop-blur-md border border-white/50 shadow-lg shadow-slate-200/40;
   }
 }
 
-/* Scrollbar styling - soft and minimal */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
-}
-
-/* Animations - Soft and Organic */
+/* Animations - refined */
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
 
   to {
@@ -140,9 +136,22 @@ body {
 }
 
 .animate-slide-up {
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .page-transition {
-  @apply animate-in fade-in zoom-in-95 duration-500 ease-out;
+  @apply animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out;
+}
+
+/* Scrollbar styling - minimal */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300;
 }

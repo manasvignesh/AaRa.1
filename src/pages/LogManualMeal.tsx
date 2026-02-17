@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Loader2, Check, UtensilsCrossed, Info, ChevronLeft, Target, Flame, Heart, Sparkles, XCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Check, UtensilsCrossed, Info, ChevronLeft, Target, Flame, Sparkles, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { PageLayout, SectionHeader } from "@/components/PageLayout";
@@ -167,11 +167,11 @@ export default function LogManualMeal() {
       }
     >
       <div className="max-w-xl mx-auto space-y-8 pb-32">
-        <section className="wellness-card p-6 bg-blue-50/50 border-blue-100 flex gap-4 items-start shadow-sm shadow-blue-500/5">
-          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
-            <Heart className="w-5 h-5 text-blue-500" />
+        <section className="wellness-card p-6 bg-white border-slate-100 flex gap-4 items-start shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 shadow-sm border border-slate-100">
+            <Info className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-[14px] text-blue-800 font-semibold leading-relaxed">
+          <p className="text-sm text-slate-600 font-medium leading-relaxed">
             Eating out? No stress. Describe it simply and AARA will adapt. Progress happens over weeks, not hours.
           </p>
         </section>

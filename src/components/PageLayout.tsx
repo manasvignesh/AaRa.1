@@ -12,7 +12,7 @@ export function PageLayout({
     children,
     className,
     header,
-    maxWidth = "2xl"
+    maxWidth = "md"
 }: PageLayoutProps) {
     const maxWidthClass = {
         sm: "max-w-sm",
@@ -24,15 +24,15 @@ export function PageLayout({
     }[maxWidth];
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
-            <main className="flex-1 pb-32 overflow-y-auto overflow-x-hidden">
-                <div className={cn("mx-auto px-4 pt-10 pb-6", maxWidthClass)}>
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+            <main className="flex-1 pb-24 overflow-y-auto overflow-x-hidden">
+                <div className={cn("mx-auto px-5 pt-8 pb-6", maxWidthClass)}>
                     {header && (
-                        <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                        <header className="mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
                             {header}
                         </header>
                     )}
-                    <div className={cn("animate-in fade-in slide-in-from-bottom-6 duration-1000", className)}>
+                    <div className={cn("animate-in fade-in duration-500", className)}>
                         {children}
                     </div>
                 </div>
@@ -42,20 +42,16 @@ export function PageLayout({
     );
 }
 
-export function SectionHeader({ title, overline, children }: { title: string; overline?: string; children?: React.ReactNode }) {
+export function SectionHeader({ title, action, children }: { title: string; action?: React.ReactNode; children?: React.ReactNode }) {
     return (
-        <div className="flex justify-between items-end mb-6 px-1">
-            <div className="space-y-1">
-                {overline && (
-                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] opacity-80 leading-none">
-                        {overline}
-                    </p>
-                )}
-                <h2 className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.25em] leading-none">
-                    {title}
-                </h2>
+        <div className="flex justify-between items-center mb-4 px-1">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                {title}
+            </h2>
+            <div className="flex items-center gap-2">
+                {action}
+                {children}
             </div>
-            {children}
         </div>
     );
 }

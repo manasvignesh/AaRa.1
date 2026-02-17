@@ -31,8 +31,8 @@ export default function WorkoutDetail() {
           <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-2">
             <Info className="w-10 h-10 text-muted-foreground/30" />
           </div>
-          <h2 className="text-xl font-black uppercase tracking-tighter">Session Missing</h2>
-          <Button onClick={() => setLocation("/workouts")} className="rounded-full h-14 px-8 brand-gradient text-white font-black uppercase tracking-widest text-[11px]">Return to Console</Button>
+          <h2 className="text-xl font-black uppercase tracking-tighter">Workout Not Found</h2>
+          <Button onClick={() => setLocation("/workouts")} className="rounded-full h-14 px-8 brand-gradient text-white font-black uppercase tracking-widest text-[11px]">Back to Workouts</Button>
         </div>
       </PageLayout>
     );
@@ -92,12 +92,9 @@ export default function WorkoutDetail() {
         {/* Coach Strategy */}
         {workout.description && (
           <section className="space-y-4">
-            <SectionHeader title="Methodology" />
-            <div className="wellness-card p-8 bg-slate-50 border-slate-100 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-6 opacity-[0.02] -z-10 group-hover:scale-110 transition-transform">
-                <ScrollText className="w-32 h-32" />
-              </div>
-              <p className="text-[15px] text-muted-foreground leading-relaxed font-medium italic">
+            <SectionHeader title="Focus" />
+            <div className="wellness-card p-6 bg-slate-50 border-slate-100 relative overflow-hidden group">
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
                 "{workout.description}"
               </p>
             </div>
@@ -106,7 +103,7 @@ export default function WorkoutDetail() {
 
         {/* Exercises List */}
         <section className="space-y-4">
-          <SectionHeader title="Manifest" />
+          <SectionHeader title="Exercises" />
           <div className="space-y-3">
             {Array.isArray(workout.exercises) && (workout.exercises as any[]).map((ex: any, idx: number) => (
               <motion.div
@@ -135,7 +132,7 @@ export default function WorkoutDetail() {
             {(!workout.exercises || (workout.exercises as any[]).length === 0) && (
               <div className="wellness-card p-10 text-center opacity-40">
                 <Dumbbell className="w-8 h-8 opacity-20 mx-auto mb-2" />
-                <p className="text-[10px] font-black uppercase tracking-widest">No Drills Synchronized</p>
+                <p className="text-[10px] font-black uppercase tracking-widest">No Exercises Found</p>
               </div>
             )}
           </div>
@@ -150,7 +147,7 @@ export default function WorkoutDetail() {
                   className="w-full h-16 rounded-full brand-gradient text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-brand-blue/30 active:scale-95 transition-all flex items-center justify-center gap-2"
                   onClick={() => setLocation(`/workout/${workout.id}/start`)}
                 >
-                  <Play className="w-5 h-5 fill-current" /> Initialize Session
+                  <Play className="w-5 h-5 fill-current" /> Start Workout
                 </button>
                 <button
                   className="h-14 rounded-full bg-slate-100 text-foreground font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
@@ -167,7 +164,7 @@ export default function WorkoutDetail() {
                 disabled={isPending}
               >
                 {isPending ? <Loader2 className="animate-spin w-5 h-5" /> : <X className="w-5 h-5" />}
-                Revert Entry
+                Mark as Incomplete
               </button>
             )}
           </div>

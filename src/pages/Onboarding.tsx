@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { useCreateProfile } from "@/hooks/use-user";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,11 +12,11 @@ import { Loader2, User, Target, Zap, Utensils, Scale, Sparkles, ChevronRight, Ch
 import { cn } from "@/lib/utils";
 
 const steps = [
-  { id: 1, title: "Identity", subtitle: "Define your baseline.", fields: ["displayName", "age", "gender"], icon: User },
-  { id: 2, title: "Body Stats", subtitle: "Biometric calibration.", fields: ["height", "currentWeight"], icon: Scale },
-  { id: 3, title: "Weight Goal", subtitle: "Set your vector.", fields: ["targetWeight", "dailyMealCount"], icon: Target },
-  { id: 4, title: "Lifestyle", subtitle: "Energy expenditure.", fields: ["activityLevel", "timeAvailability", "gymAccess"], icon: Zap },
-  { id: 5, title: "Kitchen", subtitle: "Fuel synchronization.", fields: ["dietaryPreferences", "cookingAccess"], icon: Utensils },
+  { id: 1, title: "Identity", subtitle: "Tell us about yourself.", fields: ["displayName", "age", "gender"], icon: User },
+  { id: 2, title: "Body Stats", subtitle: "Your current metrics.", fields: ["height", "currentWeight"], icon: Scale },
+  { id: 3, title: "Your Goal", subtitle: "Where do you want to be?", fields: ["targetWeight", "dailyMealCount"], icon: Target },
+  { id: 4, title: "Lifestyle", subtitle: "Activity & preferences.", fields: ["activityLevel", "timeAvailability", "gymAccess"], icon: Zap },
+  { id: 5, title: "Kitchen", subtitle: "What do you eat?", fields: ["dietaryPreferences", "cookingAccess"], icon: Utensils },
 ];
 
 const formSchema = z.object({
@@ -66,67 +65,70 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative flex flex-col items-center justify-center p-6 overflow-hidden selection:bg-primary/20">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-brand-blue/5 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
 
-      <div className="max-w-md w-full relative z-10 space-y-8">
-        <div className="space-y-6">
-          <div className="flex justify-between items-center px-1">
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Biosync Initializing</p>
-            <span className="text-[10px] font-black opacity-20 uppercase tracking-widest">{currentStep} / {steps.length}</span>
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="space-y-6 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 mb-4 text-brand-blue">
+            <currentStepData.icon className="w-8 h-8" />
           </div>
 
-          <div className="flex gap-5 items-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/60 backdrop-blur-xl border border-slate-100 flex items-center justify-center text-primary shadow-xl">
-              <currentStepData.icon className="w-7 h-7" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">{currentStepData.title}</h1>
-              <p className="text-xs text-muted-foreground font-medium opacity-60 uppercase tracking-widest">{currentStepData.subtitle}</p>
-            </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">{currentStepData.title}</h1>
+            <p className="text-slate-500 font-medium">{currentStepData.subtitle}</p>
           </div>
+
+          {/* Progress Bar */}
+          <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-brand-blue"
+              initial={{ width: 0 }}
+              animate={{ width: `${(currentStep / steps.length) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Step {currentStep} of {steps.length}</p>
         </div>
 
-        <div className="wellness-card p-10 bg-white/60 backdrop-blur-2xl border-white/40 shadow-2xl min-h-[440px] flex flex-col">
+        {/* Content Card */}
+        <div className="bg-white rounded-[32px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 min-h-[400px] flex flex-col">
           <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="flex-1 flex flex-col justify-center gap-8"
+                exit={{ opacity: 0, x: -20 }}
+                className="flex-1 flex flex-col justify-center gap-6"
               >
                 {currentStep === 1 && (
-                  <div className="space-y-8">
-                    <div className="space-y-3">
-                      <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Display Alias</Label>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Your Name</Label>
                       <Input
-                        className="h-16 rounded-[24px] border border-slate-200 bg-slate-50 px-6 text-xl font-black tracking-tight shadow-inner focus-visible:ring-primary/20 transition-all placeholder:opacity-40"
-                        placeholder="Required"
+                        className="h-14 rounded-2xl border-slate-200 bg-slate-50 px-5 text-lg font-semibold placeholder:text-slate-300 focus-visible:ring-brand-blue"
+                        placeholder="John Doe"
                         {...register("displayName")}
                         autoFocus
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Age</Label>
-                        <Input type="number" className="h-16 rounded-[24px] border border-slate-200 bg-slate-50 px-6 text-xl font-black shadow-inner" {...register("age")} />
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Age</Label>
+                        <Input type="number" className="h-14 rounded-2xl border-slate-200 bg-slate-50 px-5 text-lg font-semibold" {...register("age")} />
                       </div>
-                      <div className="space-y-3">
-                        <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Gender</Label>
-                        <div className="grid grid-cols-2 gap-2 h-16">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</Label>
+                        <div className="flex gap-2">
                           {['male', 'female'].map(g => (
                             <button
                               key={g}
                               type="button"
-                              className={cn("rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all", watch("gender") === g ? "brand-gradient text-white border-none" : "bg-slate-50 border-slate-200 text-muted-foreground/60")}
+                              className={cn("flex-1 h-14 rounded-2xl border-2 font-bold text-xs uppercase tracking-wider transition-all", watch("gender") === g ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-400 hover:border-slate-300")}
                               onClick={() => setValue("gender", g)}
                             >
-                              {g[0]}
+                              {g}
                             </button>
                           ))}
                         </div>
@@ -139,17 +141,17 @@ export default function Onboarding() {
                   <div className="space-y-8">
                     <div className="space-y-4">
                       <div className="flex justify-between px-1">
-                        <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Height</Label>
-                        <span className="text-xl font-black text-primary tracking-tighter">{watch("height")} <span className="text-[10px] opacity-20 uppercase">cm</span></span>
+                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Height</Label>
+                        <span className="text-xl font-bold text-brand-blue tracking-tight">{watch("height")} <span className="text-xs opacity-50 uppercase text-slate-500">cm</span></span>
                       </div>
-                      <input type="range" min="120" max="220" className="w-full accent-primary h-1 bg-slate-200 rounded-full" value={watch("height")} onChange={(e) => setValue("height", parseInt(e.target.value))} />
+                      <input type="range" min="120" max="220" className="w-full accent-brand-blue h-2 bg-slate-100 rounded-full appearance-none" value={watch("height")} onChange={(e) => setValue("height", parseInt(e.target.value))} />
                     </div>
                     <div className="space-y-4">
                       <div className="flex justify-between px-1">
-                        <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Mass</Label>
-                        <span className="text-xl font-black text-primary tracking-tighter">{watch("currentWeight")} <span className="text-[10px] opacity-20 uppercase">kg</span></span>
+                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Weight</Label>
+                        <span className="text-xl font-bold text-brand-blue tracking-tight">{watch("currentWeight")} <span className="text-xs opacity-50 uppercase text-slate-500">kg</span></span>
                       </div>
-                      <input type="range" min="40" max="150" className="w-full accent-primary h-1 bg-slate-200 rounded-full" value={watch("currentWeight")} onChange={(e) => setValue("currentWeight", parseInt(e.target.value))} />
+                      <input type="range" min="40" max="150" className="w-full accent-brand-blue h-2 bg-slate-100 rounded-full appearance-none" value={watch("currentWeight")} onChange={(e) => setValue("currentWeight", parseInt(e.target.value))} />
                     </div>
                   </div>
                 )}
@@ -158,16 +160,16 @@ export default function Onboarding() {
                   <div className="space-y-8">
                     <div className="space-y-4">
                       <div className="flex justify-between px-1">
-                        <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Objective</Label>
-                        <span className="text-xl font-black text-primary tracking-tighter">{watch("targetWeight")} <span className="text-[10px] opacity-20 uppercase">kg</span></span>
+                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Target Weight</Label>
+                        <span className="text-xl font-bold text-brand-blue tracking-tight">{watch("targetWeight")} <span className="text-xs opacity-50 uppercase text-slate-500">kg</span></span>
                       </div>
-                      <input type="range" min="40" max="150" className="w-full accent-primary h-1 bg-slate-200 rounded-full" value={watch("targetWeight")} onChange={(e) => setValue("targetWeight", parseInt(e.target.value))} />
+                      <input type="range" min="40" max="150" className="w-full accent-brand-blue h-2 bg-slate-100 rounded-full appearance-none" value={watch("targetWeight")} onChange={(e) => setValue("targetWeight", parseInt(e.target.value))} />
                     </div>
                     <div className="space-y-4">
-                      <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] text-center block">Daily Cycles</Label>
+                      <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Meals per Day</Label>
                       <div className="flex gap-3">
                         {[3, 4, 5].map(c => (
-                          <button key={c} type="button" className={cn("flex-1 h-16 rounded-2xl font-black text-xl border-2 transition-all", watch("dailyMealCount") === c ? "brand-gradient text-white border-none" : "bg-slate-50 border-slate-200 text-muted-foreground/60")} onClick={() => setValue("dailyMealCount", c)}>{c}</button>
+                          <button key={c} type="button" className={cn("flex-1 h-14 rounded-2xl font-bold text-lg border-2 transition-all", watch("dailyMealCount") === c ? "bg-brand-blue border-brand-blue text-white" : "bg-white border-slate-200 text-slate-400")} onClick={() => setValue("dailyMealCount", c)}>{c}</button>
                         ))}
                       </div>
                     </div>
@@ -176,22 +178,22 @@ export default function Onboarding() {
 
                 {currentStep === 4 && (
                   <div className="space-y-8">
-                    <div className="space-y-4">
-                      <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Metabolic Baseline</Label>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity Level</Label>
                       <Select onValueChange={(v) => setValue("activityLevel", v)} defaultValue={watch("activityLevel")}>
-                        <SelectTrigger className="h-16 rounded-[24px] border border-slate-200 bg-slate-50 px-6 font-black text-[14px] uppercase tracking-widest shadow-inner focus:ring-primary/20">
-                          <SelectValue placeholder="Protocol" />
+                        <SelectTrigger className="h-16 rounded-2xl border-slate-200 bg-slate-50 px-5 font-bold text-sm uppercase tracking-wider">
+                          <SelectValue placeholder="Select Activity" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-[24px] bg-white/95 backdrop-blur-xl border-slate-100 font-black uppercase text-[10px]">
-                          <SelectItem value="sedentary">Low Flux</SelectItem>
-                          <SelectItem value="moderate">Moderate Flux</SelectItem>
-                          <SelectItem value="active">High Flux</SelectItem>
+                        <SelectContent className="rounded-2xl border-slate-100 font-bold uppercase text-xs">
+                          <SelectItem value="sedentary">Sedentary (Office job)</SelectItem>
+                          <SelectItem value="moderate">Moderate (1-3 days/week)</SelectItem>
+                          <SelectItem value="active">Active (5+ days/week)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className={cn("flex items-center gap-4 h-16 px-6 rounded-[24px] border-2 transition-all cursor-pointer", watch("gymAccess") ? "brand-gradient text-white border-none" : "bg-slate-50 border-slate-200 text-muted-foreground/60")} onClick={() => setValue("gymAccess", !watch("gymAccess"))}>
-                      <Zap className="w-5 h-5" />
-                      <span className="font-black text-[11px] uppercase tracking-widest">Gym Access Available</span>
+                    <div className={cn("flex items-center gap-4 h-16 px-6 rounded-2xl border-2 transition-all cursor-pointer", watch("gymAccess") ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-300")} onClick={() => setValue("gymAccess", !watch("gymAccess"))}>
+                      <Zap className={cn("w-5 h-5", watch("gymAccess") ? "fill-amber-500 text-amber-500" : "")} />
+                      <span className="font-bold text-xs uppercase tracking-wider">Gym Access Available</span>
                     </div>
                   </div>
                 )}
@@ -199,26 +201,26 @@ export default function Onboarding() {
                 {currentStep === 5 && (
                   <div className="space-y-8">
                     <div className="space-y-4">
-                      <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] text-center block" >Biochemical Source</Label>
+                      <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2" >Dietary Preference</Label>
                       <div className="flex gap-2">
                         {['veg', 'non-veg', 'egg'].map(opt => (
-                          <button key={opt} type="button" className={cn("flex-1 h-20 rounded-[24px] flex flex-col items-center justify-center font-black text-[9px] uppercase tracking-widest border-2 transition-all gap-2", watch("dietaryPreferences") === opt ? "brand-gradient text-white border-none" : "bg-white/5 border-white/5 text-muted-foreground/40")} onClick={() => setValue("dietaryPreferences", opt)}>
-                            <span className="text-xl">{opt === 'veg' ? '🌿' : opt === 'non-veg' ? '🍖' : '🥚'}</span>
+                          <button key={opt} type="button" className={cn("flex-1 h-24 rounded-2xl flex flex-col items-center justify-center font-bold text-[10px] uppercase tracking-wider border-2 transition-all gap-2", watch("dietaryPreferences") === opt ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400")} onClick={() => setValue("dietaryPreferences", opt)}>
+                            <span className="text-2xl">{opt === 'veg' ? '🌿' : opt === 'non-veg' ? '🍖' : '🥚'}</span>
                             {opt}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <Label className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] text-center block">Synthesis Hub</Label>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Kitchen Access</Label>
                       <Select onValueChange={(v) => setValue("cookingAccess", v)} defaultValue={watch("cookingAccess")}>
-                        <SelectTrigger className="h-16 rounded-[24px] border-none bg-white/5 px-6 font-black text-[14px] uppercase tracking-widest shadow-inner">
-                          <SelectValue placeholder="Access" />
+                        <SelectTrigger className="h-16 rounded-2xl border-slate-200 bg-slate-50 px-5 font-bold text-sm uppercase tracking-wider">
+                          <SelectValue placeholder="Select Access" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-[24px] bg-card/90 backdrop-blur-xl border-white/5 font-black uppercase text-[10px]">
-                          <SelectItem value="full">High Capacity (Kitchen)</SelectItem>
-                          <SelectItem value="basic">Low Capacity (Minimal)</SelectItem>
-                          <SelectItem value="none">Restricted (None)</SelectItem>
+                        <SelectContent className="rounded-2xl border-slate-100 font-bold uppercase text-xs">
+                          <SelectItem value="full">Full Kitchen</SelectItem>
+                          <SelectItem value="basic">Basic (Microwave/Stove)</SelectItem>
+                          <SelectItem value="none">No Kitchen</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -227,18 +229,16 @@ export default function Onboarding() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="flex gap-3 pt-10">
-              <button type="button" onClick={() => setCurrentStep(s => Math.max(s - 1, 1))} disabled={currentStep === 1} className="h-14 w-14 rounded-2xl flex items-center justify-center bg-white/5 text-white/20 disabled:opacity-0 transition-all hover:text-white"><ChevronLeft className="w-6 h-6" /></button>
+            <div className="flex gap-3 pt-8 mt-auto border-t border-slate-50">
+              <button type="button" onClick={() => setCurrentStep(s => Math.max(s - 1, 1))} disabled={currentStep === 1} className="h-14 w-14 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-400 disabled:opacity-0 transition-all hover:bg-slate-200 hover:text-slate-600"><ChevronLeft className="w-6 h-6" /></button>
               {currentStep < steps.length ? (
-                <button type="button" onClick={handleNext} className="flex-1 h-14 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[11px] shadow-xl shadow-brand-blue/20 active:scale-95 transition-all">Next Phase <ChevronRight className="w-4 h-4 ml-2 inline-block" /></button>
+                <button type="button" onClick={handleNext} className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-bold uppercase tracking-widest text-xs shadow-lg shadow-slate-200 active:scale-95 transition-all">Continue <ChevronRight className="w-4 h-4 ml-2 inline-block" /></button>
               ) : (
-                <button type="submit" disabled={isPending} className="flex-1 h-14 rounded-2xl brand-gradient text-white font-black uppercase tracking-widest text-[11px] shadow-xl shadow-brand-blue/30 active:scale-95 transition-all">{isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : <><Sparkles className="w-4 h-4 mr-2 inline-block" /> Synthesize Strategy</>}</button>
+                <button type="submit" disabled={isPending} className="flex-1 h-14 rounded-2xl bg-brand-gradient text-white font-bold uppercase tracking-widest text-xs shadow-lg shadow-brand-blue/30 active:scale-95 transition-all" style={{ background: 'linear-gradient(135deg, #2F80ED 0%, #27AE60 100%)' }}>{isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : <><Sparkles className="w-4 h-4 mr-2 inline-block" /> Generate Plan</>}</button>
               )}
             </div>
           </form>
         </div>
-
-        <p className="text-center text-[8px] font-black text-muted-foreground/10 uppercase tracking-[0.5em] pt-4">Neural Architecture by AARA Intelligence</p>
       </div>
     </div>
   );

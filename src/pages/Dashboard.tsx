@@ -5,12 +5,9 @@ import { useUserProfile } from "@/hooks/use-user";
 import { useMeals } from "@/hooks/use-meals";
 import { PageLayout, SectionHeader } from "@/components/PageLayout";
 import { MacroRing } from "@/components/MacroRing";
-import { Button } from "@/components/ui/button";
-
-import { Loader2, Plus, ChevronRight, CheckCircle, Utensils, ChevronLeft, Droplets, Minus, Zap, Activity, Footprints, Trophy, Search, Clock, ArrowRight, PlayCircle } from "lucide-react";
-import { format, addDays, subDays, isToday, startOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
+import { Loader2, Plus, ChevronRight, Droplets, Minus, Zap, Footprints, Trophy, PlayCircle } from "lucide-react";
+import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -22,10 +19,9 @@ export default function Dashboard() {
   const { mutate: generatePlan, isPending: isGenerating } = useGeneratePlan();
   const { mutate: updateWater } = useUpdateWater();
 
-
   const [generationError, setGenerationError] = useState<string | null>(null);
 
-  // Derive totals from meals state
+  // Derive totals
   const caloriesProgress = meals.reduce((sum: number, m: any) => {
     if (m.consumedAlternative) return sum + (m.alternativeCalories || 0);
     if (m.isConsumed) return sum + (m.calories || 0);
@@ -64,247 +60,178 @@ export default function Dashboard() {
 
   const isHydrated = plan ? (plan.waterIntake || 0) >= 2000 : false;
 
+  const caloriesTarget = plan?.caloriesTarget || 2000;
+  const proteinTarget = plan?.proteinTarget || 150;
+  const remainingCalories = Math.max(0, caloriesTarget - caloriesProgress);
+
   if (userLoading || (planLoading && !plan) || isGenerating) {
     return (
-      <PageLayout
-        header={
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">{format(selectedDate, 'EEEE, MMM do')}</p>
-            <h1 className="text-4xl font-black tracking-tighter text-foreground">Analyzing</h1>
-          </div>
-        }
-      >
-        <div className="flex flex-col items-center justify-center py-20 min-h-[50vh] gap-8 text-center text-foreground">
-          <Loader2 className="w-12 h-12 text-primary animate-spin" />
-          <div className="space-y-2">
-            <h3 className="font-black text-2xl tracking-tighter uppercase opacity-80">Synchronizing</h3>
-            <p className="text-sm text-muted-foreground font-medium animate-pulse">AARA AI is coordinating your biome...</p>
-          </div>
+      <PageLayout>
+        <div className="flex flex-col items-center justify-center h-[80vh] gap-4">
+          <Loader2 className="w-8 h-8 text-brand-blue animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Syncing your plan...</p>
         </div>
       </PageLayout>
     );
   }
 
-  const weekDays = eachDayOfInterval({
-    start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
-    end: addDays(startOfWeek(selectedDate, { weekStartsOn: 1 }), 6)
-  });
-
-  const caloriesTarget = plan?.caloriesTarget || 2000;
-  const proteinTarget = plan?.proteinTarget || 150;
-  const remainingCalories = Math.max(0, caloriesTarget - caloriesProgress);
-
   return (
     <PageLayout
-      maxWidth="md"
       header={
         <div className="flex justify-between items-end">
           <div>
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">
-              {isToday(selectedDate) ? "Current Matrix" : format(selectedDate, 'EEEE, MMM do')}
-            </p>
-            <h1 className="text-4xl font-black tracking-tighter text-foreground">Status</h1>
+            <p className="text-xs font-semibold text-slate-400 mb-1">{format(selectedDate, 'EEEE, MMM do')}</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Hello, {user?.displayName || "Athlete"}
+            </h1>
           </div>
-          <div className="flex items-center gap-2 mb-1">
-            <button
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/60 backdrop-blur-xl border border-slate-100 text-primary hover:bg-white/80 transition-all"
-              onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/60 backdrop-blur-xl border border-slate-100 text-primary hover:bg-white/80 transition-all"
-              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
+            {user?.displayName?.[0]}
           </div>
         </div>
       }
     >
-      <div className="space-y-8 pb-10">
-        {/* Weekly Timeline */}
-        <section>
-          <div className="wellness-card p-3 flex justify-between items-center bg-white/40 backdrop-blur-xl border-white/20 shadow-xl">
-            {weekDays.map((baseDay: Date, idx: number) => {
-              const active = isSameDay(baseDay, selectedDate);
-              const today = isToday(baseDay);
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedDate(baseDay)}
-                  className={cn(
-                    "flex flex-col items-center py-3 px-3 rounded-2xl transition-all w-12",
-                    active ? "brand-gradient text-white shadow-xl scale-105" : "text-muted-foreground/60 hover:text-foreground"
-                  )}
-                >
-                  <span className={cn("text-[8px] font-black uppercase tracking-widest", active ? "text-white/80" : "text-muted-foreground/40")}>
-                    {format(baseDay, "eee")}
-                  </span>
-                  <span className="text-lg font-black tracking-tighter mt-1">{format(baseDay, "d")}</span>
-                  {today && !active && <div className="w-1 h-1 bg-primary rounded-full mt-1" />}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+      <div className="space-y-6">
 
-        {/* Metabolic Core */}
-        <section className="space-y-5">
-          <SectionHeader title="Biosphere Insights" />
-          <div className="wellness-card p-5 flex flex-col items-center group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.02] -z-10 group-hover:scale-110 transition-transform">
-              <Activity className="w-48 h-48" />
+        {/* Main Summary Card */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+          {/* Subtle background blurs */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-blue/5 rounded-full blur-3xl -z-10" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-green/5 rounded-full blur-3xl -z-10" />
+
+          <div className="flex items-center gap-6">
+            <div className="shrink-0">
+              <MacroRing
+                caloriesTarget={caloriesTarget}
+                caloriesCurrent={caloriesProgress}
+                proteinTarget={proteinTarget}
+                proteinCurrent={proteinProgress}
+                size={130}
+              />
             </div>
-
-            <MacroRing
-              caloriesTarget={caloriesTarget}
-              caloriesCurrent={caloriesProgress}
-              proteinTarget={proteinTarget}
-              proteinCurrent={proteinProgress}
-              size={260}
-              strokeWidth={24}
-            />
-
-            <div className="grid grid-cols-2 w-full gap-4 mt-8">
-              <div className="bg-slate-50 p-5 rounded-[24px] border border-slate-100 text-center">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-60">Delta</p>
-                <p className="text-2xl font-black tracking-tighter text-foreground">{remainingCalories}</p>
-                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase mt-1">kcal left</p>
-              </div>
-              <div className="bg-slate-50 p-5 rounded-[24px] border border-slate-100 text-center">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-60">Synthesis</p>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-2xl font-black tracking-tighter">{Math.round(proteinProgress)}</span>
-                  <span className="text-[10px] font-bold text-muted-foreground/40">/{proteinTarget}g</span>
-                </div>
-                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase mt-1">protein</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Hydration */}
-        <section className="space-y-4">
-          <SectionHeader title="Hydration Flow" />
-          <div className="wellness-card p-5 flex items-center justify-between group">
-            <div className="flex items-center gap-5">
-              <div className={cn(
-                "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700",
-                isHydrated ? "brand-gradient text-white shadow-lg" : "bg-slate-100/50 text-primary"
-              )}>
-                <Droplets className={cn("w-7 h-7", isHydrated && "animate-pulse")} />
-              </div>
+            <div className="flex-1 space-y-5">
               <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black tracking-tighter">{plan?.waterIntake || 0}</span>
-                  <span className="text-xs font-bold text-muted-foreground/40">ml</span>
-                </div>
-                <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest mt-1">Target: 2.5 L</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Calories Remaining</p>
+                <p className="text-3xl font-bold text-slate-900 leading-none tracking-tight">{Math.round(remainingCalories)}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSubtractWater}
-                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-muted-foreground flex items-center justify-center transition-all active:scale-95"
-              >
-                <Minus className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleAddWater}
-                className="w-10 h-10 rounded-xl brand-gradient text-white flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-brand-blue/20"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
+              <div className="pt-2 border-t border-slate-50">
+                <div className="flex justify-between items-baseline mb-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Protein Goal</p>
+                  <span className="text-[10px] font-medium text-slate-400">{proteinTarget}g</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-green rounded-full transition-all duration-1000 ease-out" style={{ width: `${(proteinProgress / proteinTarget) * 100}%` }} />
+                </div>
+                <p className="text-right text-[10px] font-bold text-brand-green mt-1">{Math.round(proteinProgress)}g</p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Next Training */}
-        <section className="space-y-4">
-          <SectionHeader title="Training Engine" />
+        {/* Quick Actions Row */}
+        <section className="grid grid-cols-2 gap-4">
+          {/* Hydration Mini-Card */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden group">
+            <div className="absolute inset-0 bg-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+            <div className="flex justify-between items-start relative z-10">
+              <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center transition-all shadow-sm", isHydrated ? "bg-blue-500 text-white shadow-blue-200" : "bg-white border border-slate-100 text-blue-500")}>
+                <Droplets className="w-4 h-4 fill-current" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">H2O</span>
+            </div>
+
+            <div className="relative z-10">
+              <div className="flex items-baseline gap-1 mb-3">
+                <span className="text-xl font-bold text-slate-900">{plan?.waterIntake || 0}</span>
+                <span className="text-xs font-semibold text-slate-400">ml</span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleSubtractWater} className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center hover:bg-slate-50 transition-colors"><Minus className="w-3.5 h-3.5 text-slate-400" /></button>
+                <button onClick={handleAddWater} className="flex-1 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-sm shadow-blue-200"><Plus className="w-4 h-4" /></button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Log Meal */}
+          <Link href="/log-meal">
+            <div className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden cursor-pointer group hover:border-emerald-200 transition-all">
+              <div className="absolute inset-0 bg-emerald-50/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              <div className="flex justify-between items-start relative z-10">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Log</span>
+              </div>
+
+              <div className="relative z-10">
+                <p className="text-sm font-bold text-slate-900 leading-tight mb-1">Track<br />Manual Meal</p>
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Entry</span>
+                  <ChevronRight className="w-3 h-3" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </section>
+
+        {/* Workout Feature */}
+        <section>
+          <SectionHeader title="Training" action={<Link href="/workouts"><span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-brand-blue transition-colors">View All</span></Link>} />
           {workouts.length > 0 ? (
             <Link href={`/workout/${workouts[0].id}`}>
-              <div className="wellness-card p-1 bg-card border-none overflow-hidden cursor-pointer group hover:-translate-y-1 transition-all duration-500">
-                <div className="brand-gradient p-5 text-white relative">
-                  <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-[40px] opacity-40" />
-                  <div className="relative z-10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-70 mb-2">Primary Protocol</p>
-                      <h3 className="text-2xl font-black tracking-tighter leading-none mb-4">{workouts[0].name}</h3>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                          <Clock className="w-3 h-3" /> {workouts[0].duration}m
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                          <Zap className="w-3 h-3" /> {workouts[0].difficulty}
-                        </div>
-                      </div>
+              <div className="group bg-white rounded-[24px] p-1 shadow-lg shadow-slate-200/50 cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden border border-slate-100">
+                <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 opacity-50" />
+
+                {/* Decorative blur */}
+                <div className="absolute top-0 right-0 w-48 h-48 bg-brand-blue/5 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
+
+                <div className="relative z-10 p-5 rounded-[22px] flex justify-between items-center h-28">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold uppercase tracking-wider text-slate-500 border border-slate-200">{workouts[0].difficulty}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold uppercase tracking-wider text-slate-500 border border-slate-200">{workouts[0].duration} min</span>
                     </div>
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <PlayCircle className="w-6 h-6 fill-current" />
-                    </div>
+                    <h3 className="text-lg font-bold tracking-tight text-slate-900 mb-0.5">{workouts[0].name}</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Start Session</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 transition-all shadow-md shadow-blue-200">
+                    <PlayCircle className="w-6 h-6 text-white fill-current" />
                   </div>
                 </div>
               </div>
             </Link>
           ) : (
-            <div className="wellness-card p-10 flex flex-col items-center justify-center text-center opacity-40">
-              <Clock className="w-8 h-8 opacity-20 mb-2" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Regeneration Active</p>
+            <div className="bg-slate-50 rounded-3xl p-6 text-center border border-slate-100 border-dashed h-24 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <Zap className="w-5 h-5 text-slate-300" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rest Day Active</p>
+              </div>
             </div>
           )}
         </section>
 
-        {/* Nutrition Summary */}
-        <section className="space-y-4">
-          <SectionHeader title="Fuel Management" />
-          <div className="wellness-card p-5 bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl flex items-center justify-between group">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-primary shadow-sm">
-                <Utensils className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1 opacity-70">Daily Fuel</p>
-                <h4 className="text-lg font-black tracking-tight leading-none mb-1 text-foreground">
-                  {meals.length > 0 ? `${meals.length} Meals Planned` : "No Meals Planned"}
-                </h4>
-                {meals.length > 0 && (
-                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest leading-none">
-                    Next: {meals[0].name}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <Link href="/meals">
-              <button className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-foreground flex items-center justify-center transition-all active:scale-95 group-hover:bg-primary group-hover:text-white border border-slate-200 group-hover:border-primary">
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </Link>
-          </div>
-        </section>
-
-        {/* Quick Stats */}
+        {/* Stats Grid */}
         <section className="grid grid-cols-2 gap-4">
           {[
-            { label: "Steps", val: "8,2K", icon: Footprints, color: "text-orange-500 bg-orange-500/10" },
-            { label: "Streak", val: "12 D", icon: Trophy, color: "text-amber-500 bg-amber-500/10" }
+            { label: "Daily Steps", val: "8,204", icon: Footprints, color: "text-orange-600", bg: "bg-orange-50 border-orange-100" },
+            { label: "Day Streak", val: "12 Days", icon: Trophy, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" }
           ].map((stat, i) => (
-            <div key={i} className="wellness-card p-4 flex items-center gap-4 bg-white/2 border-white/5">
-              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", stat.color)}>
-                <stat.icon className="w-5 h-5" />
+            <div key={i} className={cn("bg-white p-5 rounded-3xl border flex flex-col justify-center gap-3 shadow-sm", stat.bg)}>
+              <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center bg-white shadow-sm", stat.color)}>
+                <stat.icon className="w-5 h-5 fill-current opacity-20" />
+                <stat.icon className="w-5 h-5 absolute" />
               </div>
               <div>
-                <p className="text-xl font-black tracking-tighter leading-none">{stat.val}</p>
-                <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest mt-1">{stat.label}</p>
+                <p className="text-lg font-bold text-slate-900 leading-tight tracking-tight">{stat.val}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-80">{stat.label}</p>
               </div>
             </div>
           ))}
         </section>
-      </div >
 
-
-    </PageLayout >
+      </div>
+    </PageLayout>
   );
 }

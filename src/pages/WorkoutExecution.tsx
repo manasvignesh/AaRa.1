@@ -126,7 +126,7 @@ export default function WorkoutExecution() {
               <XCircle className="w-5 h-5" />
             </button>
             <div>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-0.5">Execution Phase</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-0.5">Workout</p>
               <p className="text-[12px] font-bold text-muted-foreground uppercase opacity-40">{workout.name}</p>
             </div>
           </div>
@@ -158,11 +158,11 @@ export default function WorkoutExecution() {
                   <CheckCircle2 className="w-12 h-12 text-white" />
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Victory Synchronized</h2>
-                  <p className="text-sm text-muted-foreground font-medium max-w-[240px] mx-auto opacity-60">Session concluded successfully. Biometric data initialized for processing.</p>
+                  <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Workout Completed</h2>
+                  <p className="text-sm text-muted-foreground font-medium max-w-[240px] mx-auto opacity-60">Great session. Your progress has been saved.</p>
                 </div>
                 <button className="w-full h-16 rounded-full brand-gradient text-white font-black uppercase tracking-widest text-sm shadow-xl" onClick={() => { completeWorkout({ id: workout.id, isCompleted: true, date: dateStr }); setLocation("/dashboard"); }}>
-                  Archive Session
+                  Finish
                 </button>
               </motion.div>
             ) : (
@@ -170,9 +170,9 @@ export default function WorkoutExecution() {
                 <div className={cn("wellness-card p-12 text-center space-y-10 transition-all border-slate-100 shadow-2xl", isResting ? "bg-primary/5 ring-2 ring-primary/20" : "bg-white/60")}>
                   <div className="space-y-3">
                     <span className={cn("inline-block px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em]", isResting ? "brand-gradient text-white" : "bg-slate-100 text-primary")}>
-                      {isResting ? "Bio Recovery" : currentExercise?.phase || "Active"}
+                      {isResting ? "Rest" : currentExercise?.phase || "Active"}
                     </span>
-                    <h2 className="text-4xl font-black tracking-tighter leading-none uppercase">{isResting ? "Breathe Deep" : currentExercise?.name}</h2>
+                    <h2 className="text-4xl font-black tracking-tighter leading-none uppercase">{isResting ? "Breathe" : currentExercise?.name}</h2>
                   </div>
 
                   <div className="flex flex-col items-center">
@@ -187,7 +187,7 @@ export default function WorkoutExecution() {
                   )}
                   {isResting && (
                     <div className="animate-pulse">
-                      <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] mb-2">Initialize Next</p>
+                      <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] mb-2">Up Next</p>
                       <p className="text-xl font-black uppercase tracking-tighter text-primary">{exercises[currentIndex + 1]?.name}</p>
                     </div>
                   )}
@@ -195,19 +195,43 @@ export default function WorkoutExecution() {
 
                 <div className="space-y-4">
                   {!isRunning && totalElapsed === 0 ? (
-                    <button className="w-full h-16 rounded-full brand-gradient text-white font-black uppercase tracking-widest text-sm shadow-xl flex items-center justify-center gap-3" onClick={handleStart}>
-                      <PlayCircle className="w-6 h-6" /> Initialize Energy
+                    <button className="w-full h-16 rounded-full brand-gradient text-white font-black uppercase tracking-widest text-sm shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all" onClick={handleStart}>
+                      <PlayCircle className="w-6 h-6 stroke-[3px]" /> Start Workout
                     </button>
                   ) : (
-                    <div className="space-y-3">
-                      <button className="w-full h-16 rounded-full bg-slate-100 border border-slate-200 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2" onClick={() => setIsRunning(!isRunning)}>
-                        {isRunning ? <><Pause className="w-4 h-4" /> Suspend Session</> : <><Sparkles className="w-4 h-4" /> Resume Flux</>}
+                    <div className="grid grid-cols-2 gap-3">
+                      <button className="h-16 rounded-[24px] bg-slate-100 border border-slate-200 font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-200 transition-all flex flex-col items-center justify-center gap-1" onClick={() => { setIsRunning(false); if (currentIndex > 0) { setIsResting(false); setCurrentIndex(i => i - 1); setTimeRemaining(exercises[currentIndex - 1]?.duration || 30); } }}>
+                        <SkipForward className="w-5 h-5 rotate-180 mb-0.5" />
+                        Previous
                       </button>
-                      <button className="w-full h-12 rounded-full text-muted-foreground/40 font-black uppercase tracking-widest text-[10px]" onClick={() => { if (isResting) { setIsResting(false); setCurrentIndex(i => i + 1); setTimeRemaining(exercises[currentIndex + 1]?.duration || 0); } else setTimeRemaining(1); }}>
-                        Skip Drill
+
+                      <button className={cn("h-16 rounded-[24px] font-black uppercase tracking-widest text-[10px] text-white transition-all flex flex-col items-center justify-center gap-1 shadow-lg", isRunning ? "bg-amber-400 shadow-amber-200" : "brand-gradient shadow-brand-blue/30")} onClick={() => setIsRunning(!isRunning)}>
+                        {isRunning ? <><Pause className="w-5 h-5 mb-0.5" /> Pause</> : <><PlayCircle className="w-5 h-5 mb-0.5" /> Resume</>}
+                      </button>
+
+                      <button className="col-span-2 h-12 rounded-full text-slate-400 font-bold uppercase tracking-widest text-[10px] hover:text-slate-600 transition-colors flex items-center justify-center gap-2" onClick={() => { if (isResting) { setIsResting(false); setCurrentIndex(i => i + 1); setTimeRemaining(exercises[currentIndex + 1]?.duration || 0); } else setTimeRemaining(1); }}>
+                        Skip Current <SkipForward className="w-3 h-3" />
                       </button>
                     </div>
                   )}
+
+                  {/* Exercise List Trigger */}
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-4">Workout Plan</p>
+                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                      {exercises.map((ex: any, idx: number) => (
+                        <div key={idx} onClick={() => { setCurrentIndex(idx); setIsResting(false); setTimeRemaining(ex.duration); setIsRunning(false); }} className={cn("flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border", idx === currentIndex ? "bg-brand-blue/5 border-brand-blue/20" : "hover:bg-slate-50 border-transparent")}>
+                          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", idx === currentIndex ? "bg-brand-blue text-white" : "bg-slate-100 text-slate-400")}>
+                            {idx < currentIndex ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
+                          </div>
+                          <div className="flex-1">
+                            <p className={cn("text-xs font-bold leading-none", idx === currentIndex ? "text-brand-blue" : "text-slate-600")}>{ex.name}</p>
+                          </div>
+                          <p className="text-[10px] font-mono text-slate-400">{Math.floor(ex.duration / 60)}:{(ex.duration % 60).toString().padStart(2, '0')}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -223,12 +247,12 @@ export default function WorkoutExecution() {
                 <AlertCircle className="w-8 h-8 text-orange-500" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-black tracking-tighter uppercase">Suspend Early?</h3>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-60">Biometric synchronization is incomplete. Every completed drill contributes to your neural evolution.</p>
+                <h3 className="text-2xl font-black tracking-tighter uppercase">End Workout?</h3>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-60">You haven't finished all exercises yet. This will save your current progress.</p>
               </div>
               <div className="flex flex-col gap-3">
-                <button className="h-14 rounded-full brand-gradient text-white font-black text-xs uppercase tracking-widest" onClick={() => setShowEndConfirm(false)}>Maintain Flux</button>
-                <button className="h-14 rounded-full bg-slate-100 text-red-500 font-black text-xs uppercase tracking-widest hover:bg-slate-200" onClick={() => { completeWorkout({ id: workout.id, isCompleted: true, date: dateStr }); setLocation("/dashboard"); }}>Terminate Session</button>
+                <button className="h-14 rounded-full brand-gradient text-white font-black text-xs uppercase tracking-widest" onClick={() => setShowEndConfirm(false)}>Resume</button>
+                <button className="h-14 rounded-full bg-slate-100 text-red-500 font-black text-xs uppercase tracking-widest hover:bg-slate-200" onClick={() => { completeWorkout({ id: workout.id, isCompleted: true, date: dateStr }); setLocation("/dashboard"); }}>End Workout</button>
               </div>
             </motion.div>
           </div>

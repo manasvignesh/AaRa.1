@@ -1,28 +1,25 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { healthService, ActivityStats } from "@/lib/health";
-import { Play, Pause, MapPin, Trophy, Footprints, Flame, Timer, Navigation as NavIcon, Target, ChevronRight, Zap } from "lucide-react";
+import { Play, Pause, MapPin, Trophy, Footprints, Flame, Timer, Navigation as NavIcon, Zap, ChevronRight, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { PageLayout, SectionHeader } from "@/components/PageLayout";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-// Helper for Circular Progress (Premium Version)
-function CircleProgress({ value, max, size = 220, strokeWidth = 18, children, className }: any) {
+// Clean minimal circular progress
+function CircleProgress({ value, max, size = 180, strokeWidth = 12, children }: any) {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const percentage = Math.min(value, max) / max;
-    const offset = circumference - percentage * circumference;
 
     return (
-        <div className={cn("relative flex items-center justify-center", className)} style={{ width: size, height: size }}>
-            <svg width={size} height={size} className="transform -rotate-90 drop-shadow-sm">
+        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+            <svg width={size} height={size} className="transform -rotate-90">
                 <circle
                     cx={size / 2}
                     cy={size / 2}
@@ -30,21 +27,20 @@ function CircleProgress({ value, max, size = 220, strokeWidth = 18, children, cl
                     stroke="currentColor"
                     strokeWidth={strokeWidth}
                     fill="transparent"
-                    className="text-primary/5"
+                    className="text-slate-100"
                 />
                 <motion.circle
                     initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset: offset }}
+                    animate={{ strokeDashoffset: circumference - percentage * circumference }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
                     cx={size / 2}
                     cy={size / 2}
                     r={radius}
-                    stroke="currentColor"
+                    stroke="hsl(var(--brand-blue))"
                     strokeWidth={strokeWidth}
                     fill="transparent"
                     strokeDasharray={circumference}
                     strokeLinecap="round"
-                    className="text-primary transition-all duration-1000 ease-in-out"
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -68,17 +64,16 @@ export default function WalkRunPage() {
     const [isGpsActive, setIsGpsActive] = useState(false);
     const [currentLocation, setCurrentLocation] = useState<GeolocationPosition | null>(null);
 
-    // Server state (Persisted & Gamification)
+    // Server state
     const { data: serverData } = useQuery<{ activity: ActivityStats | null, gamification: any }>({
         queryKey: ["/api/activity/today"],
-        refetchInterval: 5000 // Poll every 5s for gamification sync
+        refetchInterval: 5000
     });
 
     const { data: leaderboard } = useQuery<any[]>({
         queryKey: ["/api/leaderboard", "steps"],
     });
 
-    // Subscribe to Health Service
     useEffect(() => {
         const unsub = healthService.subscribe((newStats) => {
             setStats(newStats);
@@ -107,230 +102,174 @@ export default function WalkRunPage() {
     };
 
     const gamification = serverData?.gamification || { xp: 0, level: 1, badges: [] };
-    const badges = gamification.badges || [];
 
     return (
         <PageLayout
             header={
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-[13px] font-semibold text-primary uppercase tracking-wider mb-1">Active Living</p>
-                        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Step Tracker</h1>
+                        <p className="text-xs font-semibold text-slate-400 mb-1">Activity</p>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Activity</h1>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full border border-primary/10">
-                            <Zap className="w-3.5 h-3.5 text-primary fill-current" />
-                            <span className="text-sm font-black text-primary uppercase tracking-tighter">LVL {gamification.level}</span>
+                        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                            <Zap className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                            <span className="text-xs font-bold text-slate-700">LVL {gamification.level}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{gamification.xp} XP</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{gamification.xp} XP</p>
                     </div>
                 </div>
             }
         >
             <Tabs defaultValue="activity" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-8 bg-secondary/30 p-1.5 rounded-[20px] h-14">
-                    <TabsTrigger value="activity" className="rounded-2xl font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm">Summary</TabsTrigger>
-                    <TabsTrigger value="run" className="rounded-2xl font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm">Live Track</TabsTrigger>
-                    <TabsTrigger value="leaderboard" className="rounded-2xl font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm">Social</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100 p-1 rounded-2xl h-12">
+                    <TabsTrigger value="activity" className="rounded-xl font-bold text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm text-slate-500 data-[state=active]:text-slate-900">Summary</TabsTrigger>
+                    <TabsTrigger value="run" className="rounded-xl font-bold text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm text-slate-500 data-[state=active]:text-slate-900">GPS Run</TabsTrigger>
+                    <TabsTrigger value="leaderboard" className="rounded-xl font-bold text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm text-slate-500 data-[state=active]:text-slate-900">Social</TabsTrigger>
                 </TabsList>
 
                 {/* ACTIVITY TAB */}
-                <TabsContent value="activity" className="space-y-10 focus-visible:outline-none">
-                    <section className="flex flex-col items-center">
-                        <CircleProgress value={stats.steps} max={10000} className="mb-10 group">
+                <TabsContent value="activity" className="space-y-8 focus-visible:outline-none">
+                    <section className="flex flex-col items-center py-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                        <CircleProgress value={stats.steps} max={10000}>
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="flex flex-col items-center"
                             >
-                                <div className="w-14 h-14 rounded-3xl bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                                    <Footprints className="w-7 h-7" />
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mb-2 text-brand-blue">
+                                    <Footprints className="w-5 h-5" />
                                 </div>
-                                <span className="text-5xl font-black tabular-nums tracking-tighter">{stats.steps.toLocaleString()}</span>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Steps Today</span>
+                                <span className="text-4xl font-bold text-slate-900 tracking-tight">{stats.steps.toLocaleString()}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Steps</span>
                             </motion.div>
                         </CircleProgress>
 
-                        <div className="grid grid-cols-3 gap-4 w-full">
-                            <div className="wellness-card p-4 flex flex-col items-center justify-center bg-card shadow-sm group hover:border-orange-200 transition-colors">
-                                <Flame className="w-5 h-5 text-orange-500 mb-2 group-hover:animate-bounce" />
-                                <span className="text-xl font-black tabular-nums tracking-tight">{Math.floor(stats.calories)}</span>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Calories</span>
+                        <div className="grid grid-cols-3 gap-6 w-full px-6 mt-8">
+                            <div className="flex flex-col items-center justify-center gap-1">
+                                <Flame className="w-5 h-5 text-orange-500 mb-1" />
+                                <span className="text-lg font-bold text-slate-900">{Math.floor(stats.calories)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kcal</span>
                             </div>
-                            <div className="wellness-card p-4 flex flex-col items-center justify-center bg-card shadow-sm group hover:border-blue-200 transition-colors">
-                                <MapPin className="w-5 h-5 text-blue-500 mb-2 group-hover:animate-bounce" />
-                                <span className="text-xl font-black tabular-nums tracking-tight">{(stats.distance / 1000).toFixed(2)}</span>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Km</span>
+                            <div className="flex flex-col items-center justify-center gap-1 border-x border-slate-100 px-4">
+                                <MapPin className="w-5 h-5 text-blue-500 mb-1" />
+                                <span className="text-lg font-bold text-slate-900">{(stats.distance / 1000).toFixed(2)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Km</span>
                             </div>
-                            <div className="wellness-card p-4 flex flex-col items-center justify-center bg-card shadow-sm group hover:border-emerald-200 transition-colors">
-                                <Timer className="w-5 h-5 text-emerald-500 mb-2 group-hover:animate-bounce" />
-                                <span className="text-xl font-black tabular-nums tracking-tight">{Math.floor(stats.activeTime)}</span>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Mins</span>
+                            <div className="flex flex-col items-center justify-center gap-1">
+                                <Timer className="w-5 h-5 text-emerald-500 mb-1" />
+                                <span className="text-lg font-bold text-slate-900">{Math.floor(stats.activeTime)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mins</span>
                             </div>
                         </div>
                     </section>
-
-                    <section className="space-y-4">
-                        <SectionHeader title="Achievements & Badges" />
-                        <div className="grid grid-cols-3 gap-4">
-                            {!badges.length && (
-                                <div className="col-span-3 wellness-card p-10 border-dashed bg-card/10 flex flex-col items-center justify-center text-center opacity-60">
-                                    <Trophy className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Walk more to unlock badges</p>
-                                </div>
-                            )}
-                            {badges.includes("5k_club") && (
-                                <div className="wellness-card p-5 flex flex-col items-center justify-center bg-yellow-50 shadow-sm border-yellow-100 gap-3 group hover:scale-105 transition-transform">
-                                    <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-200 shadow-inner">
-                                        <Trophy className="w-6 h-6 text-yellow-600" />
-                                    </div>
-                                    <span className="text-[11px] font-black text-center text-yellow-800 uppercase tracking-tighter leading-tight">5K Step<br />Fighter</span>
-                                </div>
-                            )}
-                            {badges.includes("10k_club") && (
-                                <div className="wellness-card p-5 flex flex-col items-center justify-center bg-blue-50 shadow-sm border-blue-100 gap-3 group hover:scale-105 transition-transform">
-                                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-200 shadow-inner">
-                                        <Trophy className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <span className="text-[11px] font-black text-center text-blue-800 uppercase tracking-tighter leading-tight">10K Step<br />Master</span>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                    <div className="bg-primary/5 p-6 rounded-[32px] border border-primary/10 text-center">
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                            AARA tracks your activity in the background. <br />
-                            Switch to <strong>Live Track</strong> for GPS-accurate run mapping.
-                        </p>
-                    </div>
                 </TabsContent>
 
                 {/* RUN TAB */}
                 <TabsContent value="run" className="space-y-6 focus-visible:outline-none">
-                    <div className="wellness-card h-[460px] relative overflow-hidden flex flex-col bg-slate-50 border-none shadow-xl">
-                        {isGpsActive ? (
-                            <div className="flex-1 flex flex-col items-center justify-center relative">
-                                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_hsl(var(--primary))_0%,_transparent_70%)] animate-pulse" />
-
-                                <div className="text-center z-10 p-8">
-                                    <div className="relative mb-6">
-                                        <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                                        <NavIcon className="w-14 h-14 text-primary relative mx-auto" />
-                                    </div>
-                                    <h3 className="text-2xl font-black tracking-tighter mb-1">Session Active</h3>
-                                    <p className="text-[11px] text-primary font-bold uppercase tracking-[0.15em] mb-6">Tracking Live Route</p>
-
-                                    <div className="grid grid-cols-2 gap-4 mb-8">
-                                        <div className="bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-white shadow-sm">
-                                            <p className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest mb-1">Latency</p>
-                                            <p className="text-sm font-bold font-mono">{currentLocation?.coords.latitude.toFixed(4) || "..."}</p>
-                                        </div>
-                                        <div className="bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-white shadow-sm">
-                                            <p className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest mb-1">Heading</p>
-                                            <p className="text-sm font-bold font-mono">{currentLocation?.coords.longitude.toFixed(4) || "..."}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="text-6xl font-black tracking-tighter tabular-nums flex items-baseline justify-center gap-2">
-                                        {(stats.distance / 1000).toFixed(2)}
-                                        <span className="text-lg font-bold text-muted-foreground tracking-normal">km</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                                <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center mb-6 border border-border/10">
-                                    <MapPin className="w-10 h-10 text-muted-foreground/30" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-2">GPS Run Tracking</h3>
-                                <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed mx-auto">
-                                    Get precise distance and route mapping for your outdoor runs or walks.
-                                </p>
+                    <div className="bg-white rounded-[32px] overflow-hidden flex flex-col shadow-xl shadow-slate-200/50 relative min-h-[400px] border border-slate-100">
+                        {/* Map Placeholder or Gradient */}
+                        <div className="absolute inset-0 bg-slate-50/50 z-0" />
+                        {isGpsActive && (
+                            <div className="absolute inset-0 opacity-10">
+                                {/* Animated radar effect for authenticity */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-brand-blue rounded-full animate-ping" />
                             </div>
                         )}
 
-                        <div className="p-8 bg-white/50 backdrop-blur-lg border-t border-white/50">
+                        <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-6">
+                            {isGpsActive ? (
+                                <>
+                                    <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-6 animate-pulse">
+                                        <div className="w-16 h-16 rounded-full bg-brand-blue flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                            <NavIcon className="w-8 h-8 fill-current" />
+                                        </div>
+                                    </div>
+                                    <h3 className="text-3xl font-bold tracking-tight mb-1 text-slate-900">{(stats.distance / 1000).toFixed(2)} km</h3>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Tracking Active</p>
+
+                                    <div className="grid grid-cols-2 gap-4 w-full">
+                                        <div className="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Time</p>
+                                            <p className="text-xl font-mono font-bold text-slate-900">{Math.floor(stats.activeTime)}:00</p>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pace</p>
+                                            <p className="text-xl font-mono font-bold text-slate-900">5:30 <span className="text-[10px] text-slate-400">/km</span></p>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-6 border border-slate-100">
+                                        <MapPin className="w-8 h-8 text-slate-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2 text-slate-900">Outdoor Run</h3>
+                                    <p className="text-sm text-slate-400 max-w-[240px] text-center leading-relaxed">
+                                        Start GPS tracking to map your route and calculate precise distance.
+                                    </p>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 relative z-20">
                             <Button
                                 size="lg"
                                 className={cn(
-                                    "w-full h-16 rounded-full text-lg font-bold shadow-lg transition-all active:scale-[0.98]",
+                                    "w-full h-16 rounded-2xl text-base font-bold shadow-lg transition-all active:scale-[0.98]",
                                     isGpsActive
-                                        ? "bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white border-none"
-                                        : "brand-gradient text-white shadow-brand-blue/20"
+                                        ? "bg-red-500 hover:bg-red-600 text-white"
+                                        : "bg-brand-blue hover:bg-blue-600 text-white"
                                 )}
                                 onClick={toggleGps}
                             >
                                 {isGpsActive ? (
-                                    <>Stop and Save Run</>
+                                    <>Stop Session <Pause className="w-4 h-4 ml-2 fill-current" /></>
                                 ) : (
-                                    <>Start New Session</>
+                                    <>Start Tracking <Play className="w-4 h-4 ml-2 fill-current" /></>
                                 )}
                             </Button>
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 wellness-card p-5 bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-500/5">
-                        <Target className="w-5 h-5 text-primary" />
-                        <p className="text-xs font-bold text-primary/80 uppercase tracking-wider">Outdoor tracking increases XP gains</p>
                     </div>
                 </TabsContent>
 
                 {/* LEADERBOARD TAB */}
                 <TabsContent value="leaderboard" className="focus-visible:outline-none">
-                    <section className="space-y-4 pb-20">
-                        <SectionHeader title="Community Ranks" />
-                        <div className="wellness-card bg-card border-none shadow-sm overflow-hidden">
+                    <section className="space-y-4">
+                        <SectionHeader title="Top Movers" />
+                        <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
                             <ScrollArea className="h-[500px]">
-                                <div className="p-2 space-y-2">
+                                <div className="p-2 space-y-1">
                                     {leaderboard?.map((user: any, index: number) => (
                                         <div
                                             key={index}
                                             className={cn(
-                                                "flex items-center p-4 rounded-[20px] transition-colors group",
-                                                index === 0 ? "bg-yellow-50/50 border border-yellow-100" : "hover:bg-secondary/30"
+                                                "flex items-center p-3 rounded-2xl transition-colors",
+                                                index === 0 ? "bg-amber-50" : "hover:bg-slate-50"
                                             )}
                                         >
                                             <div className={cn(
-                                                "w-10 flex items-center justify-center font-black italic text-lg",
-                                                index === 0 ? "text-yellow-600" : "text-muted-foreground/30"
+                                                "w-8 flex items-center justify-center font-bold text-sm",
+                                                index === 0 ? "text-amber-600" : "text-slate-400"
                                             )}>
                                                 {index + 1}
                                             </div>
-                                            <div className="relative">
-                                                <Avatar className="h-12 w-12 border-2 border-white shadow-sm overflow-hidden">
-                                                    <AvatarImage src={user.profileImage} className="object-cover" />
-                                                    <AvatarFallback className="bg-secondary font-black text-xs">
-                                                        {user.firstName?.[0]}{user.lastName?.[0]}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                {index === 0 && (
-                                                    <div className="absolute -top-1 -right-1 bg-yellow-400 p-0.5 rounded-full shadow-sm text-yellow-900">
-                                                        <Trophy className="w-3 h-3 fill-current" />
-                                                    </div>
-                                                )}
+                                            <Avatar className="h-10 w-10 border border-slate-100">
+                                                <AvatarImage src={user.profileImage} className="object-cover" />
+                                                <AvatarFallback className="bg-slate-100 font-bold text-xs text-slate-600">
+                                                    {user.firstName?.[0]}{user.lastName?.[0]}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="ml-4 flex-1">
+                                                <p className="font-bold text-sm text-slate-900">{user.firstName} {user.lastName}</p>
+                                                <p className="text-xs font-medium text-slate-500">{user.value?.toLocaleString()} steps</p>
                                             </div>
-                                            <div className="ml-5 flex-1">
-                                                <p className="font-bold text-[15px] tracking-tight">{user.firstName} {user.lastName}</p>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <Badge variant="outline" className="text-[9px] font-black uppercase py-0 h-4 border-primary/20 bg-primary/5 text-primary">
-                                                        ELITE
-                                                    </Badge>
-                                                    <span className="text-xs font-black text-muted-foreground group-hover:text-foreground transition-colors">
-                                                        {user.value?.toLocaleString()} steps
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ChevronRight className="w-5 h-5 text-muted-foreground/20 group-hover:text-primary transition-all group-hover:translate-x-1" />
+                                            {index === 0 && <Trophy className="w-4 h-4 text-amber-500" />}
                                         </div>
                                     ))}
                                     {(!leaderboard || leaderboard.length === 0) && (
-                                        <div className="py-20 text-center px-10">
-                                            <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
-                                                <Zap className="w-8 h-8 text-muted-foreground/20" />
-                                            </div>
-                                            <h4 className="text-sm font-black text-muted-foreground uppercase tracking-widest">No Activity Recorded</h4>
-                                            <p className="text-xs text-muted-foreground mt-2 font-medium">Be the first to step onto the board!</p>
+                                        <div className="py-12 text-center px-10">
+                                            <p className="text-sm font-bold text-slate-400">No data yet.</p>
                                         </div>
                                     )}
                                 </div>

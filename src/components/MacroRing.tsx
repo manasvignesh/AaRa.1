@@ -6,7 +6,6 @@ interface MacroRingProps {
   proteinTarget: number;
   proteinCurrent: number;
   size?: number;
-  strokeWidth?: number;
 }
 
 export function MacroRing({
@@ -14,15 +13,17 @@ export function MacroRing({
   caloriesCurrent,
   proteinTarget,
   proteinCurrent,
-  size = 240,
-  strokeWidth = 20
+  size = 180,
 }: MacroRingProps) {
+  const strokeWidth = 12;
+  const gap = 4;
+
   const caloriesPercentage = Math.min(100, (caloriesCurrent / caloriesTarget) * 100);
   const proteinPercentage = Math.min(100, (proteinCurrent / proteinTarget) * 100);
 
   const center = size / 2;
   const caloriesRadius = (size / 2) - (strokeWidth / 2);
-  const proteinRadius = caloriesRadius - strokeWidth - 4;
+  const proteinRadius = caloriesRadius - strokeWidth - gap;
 
   const caloriesCircumference = 2 * Math.PI * caloriesRadius;
   const proteinCircumference = 2 * Math.PI * proteinRadius;
@@ -30,7 +31,7 @@ export function MacroRing({
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg className="w-full h-full transform -rotate-90">
-        {/* Calories Background */}
+        {/* Calories Track */}
         <circle
           cx={center}
           cy={center}
@@ -38,24 +39,24 @@ export function MacroRing({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="transparent"
-          className="text-primary/10"
+          className="text-slate-100"
         />
-        {/* Calories Ring */}
+        {/* Calories Indicator */}
         <motion.circle
           initial={{ strokeDashoffset: caloriesCircumference }}
           animate={{ strokeDashoffset: caloriesCircumference - (caloriesPercentage / 100) * caloriesCircumference }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
           cx={center}
           cy={center}
           r={caloriesRadius}
-          stroke="hsl(var(--primary))"
+          stroke="hsl(var(--brand-blue))"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeLinecap="round"
           style={{ strokeDasharray: caloriesCircumference }}
         />
 
-        {/* Protein Background */}
+        {/* Protein Track */}
         <circle
           cx={center}
           cy={center}
@@ -63,13 +64,13 @@ export function MacroRing({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="transparent"
-          className="text-brand-green/10"
+          className="text-slate-100"
         />
-        {/* Protein Ring */}
+        {/* Protein Indicator */}
         <motion.circle
           initial={{ strokeDashoffset: proteinCircumference }}
           animate={{ strokeDashoffset: proteinCircumference - (proteinPercentage / 100) * proteinCircumference }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
           cx={center}
           cy={center}
           r={proteinRadius}
@@ -82,10 +83,12 @@ export function MacroRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-4xl font-black tracking-tighter text-foreground">
-          {Math.round(caloriesPercentage)}%
-        </span>
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Daily Progress</span>
+        <div className="flex flex-col items-center">
+          <span className="text-3xl font-bold tracking-tight text-slate-800">
+            {Math.round(caloriesPercentage)}%
+          </span>
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Daily Goal</span>
+        </div>
       </div>
     </div>
   );
