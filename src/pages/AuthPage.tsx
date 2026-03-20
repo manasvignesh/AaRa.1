@@ -1,215 +1,161 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
+import { Loader2, Sparkles } from "lucide-react";
+
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Mail, Lock, User as UserIcon, ChevronRight, Fingerprint, Key, AtSign } from "lucide-react";
-import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
 import aaraLogo from "@/assets/aara-logo.png";
-import { cn } from "@/lib/utils";
 
 export default function AuthPage() {
-    const { login, register, isLoggingIn, isRegistering } = useAuth();
-    const [, setLocation] = useLocation();
-    const searchParams = new URLSearchParams(window.location.search);
-    const initialTab = searchParams.get("tab") === "register" ? "register" : "login";
-    const [activeTab, setActiveTab] = useState(initialTab);
+  const { login, register, isLoggingIn, isRegistering } = useAuth();
+  const [, setLocation] = useLocation();
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialTab = searchParams.get("tab") === "register" ? "register" : "login";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
-    // Login state
-    const [loginEmail, setLoginEmail] = useState("");
-    const [loginPassword, setLoginPassword] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regFirstName, setRegFirstName] = useState("");
+  const [regLastName, setRegLastName] = useState("");
 
-    // Register state
-    const [regEmail, setRegEmail] = useState("");
-    const [regPassword, setRegPassword] = useState("");
-    const [regFirstName, setRegFirstName] = useState("");
-    const [regLastName, setRegLastName] = useState("");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login({ email: loginEmail, password: loginPassword });
+      setLocation("/dashboard");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await login({ email: loginEmail, password: loginPassword });
-            setLocation("/dashboard");
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await register({
+        email: regEmail,
+        password: regPassword,
+        firstName: regFirstName,
+        lastName: regLastName,
+      });
+      setLocation("/onboarding");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await register({
-                email: regEmail,
-                password: regPassword,
-                firstName: regFirstName,
-                lastName: regLastName
-            });
-            setLocation("/onboarding");
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  return (
+    <div className="page-transition min-h-screen px-6 py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md items-center justify-center">
+        <div className="w-full space-y-8">
+          <div className="animate-slide-up text-center">
+            <img src={aaraLogo} alt="AARA" className="mx-auto h-20 w-auto" />
+            <div className="section-label mt-5">Secure Access</div>
+            <h1 className="font-display brand-gradient-text mt-2 text-4xl">Wellness Console</h1>
+            <p className="mt-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+              Sign in to continue your journey or create a new AARA account.
+            </p>
+          </div>
 
-    return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 sm:p-10 selection:bg-primary/20 relative overflow-hidden">
-            {/* Ambient Background */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-brand-blue/5 blur-[120px]" />
-            </div>
+          <div className="wellness-card animate-slide-up mx-auto max-w-md p-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0">
+                <TabsTrigger
+                  value="login"
+                  className="rounded-xl border-0 bg-transparent px-0 py-0 shadow-none data-[state=active]:bg-transparent"
+                >
+                  <span className={activeTab === "login" ? "pill-brand" : ""}>Login</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="register"
+                  className="rounded-xl border-0 bg-transparent px-0 py-0 shadow-none data-[state=active]:bg-transparent"
+                >
+                  <span className={activeTab === "register" ? "pill-brand" : ""}>Signup</span>
+                </TabsTrigger>
+              </TabsList>
 
-            <motion.div
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="w-full max-w-[420px] relative z-10 space-y-10"
-            >
-                <div className="flex flex-col items-center space-y-6">
-                    <img src={aaraLogo} alt="AaRa" className="h-24 md:h-28 w-auto" />
-                    <div className="text-center space-y-1">
-                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Secure Access</p>
-                        <h1 className="text-2xl font-black tracking-tighter text-foreground uppercase">Wellness Console</h1>
+              <TabsContent value="login" className="mt-8">
+                <form onSubmit={handleLogin} className="space-y-5">
+                  <div className="stagger-1">
+                    <Label className="section-label mb-2 block">Email</Label>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      className="input-field"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="stagger-2">
+                    <Label className="section-label mb-2 block">Password</Label>
+                    <Input
+                      type="password"
+                      placeholder="Your password"
+                      className="input-field"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary stagger-3 w-full" disabled={isLoggingIn}>
+                    {isLoggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log In"}
+                  </button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="register" className="mt-8">
+                <form onSubmit={handleRegister} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="stagger-1">
+                      <Label className="section-label mb-2 block">First Name</Label>
+                      <Input className="input-field" value={regFirstName} onChange={(e) => setRegFirstName(e.target.value)} required />
                     </div>
-                </div>
+                    <div className="stagger-2">
+                      <Label className="section-label mb-2 block">Last Name</Label>
+                      <Input className="input-field" value={regLastName} onChange={(e) => setRegLastName(e.target.value)} required />
+                    </div>
+                  </div>
+                  <div className="stagger-3">
+                    <Label className="section-label mb-2 block">Email</Label>
+                    <Input type="email" className="input-field" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
+                  </div>
+                  <div className="stagger-4">
+                    <Label className="section-label mb-2 block">Password</Label>
+                    <Input
+                      type="password"
+                      className="input-field"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary stagger-5 w-full" disabled={isRegistering}>
+                    {isRegistering ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        Create Account
+                        <Sparkles className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
 
-                <div className="wellness-card bg-white/60 backdrop-blur-2xl border-white/40 shadow-2xl p-2">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-2 w-full h-14 p-1 bg-slate-100 rounded-[20px] mb-2">
-                            <TabsTrigger
-                                value="login"
-                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
-                            >
-                                Member
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="register"
-                                className="rounded-[16px] font-black text-[11px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all"
-                            >
-                                New Entry
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <div className="p-6">
-                            <AnimatePresence mode="wait">
-                                {activeTab === "login" ? (
-                                    <motion.div
-                                        key="login-tab"
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 10 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <form onSubmit={handleLogin} className="space-y-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Identification</Label>
-                                                <div className="relative group">
-                                                    <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                                    <Input
-                                                        type="email"
-                                                        placeholder="Email Address"
-                                                        className="h-14 pl-12 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-white transition-all"
-                                                        value={loginEmail}
-                                                        onChange={(e) => setLoginEmail(e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Access Key</Label>
-                                                <div className="relative group">
-                                                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                                    <Input
-                                                        type="password"
-                                                        placeholder="Password"
-                                                        className="h-14 pl-12 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner group-focus-within:bg-white transition-all"
-                                                        value={loginPassword}
-                                                        onChange={(e) => setLoginPassword(e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <Button
-                                                type="submit"
-                                                className="w-full brand-gradient text-white font-black text-sm uppercase tracking-widest h-16 rounded-[24px] shadow-xl shadow-brand-blue/30 mt-4 active:scale-[0.98] transition-all"
-                                                disabled={isLoggingIn}
-                                            >
-                                                {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Log In <ChevronRight className="ml-2 w-5 h-5" /></>}
-                                            </Button>
-                                        </form>
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="register-tab"
-                                        initial={{ opacity: 0, x: 10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -10 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <form onSubmit={handleRegister} className="space-y-6">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">First Name</Label>
-                                                    <Input
-                                                        className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
-                                                        value={regFirstName}
-                                                        onChange={(e) => setRegFirstName(e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Last Name</Label>
-                                                    <Input
-                                                        className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
-                                                        value={regLastName}
-                                                        onChange={(e) => setRegLastName(e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Primary Email</Label>
-                                                <Input
-                                                    type="email"
-                                                    className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
-                                                    value={regEmail}
-                                                    onChange={(e) => setRegEmail(e.target.value)}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">Security Code</Label>
-                                                <Input
-                                                    type="password"
-                                                    className="h-14 rounded-[20px] border-none bg-slate-50 font-bold focus-visible:ring-primary/20 shadow-inner"
-                                                    value={regPassword}
-                                                    onChange={(e) => setRegPassword(e.target.value)}
-                                                    required
-                                                    minLength={6}
-                                                />
-                                                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest px-2">Minimum 6 characters required</p>
-                                            </div>
-                                            <Button
-                                                type="submit"
-                                                className="w-full brand-gradient text-white font-black text-sm uppercase tracking-widest h-16 rounded-[24px] shadow-xl shadow-brand-blue/30 mt-4 active:scale-[0.98] transition-all"
-                                                disabled={isRegistering}
-                                            >
-                                                {isRegistering ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Create Account <Sparkles className="ml-2 w-5 h-5" /></>}
-                                            </Button>
-                                        </form>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </Tabs>
-                </div>
-
-                <div className="text-center">
-                    <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">Designed for Performance & Vitality</p>
-                </div>
-            </motion.div>
+          <p className="animate-slide-up text-center text-sm">
+            <a href="/" className="text-brand">
+              Return to landing page
+            </a>
+          </p>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

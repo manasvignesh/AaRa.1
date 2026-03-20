@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useTheme } from "next-themes";
+
+import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserProfile } from "@/hooks/use-user";
-import { Loader2 } from "lucide-react";
 
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/AuthPage";
@@ -26,45 +27,101 @@ import NotFound from "@/pages/not-found";
 
 import { CoachProvider } from "@/hooks/use-coach-chat";
 import { CoachFAB } from "@/components/CoachFAB";
-
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ThemeWrapper } from "@/components/ThemeWrapper";
 
-// Protected Route Wrapper
+function LoadingScreen() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: isDark ? "#111318" : "#F5F9FF",
+      }}
+    >
+      <div className="flex flex-col items-center gap-6 animate-fade-in">
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: isDark
+              ? "linear-gradient(145deg, #1E2330, #181C22)"
+              : "linear-gradient(135deg, #2F80ED, #28B5A0, #27AE60)",
+            border: isDark ? "1px solid rgba(232,169,58,0.25)" : "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: isDark
+              ? "0 0 24px rgba(232,169,58,0.2)"
+              : "0 8px 24px rgba(47,128,237,0.3)",
+          }}
+        >
+          <span
+            className="font-display text-xl"
+            style={{
+              color: isDark ? "#E8A93A" : "#FFFFFF",
+              fontWeight: 700,
+            }}
+          >
+            Aa
+          </span>
+        </div>
+        <div className="text-center">
+          <p className="font-display text-2xl brand-gradient-text">AARA</p>
+          <p
+            style={{
+              fontSize: "0.65rem",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              marginTop: 4,
+            }}
+          >
+            Wellness
+          </p>
+        </div>
+        <div
+          style={{
+            width: 120,
+            height: 2,
+            borderRadius: 999,
+            background: isDark
+              ? "rgba(255,255,255,0.06)"
+              : "rgba(47,128,237,0.08)",
+            overflow: "hidden",
+          }}
+        >
+          <div className="skeleton" style={{ width: "100%", height: "100%" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const [, setLocation] = useLocation();
 
-  // If authenticated but no profile, force Onboarding
   useEffect(() => {
-    if (!authLoading && !profileLoading && isAuthenticated && profile === null && window.location.pathname !== "/onboarding") {
-      console.log("ProtectedRoute: No profile found, redirecting to onboarding");
+    if (
+      !authLoading &&
+      !profileLoading &&
+      isAuthenticated &&
+      profile === null &&
+      window.location.pathname !== "/onboarding"
+    ) {
       setLocation("/onboarding");
     }
   }, [authLoading, profileLoading, isAuthenticated, profile, setLocation]);
 
-  console.log(`[ProtectedRoute] STATE: authLoading=${authLoading}, profileLoading=${profileLoading}, isAuthenticated=${isAuthenticated}, profileExists=${!!profile}`);
-
   if (authLoading || profileLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] relative overflow-hidden">
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
-          <div className="h-full w-full" style={{ backgroundImage: 'linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        </div>
-        <div className="flex flex-col items-center gap-8 relative z-10 text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent shadow-[0_0_20px_rgba(142,214,63,0.3)]"
-          />
-          <div>
-            <p className="text-[10px] font-mono text-primary font-bold uppercase tracking-[0.4em] animate-pulse">Establishing_Secure_Link</p>
-            <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em] mt-2">Auth_Node: {authLoading ? "SCANNING" : "VERIFIED"} // Profile_Node: {profileLoading ? "SCANNING" : "VERIFIED"}</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {
@@ -75,7 +132,6 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     return null;
   }
 
-  // If authenticated AND has profile, but trying to access Onboarding, redirect to Dashboard
   if (profile && window.location.pathname === "/onboarding") {
     setLocation("/dashboard");
     return null;
@@ -95,27 +151,20 @@ function Router() {
     }
   }, [isLoading, isAuthenticated, setLocation]);
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Switch>
       <Route path="/">
-        {isAuthenticated ? (
-          <ProtectedRoute component={Dashboard} />
-        ) : (
-          <Landing />
-        )}
+        {isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Landing />}
       </Route>
 
       <Route path="/auth">
-        {isAuthenticated ? (
-          <ProtectedRoute component={Dashboard} />
-        ) : (
-          <AuthPage />
-        )}
+        {isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <AuthPage />}
       </Route>
 
-      {/* Auth Protected Routes */}
       <Route path="/onboarding">
         <ProtectedRoute component={Onboarding} />
       </Route>
@@ -166,9 +215,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <CoachProvider>
-          <ThemeWrapper>
-            <Router />
-          </ThemeWrapper>
+          <Router />
           <CoachFAB />
           <Toaster />
         </CoachProvider>

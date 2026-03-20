@@ -28,10 +28,10 @@ export function PageLayout({
       className="min-h-screen flex flex-col font-sans"
       style={{ backgroundColor: "var(--surface-base)", color: "var(--text-primary)" }}
     >
-      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: "max(48px, env(safe-area-inset-top))", paddingBottom: "max(80px, env(safe-area-inset-bottom))" }}>
-        <div className={cn("mx-auto px-5", maxWidthClass)}>
-          {header && <header className="mb-[24px] animate-slide-up">{header}</header>}
-          <div className={cn("animate-slide-up space-y-[24px]", className)}>{children}</div>
+      <main className="flex-1 pb-safe overflow-y-auto overflow-x-hidden">
+        <div className={cn("mx-auto px-5 pt-8 pb-6", maxWidthClass)}>
+          {header && <header className="mb-6 animate-slide-up">{header}</header>}
+          <div className={cn("animate-slide-up", className)}>{children}</div>
         </div>
       </main>
       <Navigation />
@@ -49,8 +49,8 @@ export function SectionHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex justify-between items-center mb-[12px] px-1">
-      <h2 className="text-[16px] font-display font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+    <div className="flex justify-between items-center mb-4 px-1">
+      <h2 className="text-lg font-display tracking-tight" style={{ color: "var(--text-primary)" }}>
         {title}
       </h2>
       <div className="flex items-center gap-2">

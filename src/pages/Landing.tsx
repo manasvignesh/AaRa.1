@@ -1,143 +1,119 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Heart, Activity, Target, Zap, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Activity, ArrowRight, Sparkles, Target, Zap } from "lucide-react";
+
 import aaraLogo from "@/assets/aara-logo.png";
-import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Landing() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden selection:bg-primary/20">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-brand-blue/5 blur-[120px]" />
-        <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] rounded-full bg-emerald-500/5 blur-[100px]" />
-      </div>
+  const features = [
+    {
+      title: "Precision Fuel",
+      desc: "Adaptive meal systems that align with your metabolic signature.",
+      icon: Activity,
+      stagger: "stagger-1",
+    },
+    {
+      title: "Smart Training",
+      desc: "Workouts that evolve with your performance and recovery.",
+      icon: Zap,
+      stagger: "stagger-2",
+    },
+    {
+      title: "Goal Precision",
+      desc: "Track progress with a calmer, more human wellness dashboard.",
+      icon: Target,
+      stagger: "stagger-3",
+    },
+  ];
 
-      {/* Header */}
-      <header className="relative z-50 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div className="flex items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
-          >
-            <img src={aaraLogo} alt="AaRa" className="h-16 md:h-20 w-auto" />
-          </motion.div>
+  return (
+    <div className="page-transition min-h-screen flex flex-col overflow-hidden">
+      <header className="pt-safe relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 md:px-12">
+        <div className="flex items-center gap-3 animate-slide-up">
+          <img src={aaraLogo} alt="AARA" className="h-14 w-auto md:h-16" />
         </div>
-        <Link href="/auth?tab=login">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <Button
-              variant="link"
-              className="rounded-full px-8 h-12 text-[13px] font-black uppercase tracking-[0.2em] text-foreground hover:text-primary transition-colors"
-            >
-              Member Login
-            </Button>
-          </motion.div>
-        </Link>
+        <div className="flex items-center gap-3 animate-slide-up">
+          <ThemeToggle />
+          <Link href="/auth?tab=login">
+            <button className="btn-ghost">Member Login</button>
+          </Link>
+        </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative flex-1 flex flex-col items-center justify-center px-6 md:px-12 py-10 md:py-20 text-center">
-        <div className="max-w-4xl mx-auto space-y-12">
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="space-y-6"
-          >
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-card/40 backdrop-blur-md border border-border/5 text-primary text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
-              <Sparkles className="w-4 h-4" />
-              <span>Intelligent Health Evolution</span>
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-16 pt-8 md:px-12">
+        <section className="animate-slide-up grid items-center gap-12 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-8">
+            <span className="pill-brand">
+              <Sparkles className="h-3.5 w-3.5" />
+              Intelligent Health Evolution
+            </span>
+            <div className="space-y-5">
+              <h1 className="font-display text-5xl leading-[0.95] md:text-7xl">
+                Wellness, redesigned for
+                <span className="brand-gradient-text"> clarity and momentum.</span>
+              </h1>
+              <p
+                className="max-w-2xl text-base md:text-lg"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                AARA brings your nutrition, movement, recovery, and guidance into one
+                elegant daily flow without changing how the app works underneath.
+              </p>
             </div>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Link href="/auth?tab=register">
+                <button className="btn-primary min-w-[220px]">
+                  Start Journey
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </Link>
+              <Link href="/auth?tab=login">
+                <button className="btn-ghost min-w-[220px]">Open Member Area</button>
+              </Link>
+            </div>
+          </div>
 
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.9] text-center">
-              Your Body,<br />
-              <span className="brand-gradient-text">Masterfully Optimized.</span>
-            </h1>
-
-            <p className="text-[17px] md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-              AaRa is the next generation of wellness. An adaptive, AI-driven experience that transforms your biology without extreme measures.
+          <div className="wellness-card animate-slide-up p-8 md:p-10">
+            <div className="section-label mb-3">Today in AARA</div>
+            <h2 className="font-display text-3xl">One calm command center.</h2>
+            <p className="mt-3" style={{ color: "var(--text-secondary)" }}>
+              Light and dark themes, softer surfaces, richer typography, and
+              wellness-first visual hierarchy across meals, workouts, progress,
+              profile, and coach screens.
             </p>
-          </motion.div>
+            <div className="mt-8 grid gap-4">
+              {["Adaptive meals", "Live workout flow", "Progress analytics", "Coach support"].map(
+                (item, index) => (
+                  <div
+                    key={item}
+                    className={`metric-card ${["stagger-1", "stagger-2", "stagger-3", "stagger-4"][index]}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span style={{ color: "var(--text-primary)" }}>{item}</span>
+                      <span className="pill-green">Ready</span>
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+        </section>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6"
-          >
-            <Link href="/auth?tab=register" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto rounded-[24px] text-lg px-12 h-20 brand-gradient hover:opacity-90 shadow-2xl shadow-brand-blue/30 hover:shadow-brand-blue/40 hover:-translate-y-1 transition-all border-0 text-white font-black"
-              >
-                Start Journey <ChevronRight className="ml-2 w-6 h-6" />
-              </Button>
-            </Link>
-          </motion.div>
-
-          {/* Features Strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="grid md:grid-cols-3 gap-8 mt-12 text-center"
-          >
-            {[
-              {
-                title: "Precision Fuel",
-                desc: "Adaptive meal systems that align with your metabolic signature.",
-                icon: Activity,
-                color: "text-primary bg-primary/5"
-              },
-              {
-                title: "Smart Training",
-                desc: "Workouts that evolve with your performance intensity.",
-                icon: Zap,
-                color: "text-brand-blue bg-brand-blue/5"
-              },
-              {
-                title: "Goal Precision",
-                desc: "High-fidelity progress tracking for meaningful transformations.",
-                icon: Target,
-                color: "text-emerald-500 bg-emerald-500/5"
-              }
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="group p-8 rounded-[40px] bg-card/30 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/[0.02] flex flex-col items-center gap-4 hover:bg-card/50 transition-all duration-500"
-              >
-                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform", feature.color)}>
-                  <feature.icon className="w-7 h-7" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black tracking-tight text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{feature.desc}</p>
-                </div>
+        <section className="animate-slide-up mt-16 grid gap-6 md:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className={`wellness-card p-6 ${feature.stagger}`}>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-2 text-brand">
+                <feature.icon className="h-5 w-5" />
               </div>
-            ))}
-          </motion.div>
-        </div>
+              <div className="section-label mb-2">Feature</div>
+              <h3 className="font-display text-2xl">{feature.title}</h3>
+              <p className="mt-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+                {feature.desc}
+              </p>
+            </div>
+          ))}
+        </section>
       </main>
-
-      {/* Large visual element placeholder/accent */}
-      <div className="relative py-20 px-6 overflow-hidden">
-        <div className="max-w-6xl mx-auto h-[1px] bg-gradient-to-r from-transparent via-border to-transparent opacity-20" />
-        <div className="mt-20 flex justify-center opacity-[0.03] select-none pointer-events-none">
-          <span className="text-[200px] font-black tracking-tighter leading-none grayscale blur-sm">AARA</span>
-        </div>
-      </div>
-
-      {/* Small footer */}
-      <footer className="py-10 px-6 border-t border-border/5 text-center">
-        <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.5em]">The Architecture of Human Vitality</p>
-      </footer>
     </div>
   );
 }

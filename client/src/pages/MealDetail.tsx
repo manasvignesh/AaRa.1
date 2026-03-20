@@ -1,17 +1,29 @@
 import { useLocation, useRoute } from "wouter";
-import { usePlanMeta } from "@/hooks/use-plans";
 import { useMeals, useToggleMealConsumed, useRegenerateMeal, useLogAlternativeMeal } from "@/hooks/use-meals";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Check, RefreshCw, Loader2, X, Flame, Zap, Utensils, Clock, ShieldCheck, Heart, Info, ArrowRight, Activity, Cpu } from "lucide-react";
+import {
+  Check,
+  RefreshCw,
+  Loader2,
+  X,
+  ChevronLeft,
+  Flame,
+  Target,
+  Zap,
+  Droplets,
+  MapPin,
+  Clock,
+  ChefHat,
+  UtensilsCrossed,
+  Sparkles,
+} from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function MealDetail() {
   const [, params] = useRoute("/meal/:date/:id");
@@ -131,241 +143,377 @@ export default function MealDetail() {
   };
 
   const isLogged = meal.isConsumed || meal.consumedAlternative;
+  const carbsValue = meal.carbs ?? 0;
+  const fatValue = meal.fat ?? meal.fats ?? 0;
+  const rawIngredients = meal.ingredients;
+  const ingredientsArray = Array.isArray(rawIngredients) ? rawIngredients : [];
+  const ingredientListLooksUseful = ingredientsArray.length > 0 && !(
+    ingredientsArray.length === 1 &&
+    typeof ingredientsArray[0] === "string" &&
+    String(ingredientsArray[0]).trim().toLowerCase() === String(meal.name || "").trim().toLowerCase()
+  );
+
+  const formatRegion = (r: string) => ({
+    north_indian: "North Indian",
+    south_indian: "South Indian",
+    east_indian: "East Indian",
+    pan_india: "Pan India",
+    pan_indian: "Pan India",
+  }[r?.toLowerCase()] ?? r?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+
+  const formatGoal = (g: string) =>
+    g?.split(",")
+      .map(s => ({
+        weight_loss: "Weight Loss",
+        maintain: "Maintenance",
+        muscle_gain: "Muscle Gain",
+        weight_gain: "Weight Gain",
+      }[s.trim().toLowerCase()] ?? s.trim().replace(/\b\w/g, c => c.toUpperCase())))
+      .join(" · ");
+
+  const goalValue = Array.isArray(meal.goal) ? formatGoal(meal.goal.join(",")) : formatGoal(meal.goal);
+  const mealInfoItems = [
+    {
+      icon: <MapPin size={14} style={{ color: "var(--brand-primary)" }} />,
+      iconBg: "rgba(232,169,58,0.12)",
+      label: "Region",
+      value: meal.region ? formatRegion(meal.region) : undefined,
+    },
+    {
+      icon: <Target size={14} style={{ color: "#6DDBA8" }} />,
+      iconBg: "rgba(61,171,122,0.12)",
+      label: "Goal",
+      value: goalValue,
+    },
+    {
+      icon: <Clock size={14} style={{ color: "#6AAFF5" }} />,
+      iconBg: "rgba(47,128,237,0.12)",
+      label: "Meal Time",
+      value: meal.mealTime ?? meal.meal_time ?? meal.type,
+    },
+    {
+      icon: <ChefHat size={14} style={{ color: "#C084FC" }} />,
+      iconBg: "rgba(192,132,252,0.12)",
+      label: "Method",
+      value: meal.cookingMethod ?? meal.cooking_method,
+    },
+  ].filter(item => item.value);
 
   return (
-    <div className="min-h-screen bg-[#050505] flex flex-col relative overflow-hidden selection:bg-primary/30">
-      {/* Cybergrid Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
-        <div className="h-full w-full" style={{ backgroundImage: 'linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      </div>
-
-      <header className="p-6 md:p-8 flex items-center justify-between sticky top-0 z-50 glass-card border-none border-b border-white/5 bg-black/60 backdrop-blur-xl">
-        <div className="flex items-center gap-6">
-          <button
-            onClick={() => setLocation(params?.date && params.date === format(new Date(), 'yyyy-MM-dd') ? "/dashboard" : "/meals")}
-            className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all group"
-          >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          </button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-display font-bold text-white uppercase tracking-tight leading-none mb-1">NODE_NUTRITION_{meal.type?.toUpperCase()}</h1>
-            <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold">{format(planDate, "EEEE // MMM do")}</p>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--surface-base)" }}>
+      <main className="flex-1 max-w-md mx-auto w-full px-5 pt-6 pb-safe" style={{ color: "var(--text-primary)" }}>
+        <div style={{ marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <button onClick={() => history.back()} style={{
+              width: 36, height: 36, borderRadius: 12,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", flexShrink: 0,
+            }}>
+              <ChevronLeft size={18} style={{ color: "var(--text-secondary)" }} />
+            </button>
+            <div>
+              <div style={{
+                fontSize: "11px", fontWeight: 600,
+                letterSpacing: "0.12em", textTransform: "uppercase",
+                color: "var(--brand-primary)",
+              }}>
+                {meal.mealTime ?? meal.meal_time ?? meal.type} · {meal.date ?? format(planDate, "MMM do, yyyy")}
+              </div>
+            </div>
           </div>
+
+          <h1 className="font-display" style={{
+            fontSize: "26px",
+            fontWeight: "700",
+            color: "var(--text-primary)",
+            lineHeight: 1.25,
+            marginBottom: "20px",
+            textTransform: "none",
+          }}>
+            {meal.name
+              .split(" ")
+              .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+              .join(" ")}
+          </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex flex-col items-end">
-            <p className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Molecular_Registry</p>
-            <p className="text-[10px] font-mono text-white/60">#ID_{meal.id?.toString().padStart(6, '0')}</p>
-          </div>
-          <div className="h-8 w-[1px] bg-white/10 mx-2 hidden md:block" />
-          {isLogged ? (
-            <div className="px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">SYNTHESIZED</span>
-            </div>
-          ) : (
-            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-white/40" />
-              <span className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">PENDING</span>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-1 p-6 md:p-12 max-w-4xl mx-auto w-full z-10 space-y-12">
-        {/* Hero Section */}
-        <section className="space-y-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            <h2 className="text-4xl md:text-6xl font-display font-bold text-white uppercase tracking-tighter leading-none">{meal.name}</h2>
-            <div className="h-[2px] w-24 bg-primary rounded-full shadow-[0_0_15px_rgba(142,214,63,0.5)]" />
-          </motion.div>
-
-          {meal.consumedAlternative && (
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="glass-card p-6 bg-amber-500/[0.05] border-amber-500/20 rounded-[2rem] flex items-center gap-6"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
-                <Info className="w-7 h-7" />
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10px",
+          marginBottom: "24px",
+        }}>
+          {[
+            {
+              label: "Calories",
+              value: meal.calories,
+              unit: "kcal",
+              icon: <Flame size={15} color="#fff" />,
+              bg: "linear-gradient(135deg, #E8A93A, #C4841A)",
+              iconBg: "rgba(255,255,255,0.2)",
+            },
+            {
+              label: "Protein",
+              value: `${meal.protein}g`,
+              unit: "protein",
+              icon: <Target size={15} style={{ color: "#E8A93A" }} />,
+              bg: "var(--surface-2)",
+              iconBg: "rgba(232,169,58,0.15)",
+              border: "1px solid rgba(232,169,58,0.2)",
+            },
+            {
+              label: "Carbs",
+              value: `${carbsValue}g`,
+              unit: "carbs",
+              icon: <Zap size={15} style={{ color: "#6DDBA8" }} />,
+              bg: "var(--surface-2)",
+              iconBg: "rgba(61,171,122,0.15)",
+              border: "1px solid rgba(61,171,122,0.2)",
+            },
+            {
+              label: "Fat",
+              value: `${fatValue}g`,
+              unit: "fat",
+              icon: <Droplets size={15} style={{ color: "#6AAFF5" }} />,
+              bg: "var(--surface-2)",
+              iconBg: "rgba(47,128,237,0.15)",
+              border: "1px solid rgba(47,128,237,0.2)",
+            },
+          ].map((item, i) => (
+            <div key={i} style={{
+              background: item.bg,
+              border: item.border || "none",
+              borderRadius: "18px",
+              padding: "16px",
+              minHeight: "100px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              position: "relative",
+              overflow: "hidden",
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: item.iconBg,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {item.icon}
               </div>
               <div>
-                <p className="text-[10px] font-mono text-amber-500/60 uppercase tracking-widest mb-1">Alternative_Fuel_Override_Detected</p>
-                <p className="text-lg font-display font-bold text-white uppercase tracking-tight">{meal.alternativeDescription}</p>
-                <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] mt-2">
-                  {meal.alternativeCalories} KCAL // {meal.alternativeProtein}G PROTEIN
-                </p>
+                <div className="font-display" style={{
+                  fontSize: "26px", fontWeight: "700",
+                  color: i === 0 ? "#111318" : "var(--text-primary)",
+                  lineHeight: 1,
+                }}>
+                  {item.value}
+                </div>
+                <div style={{
+                  fontSize: "10px", fontWeight: 600,
+                  letterSpacing: "0.1em", textTransform: "uppercase",
+                  color: i === 0 ? "rgba(17,19,24,0.6)" : "var(--text-muted)",
+                  marginTop: "3px",
+                }}>
+                  {item.label}
+                </div>
               </div>
-            </motion.div>
-          )}
+            </div>
+          ))}
+        </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { label: "Energy_Value", value: meal.calories, unit: "KCAL", color: "text-primary", icon: Flame },
-              { label: "Molecular_Mass", value: meal.protein, unit: "G PROTEIN", color: "text-blue-400", icon: Zap },
-              { label: "Glycogen_Load", value: meal.carbs || 45, unit: "G CARBS", color: "text-orange-400", icon: Activity },
-              { label: "Lipid_Density", value: meal.fats || 12, unit: "G FATS", color: "text-amber-400", icon: Cpu }
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="glass-card p-6 rounded-3xl border-white/5 bg-white/[0.02] space-y-4 hover:border-white/10 transition-all group"
-              >
-                <div className={cn("w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity", stat.color)}>
-                  <stat.icon className="w-5 h-5" />
+        <div style={{ marginBottom: "24px" }}>
+          <h3 className="font-display" style={{
+            fontSize: "17px", fontWeight: "700",
+            color: "var(--text-primary)", marginBottom: "12px",
+          }}>
+            Ingredients
+          </h3>
+
+          {ingredientListLooksUseful ? (
+            <div style={{
+              background: "var(--surface-2)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255,255,255,0.06)",
+              overflow: "hidden",
+            }}>
+              {ingredientsArray.map((ing: any, i: number) => (
+                <div key={i} style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "13px 16px",
+                  borderBottom: i < ingredientsArray.length - 1
+                    ? "1px solid rgba(255,255,255,0.05)" : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "var(--brand-primary)", flexShrink: 0,
+                    }} />
+                    <span style={{
+                      fontSize: "14px", fontWeight: "500",
+                      color: "var(--text-primary)",
+                    }}>
+                      {typeof ing === "string"
+                        ? ing.split("_").join(" ").replace(/\b\w/g, c => c.toUpperCase())
+                        : (ing.name ?? ing.item ?? "Ingredient")}
+                    </span>
+                  </div>
+                  {(ing?.quantity || ing?.amount) && (
+                    <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                      {ing.quantity ?? ing.amount}{ing.unit ? ` ${ing.unit}` : ""}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              background: "var(--surface-2)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255,255,255,0.06)",
+              padding: "14px 16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: "rgba(232,169,58,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <UtensilsCrossed size={15} style={{ color: "var(--brand-primary)" }} />
+              </div>
+              <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+                {typeof rawIngredients === "string"
+                  ? rawIngredients
+                  : "Ingredient details not available"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: "24px" }}>
+          <h3 className="font-display" style={{
+            fontSize: "17px", fontWeight: "700",
+            color: "var(--text-primary)", marginBottom: "12px",
+          }}>
+            Meal Info
+          </h3>
+          <div style={{
+            background: "var(--surface-2)",
+            borderRadius: "16px",
+            border: "1px solid rgba(255,255,255,0.06)",
+            overflow: "hidden",
+          }}>
+            {mealInfoItems.map((item, i, arr) => (
+              <div key={i} style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "13px 16px",
+                borderBottom: i < arr.length - 1
+                  ? "1px solid rgba(255,255,255,0.05)" : "none",
+              }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 10,
+                  background: item.iconBg,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  {item.icon}
                 </div>
                 <div>
-                  <p className="text-3xl font-display font-bold text-white tracking-tighter">{stat.value}</p>
-                  <p className={cn("text-[9px] font-mono font-bold uppercase tracking-widest", stat.color)}>{stat.unit}</p>
+                  <div style={{
+                    fontSize: "10px", fontWeight: 600,
+                    letterSpacing: "0.1em", textTransform: "uppercase",
+                    color: "var(--text-muted)", marginBottom: "2px",
+                  }}>
+                    {item.label}
+                  </div>
+                  <div style={{
+                    fontSize: "14px", fontWeight: "500",
+                    color: "var(--text-primary)",
+                  }}>
+                    {item.value}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </section>
+        </div>
 
-        {/* Breakdown Sections */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass-card p-10 rounded-[2.5rem] border-white/5 bg-white/[0.02] flex flex-col"
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <Utensils className="w-5 h-5 text-primary opacity-60" />
-              <h3 className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-[0.4em]">Structural_Components</h3>
-            </div>
-            <ul className="space-y-6 flex-1">
-              {meal.ingredients?.map((ing: any, i: number) => (
-                <li key={i} className="flex items-center gap-4 group">
-                  <div className="w-2 h-2 rounded-full border border-primary/40 group-hover:bg-primary transition-all shrink-0" />
-                  <span className="text-sm font-display font-medium text-white/70 group-hover:text-white transition-colors">
-                    {typeof ing === 'object' && ing !== null && 'item' in ing ? (
-                      <>
-                        <span className="uppercase">{String((ing as any).item)}</span>
-                        <span className="text-[10px] font-mono text-white/20 ml-3 uppercase tracking-widest">[{String((ing as any).amount)}]</span>
-                      </>
-                    ) : (
-                      <span className="uppercase">{String(ing)}</span>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass-card p-10 rounded-[2.5rem] border-white/5 bg-white/[0.02]"
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <Clock className="w-5 h-5 text-primary opacity-60" />
-              <h3 className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-[0.4em]">Synthesis_Protocol</h3>
-            </div>
-            <div className="space-y-6">
-              <p className="text-sm font-display font-medium text-white/60 leading-relaxed whitespace-pre-wrap uppercase tracking-tight italic">
-                {meal.instructions || "SYSTEM_PROTOCOL_PENDING..."}
-              </p>
-              <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-4">
-                <ShieldCheck className="w-5 h-5 text-primary/60" />
-                <p className="text-[9px] font-mono text-primary/40 uppercase tracking-widest leading-relaxed">
-                  Calibration complete. Recipe optimized for bio-available synthesis.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Action Unit */}
-        <section className="pt-8 pb-20">
-          <div className="max-w-md mx-auto space-y-4">
-            {!isLogged ? (
-              <>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full h-18 py-6 rounded-[2rem] bg-primary text-black font-display font-bold text-lg uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(142,214,63,0.3)] hover:neon-glow transition-all flex items-center justify-center gap-4 border-none outline-none"
-                  disabled={isToggling}
-                  onClick={handleYesConsumed}
-                >
-                  {isToggling ? <Loader2 className="animate-spin w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
-                  CONFIRM_SYNTHESIS
-                </motion.button>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    variant="outline"
-                    className="h-16 rounded-[1.5rem] border-white/10 hover:border-white/20 text-white/60 hover:text-white uppercase font-mono text-[10px] tracking-widest"
-                    onClick={() => setShowConsumptionPrompt(true)}
-                  >
-                    OTHER_LOG_OPTIONS
-                  </Button>
-
-                  <Dialog open={isRegenOpen} onOpenChange={setIsRegenOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="h-16 rounded-[1.5rem] border-white/10 hover:border-white/20 text-white/60 hover:text-white uppercase font-mono text-[10px] tracking-widest">
-                        REGENERATE_NODE
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="glass-card border-white/10 bg-black/90 p-10 rounded-[2.5rem] outline-none">
-                      <DialogHeader className="mb-10">
-                        <DialogTitle className="text-2xl font-display font-bold text-white uppercase tracking-tight">Regeneration_Request</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-8">
-                        <div className="space-y-3">
-                          <Label className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">Reason_For_Conflict</Label>
-                          <Textarea
-                            placeholder="E.G. RESOURCE_UNAVAILABLE / PALATE_DISCORD..."
-                            value={regenReason}
-                            onChange={(e) => setRegenReason(e.target.value)}
-                            className="h-24 bg-white/[0.03] border-white/10 rounded-2xl focus:border-primary/50 text-white font-mono text-xs uppercase"
-                          />
-                        </div>
-                        <div className="space-y-3">
-                          <Label className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">Available_Resources (Optional)</Label>
-                          <Textarea
-                            placeholder="LIST_PROVISIONS..."
-                            value={availableIngredients}
-                            onChange={(e) => setAvailableIngredients(e.target.value)}
-                            className="h-24 bg-white/[0.03] border-white/10 rounded-2xl focus:border-primary/50 text-white font-mono text-xs uppercase"
-                          />
-                        </div>
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleRegenerate}
-                          disabled={isRegenerating || !regenReason}
-                          className="w-full h-16 rounded-2xl bg-primary text-black font-display font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(142,214,63,0.3)] flex items-center justify-center gap-3 border-none outline-none"
-                        >
-                          {isRegenerating ? <Loader2 className="animate-spin w-5 h-5 text-black" /> : <RefreshCw className="w-5 h-5 text-black" />}
-                          INITIATE_RE-SYNTHESIS
-                        </motion.button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-18 py-6 rounded-[2rem] bg-white/5 border border-white/10 text-white/40 hover:text-white font-display font-bold text-lg uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-4 outline-none"
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          paddingBottom: "32px",
+        }}>
+          {!isLogged ? (
+            <>
+              <button
+                className="btn-primary"
+                style={{
+                  width: "100%", height: "52px",
+                  fontSize: "13px", fontWeight: "700",
+                  letterSpacing: "0.06em",
+                  display: "flex", alignItems: "center",
+                  justifyContent: "center", gap: "8px",
+                  borderRadius: "16px",
+                }}
                 disabled={isToggling}
-                onClick={() => toggleConsumed({ id: meal.id, isConsumed: false, date: dateStr })}
+                onClick={handleYesConsumed}
               >
-                {isToggling ? <Loader2 className="animate-spin w-6 h-6" /> : <X className="w-6 h-6" />}
-                DE-ACTIVATE_NODE_LOG
-              </motion.button>
-            )}
-          </div>
-        </section>
+                {isToggling ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
+                Sync Consumption
+              </button>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <button
+                  className="btn-ghost"
+                  style={{
+                    height: "48px", fontSize: "13px",
+                    fontWeight: "600", borderRadius: "14px",
+                  }}
+                  onClick={() => setShowConsumptionPrompt(true)}
+                >
+                  Custom Log
+                </button>
+                <button
+                  style={{
+                    height: "48px", fontSize: "13px",
+                    fontWeight: "600", borderRadius: "14px",
+                    background: "rgba(232,169,58,0.1)",
+                    border: "1px solid rgba(232,169,58,0.25)",
+                    color: "var(--brand-primary)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={() => setIsRegenOpen(true)}
+                >
+                  Optimize
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              className="btn-ghost"
+              style={{
+                height: "48px",
+                fontSize: "13px",
+                fontWeight: "600",
+                borderRadius: "14px",
+              }}
+              disabled={isToggling}
+              onClick={() => toggleConsumed({ id: meal.id, isConsumed: false, date: dateStr })}
+            >
+              {isToggling ? <Loader2 className="animate-spin" size={16} /> : <X size={16} />}
+              Revert Entry
+            </button>
+          )}
+        </div>
       </main>
 
       {/* Consumption Dialogs */}
@@ -376,7 +524,7 @@ export default function MealDetail() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
-              <p className="text-lg font-display font-bold text-white uppercase mb-2">{meal.name}</p>
+              <p className="text-lg font-display font-bold text-white mb-2">{meal.name}</p>
               <div className="flex gap-6">
                 <span className="text-[10px] font-mono text-primary uppercase tracking-widest">{meal.calories} KCAL</span>
                 <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">{meal.protein} G</span>
@@ -470,7 +618,7 @@ export default function MealDetail() {
                 disabled={isLoggingAlt}
                 className="w-full h-16 rounded-2xl bg-primary text-black font-display font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(142,214,63,0.3)] flex items-center justify-center gap-3 border-none outline-none"
               >
-                {isLoggingAlt ? <Loader2 className="animate-spin w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+                {isLoggingAlt ? <Loader2 className="animate-spin w-5 h-5" /> : <Check className="w-5 h-5" />}
                 AUTHORIZE_LOG
               </motion.button>
             )}

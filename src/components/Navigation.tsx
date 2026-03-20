@@ -1,11 +1,5 @@
 import { Link, useLocation } from "wouter";
-import {
-  LayoutGrid,
-  Calendar,
-  Activity,
-  User,
-  Utensils,
-} from "lucide-react";
+import { LayoutGrid, Calendar, Activity, User, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navigation() {
@@ -20,8 +14,8 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-100 pb-safe pt-2 px-6 safe-area-bottom">
-      <div className="max-w-md mx-auto flex items-center justify-between">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel px-6" style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <div className="max-w-md mx-auto flex items-center justify-between h-[64px]">
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
 
@@ -29,20 +23,23 @@ export function Navigation() {
             <Link key={item.label} href={item.href}>
               <a
                 className={cn(
-                  "flex flex-col items-center justify-center py-2 px-1 transition-all duration-200 active:scale-95",
-                  isActive ? "text-primary" : "text-slate-400 hover:text-slate-600"
+                  "flex flex-col items-center justify-center px-2 h-full transition-all duration-200 active:scale-95",
+                  isActive ? "text-brand" : "",
                 )}
+                style={!isActive ? { color: "var(--text-muted)" } : undefined}
               >
                 <item.icon
                   className={cn(
-                    "w-6 h-6 mb-1 transition-all duration-200",
-                    isActive ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
+                    "w-[22px] h-[22px] mb-1 transition-all duration-200",
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]",
                   )}
                 />
-                <span className={cn(
-                  "text-[10px] font-medium tracking-tight transition-all",
-                  isActive ? "opacity-100 font-semibold" : "opacity-0 h-0 overflow-hidden"
-                )}>
+                <span
+                  className={cn(
+                    "text-[10px] font-medium tracking-tight transition-all",
+                    isActive ? "opacity-100 font-semibold" : "opacity-0 h-0 overflow-hidden",
+                  )}
+                >
                   {item.label}
                 </span>
               </a>

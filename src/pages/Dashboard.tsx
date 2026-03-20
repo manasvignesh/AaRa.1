@@ -1,236 +1,265 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
+import { useTheme } from "next-themes";
+import { format } from "date-fns";
+import { Droplets, Footprints, Loader2, Plus, Trophy, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 import { usePlanMeta, useGeneratePlan, useUpdateWater, useWorkouts } from "@/hooks/use-plans";
 import { useUserProfile } from "@/hooks/use-user";
 import { useMeals } from "@/hooks/use-meals";
 import { PageLayout, SectionHeader } from "@/components/PageLayout";
 import { MacroRing } from "@/components/MacroRing";
-import { Loader2, Plus, ChevronRight, Droplets, Minus, Zap, Footprints, Trophy, PlayCircle } from "lucide-react";
-import { format, isToday } from "date-fns";
-import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Dashboard() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [, setLocation] = useLocation();
+  const [selectedDate] = useState(new Date());
   const { data: user, isLoading: userLoading } = useUserProfile();
   const { data: plan, isLoading: planLoading } = usePlanMeta(selectedDate);
-  const { data: meals = [], isLoading: mealsLoading } = useMeals(selectedDate);
-  const { data: workouts = [], isLoading: workoutsLoading } = useWorkouts(selectedDate);
+  const { data: meals = [] } = useMeals(selectedDate);
+  const { data: workouts = [] } = useWorkouts(selectedDate);
   const { mutate: generatePlan, isPending: isGenerating } = useGeneratePlan();
   const { mutate: updateWater } = useUpdateWater();
-
   const [generationError, setGenerationError] = useState<string | null>(null);
 
-  // Derive totals
-  const caloriesProgress = meals.reduce((sum: number, m: any) => {
-    if (m.consumedAlternative) return sum + (m.alternativeCalories || 0);
-    if (m.isConsumed) return sum + (m.calories || 0);
+  const caloriesProgress = meals.reduce((sum: number, meal: any) => {
+    if (meal.consumedAlternative) return sum + (meal.alternativeCalories || 0);
+    if (meal.isConsumed) return sum + (meal.calories || 0);
     return sum;
   }, 0);
 
-  const proteinProgress = meals.reduce((sum: number, m: any) => {
-    if (m.consumedAlternative) return sum + (m.alternativeProtein || 0);
-    if (m.isConsumed) return sum + (m.protein || 0);
+  const proteinProgress = meals.reduce((sum: number, meal: any) => {
+    if (meal.consumedAlternative) return sum + (meal.alternativeProtein || 0);
+    if (meal.isConsumed) return sum + (meal.protein || 0);
     return sum;
   }, 0);
 
   useEffect(() => {
     if (!userLoading && user && !planLoading && !plan && !isGenerating && !generationError) {
       generatePlan(selectedDate, {
-        onError: (err: any) => {
-          setGenerationError(err.message || "Failed to generate your plan. Please try again.");
-        }
+        onError: (err: any) => setGenerationError(err.message || "Failed to generate plan."),
       });
     }
   }, [plan, planLoading, isGenerating, selectedDate, generatePlan, user, userLoading, generationError]);
 
-  useEffect(() => {
-    setGenerationError(null);
-  }, [selectedDate]);
-
-  const handleAddWater = () => {
-    if (!plan) return;
-    updateWater({ date: format(selectedDate, "yyyy-MM-dd"), amount: 250 });
-  };
-
-  const handleSubtractWater = () => {
-    if (!plan || (plan.waterIntake || 0) <= 0) return;
-    updateWater({ date: format(selectedDate, "yyyy-MM-dd"), amount: -250 });
-  };
-
-  const isHydrated = plan ? (plan.waterIntake || 0) >= 2000 : false;
-
-  const caloriesTarget = plan?.caloriesTarget || 2000;
-  const proteinTarget = plan?.proteinTarget || 150;
-  const remainingCalories = Math.max(0, caloriesTarget - caloriesProgress);
-
   if (userLoading || (planLoading && !plan) || isGenerating) {
     return (
       <PageLayout>
-        <div className="flex flex-col items-center justify-center h-[80vh] gap-4">
-          <Loader2 className="w-8 h-8 text-brand-blue animate-spin" />
-          <p className="text-sm font-medium text-slate-500">Syncing your plan...</p>
+        <div className="page-transition flex min-h-[70vh] items-center justify-center">
+          <div className="wellness-card flex flex-col items-center gap-4 p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-brand" />
+            <p style={{ color: "var(--text-secondary)" }}>Syncing your plan...</p>
+          </div>
         </div>
       </PageLayout>
     );
   }
 
+  const caloriesTarget = plan?.caloriesTarget || 2000;
+  const proteinTarget = plan?.proteinTarget || 150;
+  const remainingCalories = Math.max(0, caloriesTarget - caloriesProgress);
+
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <PageLayout
       header={
-        <div className="flex justify-between items-end">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 mb-1">{format(selectedDate, 'EEEE, MMM do')}</p>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+        <div className="flex items-start justify-between">
+          <div className="animate-slide-up">
+            <p className="text-[11px] font-semibold tracking-wider uppercase text-muted mb-1" style={{ color: "var(--text-secondary)" }}>{format(selectedDate, "EEEE, MMM do")}</p>
+            <h1 className="font-display brand-gradient-text text-[32px] font-bold leading-none mb-1">
               Hello, {user?.displayName || "Athlete"}
             </h1>
+            <p className="text-[14px] leading-[1.6] mb-[24px]" style={{ color: "var(--text-secondary)" }}>
+              Your wellness dashboard is ready for today.
+            </p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
-            {user?.displayName?.[0]}
-          </div>
+          <ThemeToggle />
         </div>
       }
     >
-      <div className="space-y-6">
-
-        {/* Main Summary Card */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-          {/* Subtle background blurs */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-blue/5 rounded-full blur-3xl -z-10" />
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-green/5 rounded-full blur-3xl -z-10" />
-
-          <div className="flex items-center gap-6">
-            <div className="shrink-0">
+      <div className="space-y-[24px] page-transition">
+        <section className="animate-slide-up">
+          <div className="wellness-card" style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "20px",
+            minHeight: "120px",
+            maxHeight: "148px",
+          }}>
+            {/* Left — Ring */}
+            <div style={{ flexShrink: 0, width: 88, height: 88 }}>
               <MacroRing
                 caloriesTarget={caloriesTarget}
                 caloriesCurrent={caloriesProgress}
                 proteinTarget={proteinTarget}
                 proteinCurrent={proteinProgress}
-                size={130}
+                size={88}
+                strokeWidth={8}
               />
             </div>
-            <div className="flex-1 space-y-5">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Calories Remaining</p>
-                <p className="text-3xl font-bold text-slate-900 leading-none tracking-tight">{Math.round(remainingCalories)}</p>
-              </div>
-              <div className="pt-2 border-t border-slate-50">
-                <div className="flex justify-between items-baseline mb-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Protein Goal</p>
-                  <span className="text-[10px] font-medium text-slate-400">{proteinTarget}g</span>
+
+            {/* Right — Stats */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span className="section-label bg-transparent font-bold !text-[var(--text-muted)]">Calories Remaining</span>
+
+              {/* Big number */}
+              <span className="font-display" style={{
+                fontSize: "36px",
+                fontWeight: "700",
+                color: "var(--text-primary)",
+                lineHeight: 1,
+              }}>
+                {Math.round(remainingCalories)}
+              </span>
+
+              {/* Protein row */}
+              <div style={{ marginTop: "4px" }}>
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "5px",
+                }}>
+                  <span className="section-label bg-transparent font-bold !text-[var(--text-muted)]">Protein Goal</span>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>
+                    {Math.round(proteinProgress)}g / {proteinTarget}g
+                  </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-green rounded-full transition-all duration-1000 ease-out" style={{ width: `${(proteinProgress / proteinTarget) * 100}%` }} />
+                {/* Progress bar */}
+                <div className="progress-bar" style={{
+                  height: "5px",
+                  borderRadius: "999px",
+                  background: isDark ? "rgba(255,255,255,0.08)" : "rgba(47,128,237,0.12)"
+                }}>
+                  <div
+                    className="progress-bar-fill"
+                    style={{ 
+                      width: `${Math.min(100, (proteinProgress / proteinTarget) * 100)}%`,
+                      background: isDark ? "linear-gradient(90deg, #C4841A, #F5C96B)" : "linear-gradient(90deg, #2F80ED, #28B5A0)",
+                      height: "100%",
+                      borderRadius: "999px",
+                      transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)"
+                    }}
+                  />
                 </div>
-                <p className="text-right text-[10px] font-bold text-brand-green mt-1">{Math.round(proteinProgress)}g</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Quick Actions Row */}
-        <section className="grid grid-cols-2 gap-4">
-          {/* Hydration Mini-Card */}
-          <div className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden group">
-            <div className="absolute inset-0 bg-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-            <div className="flex justify-between items-start relative z-10">
-              <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center transition-all shadow-sm", isHydrated ? "bg-blue-500 text-white shadow-blue-200" : "bg-white border border-slate-100 text-blue-500")}>
-                <Droplets className="w-4 h-4 fill-current" />
+        <section className="animate-slide-up grid grid-cols-3 gap-[10px]">
+          <div className="metric-card stagger-1 min-h-[128px] p-[14px] flex flex-col justify-between">
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[8px]" style={{ color: "var(--text-secondary)" }}>Hydration</div>
+              <div className="mb-[10px] flex items-center justify-between gap-2">
+                <div className="font-display text-[22px] font-bold leading-none shrink-0">{plan?.waterIntake || 0}</div>
+                <Droplets className="w-[18px] h-[18px] text-brand shrink-0" />
               </div>
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">H2O</span>
             </div>
-
-            <div className="relative z-10">
-              <div className="flex items-baseline gap-1 mb-3">
-                <span className="text-xl font-bold text-slate-900">{plan?.waterIntake || 0}</span>
-                <span className="text-xs font-semibold text-slate-400">ml</span>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={handleSubtractWater} className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center hover:bg-slate-50 transition-colors"><Minus className="w-3.5 h-3.5 text-slate-400" /></button>
-                <button onClick={handleAddWater} className="flex-1 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-sm shadow-blue-200"><Plus className="w-4 h-4" /></button>
-              </div>
+            <div className="grid grid-cols-2 gap-2 mt-auto w-full">
+              <button
+                aria-label="Remove water"
+                className="flex items-center justify-center h-[30px] rounded-full text-brand font-bold text-lg transition-colors"
+                style={{ backgroundColor: "var(--surface-2)" }}
+                onClick={() => updateWater({ date: format(selectedDate, "yyyy-MM-dd"), amount: -250 })}
+              >
+                -
+              </button>
+              <button
+                aria-label="Add water"
+                className="flex items-center justify-center h-[30px] rounded-full text-white transition-colors"
+                style={{ backgroundColor: "var(--brand-primary)" }}
+                onClick={() => updateWater({ date: format(selectedDate, "yyyy-MM-dd"), amount: 250 })}
+              >
+                <Plus className="w-[16px] h-[16px] stroke-[3px]" />
+              </button>
             </div>
           </div>
 
-          {/* Quick Log Meal */}
-          <Link href="/log-meal">
-            <div className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden cursor-pointer group hover:border-emerald-200 transition-all">
-              <div className="absolute inset-0 bg-emerald-50/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="metric-card stagger-2 min-h-[128px] p-[14px] flex flex-col justify-between">
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[8px]" style={{ color: "var(--text-secondary)" }}>Steps</div>
+              <div className="mb-[10px] flex items-center justify-between gap-2">
+                <div className="font-display text-[22px] font-bold leading-none tracking-tight shrink-0">8,204</div>
+                <Footprints className="w-[18px] h-[18px] text-brand shrink-0" />
+              </div>
+            </div>
+            <div className="progress-bar h-[4px] mt-auto rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <div className="progress-bar-fill h-full bg-brand rounded-full" style={{ width: "82%" }} />
+            </div>
+          </div>
 
-              <div className="flex justify-between items-start relative z-10">
-                <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+          <div className="metric-card stagger-3 min-h-[128px] p-[14px] flex flex-col justify-between">
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[8px]" style={{ color: "var(--text-secondary)" }}>Streak</div>
+              <div className="mb-[10px] flex items-center justify-between gap-2">
+                <div className="font-display text-[22px] font-bold leading-none shrink-0">12</div>
+                <Trophy className="w-[18px] h-[18px] text-brand shrink-0" />
+              </div>
+            </div>
+            <span className="pill-green text-[9px] mt-auto self-start whitespace-nowrap">On track</span>
+          </div>
+        </section>
+
+        <section className="animate-slide-up space-y-[12px]">
+          <SectionHeader
+            title="Today's Plan"
+            action={
+              <Link href="/log-meal">
+                <button className="bg-brand text-white flex items-center justify-center gap-1.5 px-4 h-[44px] rounded-[14px] text-[14px] font-bold hover:opacity-90 transition-opacity">
                   <Plus className="w-4 h-4" />
+                  Quick Log
+                </button>
+              </Link>
+            }
+          />
+          <div className="flex flex-col gap-[12px]">
+            {meals.slice(0, 3).map((meal: any, index: number) => (
+              <Link key={meal.id} href={`/meal/${format(selectedDate, "yyyy-MM-dd")}/${meal.id}`}>
+                <div className={`wellness-card cursor-pointer p-[16px] ${["stagger-1", "stagger-2", "stagger-3"][index]}`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[4px]" style={{ color: "var(--text-secondary)" }}>{meal.type}</div>
+                      <h3 className="text-[15px] font-semibold text-primary truncate leading-tight">{meal.name}</h3>
+                      <p className="mt-[4px] text-[12px]" style={{ color: "var(--text-secondary)" }}>
+                        {meal.calories} kcal · {meal.protein}g protein
+                      </p>
+                    </div>
+                    <span className={cn(meal.isConsumed ? "pill-green" : "pill-brand", "text-[11px]")}>{meal.isConsumed ? "Logged" : "Planned"}</span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Log</span>
-              </div>
-
-              <div className="relative z-10">
-                <p className="text-sm font-bold text-slate-900 leading-tight mb-1">Track<br />Manual Meal</p>
-                <div className="flex items-center gap-1 text-emerald-600">
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Entry</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              </div>
-            </div>
-          </Link>
+              </Link>
+            ))}
+            {meals.length === 0 && <div className="wellness-card p-[16px] text-center" style={{ color: "var(--text-secondary)" }}>No meals generated yet.</div>}
+          </div>
         </section>
 
-        {/* Workout Feature */}
-        <section>
-          <SectionHeader title="Training" action={<Link href="/workouts"><span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-brand-blue transition-colors">View All</span></Link>} />
+        <section className="animate-slide-up space-y-[12px]">
+          <SectionHeader title="Training" />
           {workouts.length > 0 ? (
             <Link href={`/workout/${workouts[0].id}`}>
-              <div className="group bg-white rounded-[24px] p-1 shadow-lg shadow-slate-200/50 cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden border border-slate-100">
-                <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 opacity-50" />
-
-                {/* Decorative blur */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-brand-blue/5 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
-
-                <div className="relative z-10 p-5 rounded-[22px] flex justify-between items-center h-28">
+              <div className="wellness-card stagger-4 cursor-pointer p-[16px] group">
+                <div className="flex items-center justify-between">
                   <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold uppercase tracking-wider text-slate-500 border border-slate-200">{workouts[0].difficulty}</span>
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold uppercase tracking-wider text-slate-500 border border-slate-200">{workouts[0].duration} min</span>
-                    </div>
-                    <h3 className="text-lg font-bold tracking-tight text-slate-900 mb-0.5">{workouts[0].name}</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Start Session</p>
+                    <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[4px]" style={{ color: "var(--text-secondary)" }}>Workout</div>
+                    <h3 className="text-[15px] font-semibold text-primary truncate leading-tight">{workouts[0].name}</h3>
+                    <p className="mt-[4px] text-[12px]" style={{ color: "var(--text-secondary)" }}>
+                      {workouts[0].difficulty} · {workouts[0].duration} min
+                    </p>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 transition-all shadow-md shadow-blue-200">
-                    <PlayCircle className="w-6 h-6 text-white fill-current" />
+                  <div className="w-[44px] h-[44px] rounded-[14px] bg-surface-2 flex items-center justify-center text-brand group-hover:scale-105 transition-transform">
+                    <Zap className="w-[20px] h-[20px] fill-current" />
                   </div>
                 </div>
               </div>
             </Link>
           ) : (
-            <div className="bg-slate-50 rounded-3xl p-6 text-center border border-slate-100 border-dashed h-24 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <Zap className="w-5 h-5 text-slate-300" />
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rest Day Active</p>
-              </div>
-            </div>
+            <div className="wellness-card p-[16px] text-center" style={{ color: "var(--text-secondary)" }}>Rest day. No workout assigned yet.</div>
           )}
         </section>
-
-        {/* Stats Grid */}
-        <section className="grid grid-cols-2 gap-4">
-          {[
-            { label: "Daily Steps", val: "8,204", icon: Footprints, color: "text-orange-600", bg: "bg-orange-50 border-orange-100" },
-            { label: "Day Streak", val: "12 Days", icon: Trophy, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" }
-          ].map((stat, i) => (
-            <div key={i} className={cn("bg-white p-5 rounded-3xl border flex flex-col justify-center gap-3 shadow-sm", stat.bg)}>
-              <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center bg-white shadow-sm", stat.color)}>
-                <stat.icon className="w-5 h-5 fill-current opacity-20" />
-                <stat.icon className="w-5 h-5 absolute" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-900 leading-tight tracking-tight">{stat.val}</p>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-80">{stat.label}</p>
-              </div>
-            </div>
-          ))}
-        </section>
-
       </div>
     </PageLayout>
   );
