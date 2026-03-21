@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { useCreateProfile } from "@/hooks/use-user";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PageLayout } from "@/components/PageLayout";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -121,6 +122,24 @@ export default function Onboarding() {
     if (await trigger(fields)) setCurrentStep((s) => Math.min(s + 1, steps.length));
   };
 
+  const handleStepOneEnter = (event: KeyboardEvent<HTMLInputElement>, nextField: "age" | "gender") => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (nextField === "age") {
+      form.setFocus("age");
+      return;
+    }
+    if (nextField === "gender") {
+      if (watch("gender")) {
+        void handleNext();
+        return;
+      }
+      document.getElementById("gender-male")?.focus();
+      return;
+    }
+    handleNext();
+  };
+
   const onSubmit = (data: FormData) => {
     createProfile(data, {
       onSuccess: () => setLocation("/dashboard"),
@@ -131,8 +150,10 @@ export default function Onboarding() {
     cn("wellness-card cursor-pointer p-4 text-left transition-all", selected && "");
 
   return (
-    <div className="page-transition min-h-[100dvh] overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto w-full max-w-[420px] space-y-6 sm:max-w-xl sm:space-y-8">
+    <PageLayout
+      maxWidth="xl"
+      className="space-y-6 sm:space-y-8"
+      header={
         <div className="animate-slide-up text-center">
           <div className="section-label mb-3">Setup</div>
           <h1 className="font-display text-[clamp(2.4rem,9vw,4rem)]">{currentStepData.title}</h1>
@@ -144,31 +165,47 @@ export default function Onboarding() {
           </div>
           <p className="section-label mt-3">Step {currentStep} of {steps.length}</p>
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="wellness-card animate-slide-up p-5 sm:p-6 md:p-8">
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="wellness-card animate-slide-up p-5 sm:p-6 md:p-8">
           {currentStep === 1 && (
             <div className="space-y-5">
               <div className="stagger-1">
                 <Label className="section-label mb-2 block">Display Name</Label>
-                <Input className="input-field" placeholder="Your name" {...register("displayName")} />
+                <Input
+                  autoFocus
+                  autoComplete="name"
+                  className="input-field"
+                  placeholder="Your name"
+                  {...register("displayName")}
+                  onKeyDown={(event) => handleStepOneEnter(event, "age")}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="stagger-2">
                   <Label className="section-label mb-2 block">Age</Label>
-                  <Input type="number" className="input-field" {...register("age")} />
+                  <Input
+                    type="number"
+                    className="input-field"
+                    {...register("age")}
+                    onKeyDown={(event) => handleStepOneEnter(event, "gender")}
+                  />
                 </div>
                 <div className="stagger-3">
                   <Label className="section-label mb-2 block">Gender</Label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {["male", "female"].map((gender) => (
                       <button
                         key={gender}
                         type="button"
-                        className={cardClass(watch("gender") === gender)}
+                        id={`gender-${gender}`}
+                        className={cn(cardClass(watch("gender") === gender), "min-h-[56px] w-full px-3 py-4")}
                         style={watch("gender") === gender ? { borderColor: "var(--brand-primary)" } : undefined}
                         onClick={() => setValue("gender", gender)}
                       >
-                        <span style={{ color: "var(--text-primary)" }}>{gender}</span>
+                        <span className="text-sm capitalize sm:text-base" style={{ color: "var(--text-primary)" }}>
+                          {gender}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -359,8 +396,7 @@ export default function Onboarding() {
               </button>
             )}
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </PageLayout>
   );
 }
