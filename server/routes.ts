@@ -566,7 +566,13 @@ export function registerRoutes(
         },
       };
 
-      const pPlan = aiPlan ?? await generatePersonalizedPlan(engineProfile);
+      const fallbackPlan = await generatePersonalizedPlan(engineProfile);
+      const pPlan = {
+        breakfast: aiPlan?.breakfast ?? fallbackPlan?.breakfast ?? null,
+        lunch: aiPlan?.lunch ?? fallbackPlan?.lunch ?? null,
+        dinner: aiPlan?.dinner ?? fallbackPlan?.dinner ?? null,
+        workout: aiPlan?.workout ?? fallbackPlan?.workout ?? null,
+      };
 
       // Persistence: Save to database
       const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
@@ -594,6 +600,9 @@ export function registerRoutes(
 
       // Save Meals
       const mealsToSave = [pPlan.breakfast, pPlan.lunch, pPlan.dinner].filter(Boolean);
+      if (mealsToSave.length === 0) {
+        throw new Error("No meals could be generated for this profile");
+      }
       for (const m of mealsToSave) {
         await storage.createMeal({
           planId,
@@ -621,20 +630,24 @@ export function registerRoutes(
       }
       // Save Workout
       if (pPlan.workout) {
-        const durationMin =
-          Number((pPlan.workout as any).durationMinutes || (pPlan.workout as any).duration_minutes || parseInt((pPlan.workout as any).duration)) ||
-          30;
-        await storage.createWorkout({
-          planId,
-          type: String((pPlan.workout as any).workoutType || (pPlan.workout as any).workout_type || "strength") as any,
-          name: String((pPlan.workout as any).name || (pPlan.workout as any).workout_name || "Workout"),
-          description: aiPlan
-            ? `AI-generated workout. ${String((pPlan.workout as any).description || "")}`.trim()
-            : (pPlan.workout as any).description || null,
-          duration: durationMin,
-          difficulty: mapWorkoutDifficultyToDb((pPlan.workout as any).level || (pPlan.workout as any).difficulty),
-          exercises: toWorkoutDbExercises(pPlan.workout as any),
-        });
+        try {
+          const durationMin =
+            Number((pPlan.workout as any).durationMinutes || (pPlan.workout as any).duration_minutes || parseInt((pPlan.workout as any).duration)) ||
+            30;
+          await storage.createWorkout({
+            planId,
+            type: String((pPlan.workout as any).workoutType || (pPlan.workout as any).workout_type || "strength") as any,
+            name: String((pPlan.workout as any).name || (pPlan.workout as any).workout_name || "Workout"),
+            description: aiPlan && aiPlan.workout
+              ? `AI-generated workout. ${String((pPlan.workout as any).description || "")}`.trim()
+              : (pPlan.workout as any).description || null,
+            duration: durationMin,
+            difficulty: mapWorkoutDifficultyToDb((pPlan.workout as any).level || (pPlan.workout as any).difficulty),
+            exercises: toWorkoutDbExercises(pPlan.workout as any),
+          });
+        } catch (workoutError) {
+          console.warn("[GENERATION] Workout generation failed but meals were created:", workoutError);
+        }
       }
       const fullPlan = await storage.getDailyPlan(userId, date);
       console.log(`[GENERATION] Successfully generated and saved personalized plan ${planId} for user ${userId}`);
