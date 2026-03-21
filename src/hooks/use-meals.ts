@@ -155,10 +155,10 @@ export function useRegenerateMeal() {
         return old.map((m: any) => m.id === updatedMeal.id ? updatedMeal : m);
       });
 
-      toast({ title: "Meal Regenerated", description: "New option created based on your feedback." });
+      toast({ title: "New Meal Ready", description: "We made a new meal based on what you asked for." });
     },
     onError: (err) => {
-      toast({ title: "Optimization Failed", description: err.message, variant: "destructive" });
+      toast({ title: "Could Not Create Meal", description: err.message, variant: "destructive" });
     },
   });
 }
