@@ -7,13 +7,13 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
 import { openai } from "./replit_integrations/audio"; // Reuse openai client
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DailyPlanWithDetails, InsertDailyPlan, InsertMeal, InsertWorkout, InsertActivityLog, InsertGpsRoute } from "@shared/schema";
 import { selectDeterministicMeals, selectBestMealForSlot } from "../src/api/diet";
 import { getWorkoutForProfile, mapWorkoutDifficultyToDb, toWorkoutDbExercises } from "./data/workout-lib";
 import { generatePersonalizedPlan } from "./data/engine";
 import { calculateCategoryTargets, getWeightCategoryDisplayName } from "./services/planGenerator";
 import { generateAiPlan } from "./services/aiPlan";
+import { generateLlmChat, generateLlmText, isLlmConfigured } from "./services/llm";
 
 /**
  * Fetch nutrition data from API-Ninjas
@@ -80,14 +80,6 @@ function normalizeIngredientsList(availableIngredients: string[] = []): string[]
     .filter(Boolean)
     .slice(0, 20);
 }
-
-const GEMINI_MODEL_FALLBACKS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-001",
-  "gemini-2.0-flash-lite",
-  "gemini-2.0-flash-lite-001",
-] as const;
 
 export function registerRoutes(
   httpServer: Server,
@@ -425,7 +417,7 @@ export function registerRoutes(
         existingAiMealTypes.has("lunch") &&
         existingAiMealTypes.has("dinner");
 
-      if (existingFullPlan && process.env.GEMINI_API_KEY && !existingLooksAiGenerated) {
+      if (existingFullPlan && isLlmConfigured() && !existingLooksAiGenerated) {
         console.log(`[GENERATION] Upgrading existing plan ${existingFullPlan.id} to AI-generated content`);
         await storage.clearPlanDetails(existingFullPlan.id);
         existingHasMeals = false;
@@ -787,9 +779,8 @@ export function registerRoutes(
     // 3. Get recent history to avoid repeating too soon
     const recentMeals = await storage.getRecentMealNames(userId, 20);
 
-    if (process.env.GEMINI_API_KEY && pantry.length > 0) {
+    if (isLlmConfigured() && pantry.length > 0) {
       try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const calorieTarget = Math.max(120, originalMeal.calories);
         const proteinTarget = Math.max(10, originalMeal.protein);
         const prompt = `
@@ -826,25 +817,7 @@ JSON shape:
   "instructions": "2-4 concise steps"
 }`;
 
-        let rawText = "";
-        let lastGeminiError: unknown = null;
-        for (const modelName of GEMINI_MODEL_FALLBACKS) {
-          try {
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const result = await model.generateContent(prompt);
-            rawText = result.response.text();
-            console.log(`[MEAL_REGEN] Gemini optimization succeeded with ${modelName}`);
-            break;
-          } catch (modelError) {
-            lastGeminiError = modelError;
-            console.warn(`[MEAL_REGEN] Model ${modelName} failed:`, modelError);
-          }
-        }
-
-        if (!rawText) {
-          throw lastGeminiError || new Error("Gemini meal optimization failed");
-        }
-
+        const rawText = await generateLlmText({ prompt, temperature: 0.6, maxTokens: 4096 });
         const aiMeal = generatedMealSchema.parse(toJsonObject(rawText));
 
         const updatedMeal = await storage.updateMeal(id, {
@@ -866,7 +839,7 @@ JSON shape:
 
         return res.json(updatedMeal);
       } catch (error) {
-        console.error("[MEAL_REGEN] Gemini optimization failed, falling back to library swap:", error);
+        console.error("[MEAL_REGEN] AI meal optimization failed, falling back to library swap:", error);
       }
     }
 
@@ -1131,8 +1104,8 @@ JSON shape:
         return res.status(400).json({ message: "Message is required" });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
-        const missingKeyMessage = "AI Coach is not configured. Set GEMINI_API_KEY in your deployment environment.";
+      if (!isLlmConfigured()) {
+        const missingKeyMessage = "AI Coach is not configured. Set the AI provider key and base URL in your deployment environment.";
         if (isProduction) {
           return res.status(500).json({ message: missingKeyMessage });
         }
@@ -1240,8 +1213,8 @@ Rules:
       };
 
       // === HARDENED GEMINI INTEGRATION ===
-      console.log("--- Gemini API Call Started ---");
-      console.log("GEMINI_API_KEY check:", process.env.GEMINI_API_KEY ? "EXISTS" : "MISSING");
+      console.log("--- AI Coach Call Started ---");
+      console.log("AI client config check:", isLlmConfigured() ? "EXISTS" : "MISSING");
 
       // 0. Persistence Prep
       const conversation = await storage.getCoachConversation(req.user.id);
@@ -1253,73 +1226,16 @@ Rules:
         content: message
       });
 
-      // 1. Try a small set of models for compatibility across keys/projects.
-      // 2. Input MUST be passed using contents
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: `System Instructions: ${systemPrompt}\n\nContext understood. Now answer this user message.` }]
-        },
-        {
-          role: "model",
-          parts: [{ text: "Understood. I am AaRa Coach and will strictly follow your guidelines and user context." }]
-        }
-      ];
-
-      // Add conversation history to contents
-      conversationHistory.forEach((m: any) => {
-        contents.push({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }]
-        });
-      });
-
-      // Add final user message
-      contents.push({
-        role: "user",
-        parts: [{ text: message }]
-      });
-
-      console.log("Gemini Request Payload (contents):", JSON.stringify(contents, null, 2));
-
       try {
-        // 3. Call Gemini (fallback across models if one isn't available for this key)
-        let result: any = null;
-        let lastErr: any = null;
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-        for (const name of GEMINI_MODEL_FALLBACKS) {
-          try {
-            const model = genAI.getGenerativeModel({ model: name });
-            result = await model.generateContent({ contents });
-            lastErr = null;
-            break;
-          } catch (e) {
-            lastErr = e;
-          }
-        }
-        if (!result) throw lastErr || new Error("Gemini call failed");
+        const text = await generateLlmChat({
+          system: systemPrompt,
+          conversationHistory,
+          message,
+          temperature: 0.6,
+          maxTokens: 2048,
+        });
 
-        console.log("Gemini Response Metadata:", JSON.stringify({
-          candidatesCount: result.response.candidates?.length,
-          promptFeedback: result.response.promptFeedback
-        }, null, 2));
-
-        // 4. Response text MUST be extracted manually from candidates
-        let text = "";
-        try {
-          if (result.response.candidates && result.response.candidates.length > 0) {
-            text = result.response.candidates[0].content.parts[0].text || "";
-          }
-        } catch (extractError) {
-          console.error("Manual extraction failed, trying result.response.text():", extractError);
-          text = result.response.text(); // Resilient fallback
-        }
-
-        if (!text) {
-          throw new Error("Gemini returned an empty response candidate.");
-        }
-
-        console.log("Gemini Response Text (First 100 chars):", text.substring(0, 100) + "...");
+        console.log("AI Coach Response Text (First 100 chars):", text.substring(0, 100) + "...");
 
         // Save assistant message to DB
         await storage.createMessage({
@@ -1331,19 +1247,18 @@ Rules:
         // Return JSON in production; SSE in development.
         sendCoachPayload({ content: text, done: true, fullResponse: text });
 
-      } catch (geminiError: any) {
-        // 5. Errors (full stack trace)
-        console.error("!! GEMINI API FATAL ERROR !!");
-        console.error("Stack trace:", geminiError.stack);
-        console.error("Full Error Object:", JSON.stringify(geminiError, (key, value) => {
+      } catch (aiError: any) {
+        console.error("!! AI COACH FATAL ERROR !!");
+        console.error("Stack trace:", aiError.stack);
+        console.error("Full Error Object:", JSON.stringify(aiError, (key, value) => {
           if (key === 'stack') return undefined; // Already logged
           return value;
         }, 2));
 
-        throw geminiError; // Re-throw to be caught by outer catch
+        throw aiError;
       }
 
-      console.log("--- Gemini API Call Completed Successfully ---");
+      console.log("--- AI Coach Call Completed Successfully ---");
 
       } catch (err: any) {
         console.error("Coach chat route catch block triggered:", err.message);

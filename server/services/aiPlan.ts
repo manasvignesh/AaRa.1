@@ -1,17 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 
 import { loadMeals } from "../data/loadMeals";
 import { loadWorkouts } from "../data/workout-lib";
 import { calculateCategoryTargets, getWeightCategoryDisplayName, mapPrimaryGoalToPlanGoal } from "./planGenerator";
-
-const GEMINI_MODEL_FALLBACKS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-001",
-  "gemini-2.0-flash-lite",
-  "gemini-2.0-flash-lite-001",
-] as const;
+import { generateLlmText, isLlmConfigured } from "./llm";
 
 const generatedMealSchema = z.object({
   mealType: z.enum(["breakfast", "lunch", "dinner"]),
@@ -137,27 +129,25 @@ function buildWorkoutExamples(profile: PlannerProfile) {
 }
 
 async function generateStructuredJson<T>(
-  apiKey: string,
   prompt: string,
   schema: z.ZodSchema<T>,
   label: string,
 ): Promise<T | null> {
-  const genAI = new GoogleGenerativeAI(apiKey);
   let lastError: unknown = null;
 
-  for (const modelName of GEMINI_MODEL_FALLBACKS) {
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        const parsed = schema.parse(parseJsonBlock(text));
-        console.log(`[AI_PLAN] Generated ${label} successfully with ${modelName} on attempt ${attempt}`);
-        return parsed;
-      } catch (error) {
-        lastError = error;
-        console.warn(`[AI_PLAN] ${label} failed with ${modelName} on attempt ${attempt}:`, error);
-      }
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const text = await generateLlmText({
+        prompt,
+        temperature: 0.6,
+        maxTokens: 4096,
+      });
+      const parsed = schema.parse(parseJsonBlock(text));
+      console.log(`[AI_PLAN] Generated ${label} successfully on attempt ${attempt}`);
+      return parsed;
+    } catch (error) {
+      lastError = error;
+      console.warn(`[AI_PLAN] ${label} failed on attempt ${attempt}:`, error);
     }
   }
 
@@ -166,8 +156,7 @@ async function generateStructuredJson<T>(
 }
 
 export async function generateAiPlan(profile: PlannerProfile): Promise<GeneratedPlan | null> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!isLlmConfigured()) return null;
 
   const targets = calculateCategoryTargets(profile as any);
   const planGoal = mapPrimaryGoalToPlanGoal(profile.primaryGoal);
@@ -271,7 +260,7 @@ Return only valid JSON matching exactly:
   "region": "north_indian"
 }`;
 
-      const meal = await generateStructuredJson(apiKey, prompt, generatedMealSchema, `${key} meal`);
+      const meal = await generateStructuredJson(prompt, generatedMealSchema, `${key} meal`);
       return [key, meal] as const;
     }),
   );
@@ -309,7 +298,7 @@ Return only valid JSON matching exactly:
   ]
 }`;
 
-  const workout = await generateStructuredJson(apiKey, workoutPrompt, generatedWorkoutSchema, "workout");
+  const workout = await generateStructuredJson(workoutPrompt, generatedWorkoutSchema, "workout");
 
   const generatedPlan = Object.fromEntries(mealResults) as GeneratedPlan;
   generatedPlan.workout = workout;
