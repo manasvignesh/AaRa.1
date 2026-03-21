@@ -407,10 +407,15 @@ export function registerRoutes(
       const existingFullPlan = await storage.getDailyPlan(userId, date);
       let existingHasMeals = Boolean(existingFullPlan?.meals && existingFullPlan.meals.length > 0);
       let existingHasWorkouts = Boolean(existingFullPlan?.workouts && existingFullPlan.workouts.length > 0);
-      const existingLooksAiGenerated = Boolean(
-        existingFullPlan?.meals?.some((meal) => String(meal.libraryMealId || "").startsWith("ai-generated")) ||
-        existingFullPlan?.workouts?.some((workout) => String(workout.description || "").includes("AI-generated")),
+      const existingAiMealTypes = new Set(
+        (existingFullPlan?.meals || [])
+          .filter((meal) => String(meal.libraryMealId || "").startsWith("ai-generated"))
+          .map((meal) => String(meal.type || "").toLowerCase()),
       );
+      const existingLooksAiGenerated =
+        existingAiMealTypes.has("breakfast") &&
+        existingAiMealTypes.has("lunch") &&
+        existingAiMealTypes.has("dinner");
 
       if (existingFullPlan && process.env.GEMINI_API_KEY && !existingLooksAiGenerated) {
         console.log(`[GENERATION] Upgrading existing plan ${existingFullPlan.id} to AI-generated content`);
@@ -573,6 +578,9 @@ export function registerRoutes(
         dinner: aiPlan?.dinner ?? fallbackPlan?.dinner ?? null,
         workout: aiPlan?.workout ?? fallbackPlan?.workout ?? null,
       };
+      const aiGeneratedMealTypes = new Set(
+        ["breakfast", "lunch", "dinner"].filter((mealType) => Boolean((aiPlan as any)?.[mealType])),
+      );
 
       // Persistence: Save to database
       const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
@@ -615,7 +623,9 @@ export function registerRoutes(
           fats: Math.round(Number((m as any).fat || (m as any).fats || 0)) || null,
           fiber: Math.round(Number((m as any).fiber || 0)) || null,
           cookingMethod: String((m as any).cookingMethod || ""),
-          libraryMealId: aiPlan ? `ai-generated-${String((m as any).mealType || "meal")}` : String((m as any).id || ""),
+          libraryMealId: aiGeneratedMealTypes.has(String((m as any).mealType || "").toLowerCase())
+            ? `ai-generated-${String((m as any).mealType || "meal")}`
+            : String((m as any).id || ""),
           suitableForCategories: (m as any).suitableForCategories || null,
           calorieDensity: (m as any).calorieDensity || null,
           glycemicLoad: (m as any).glycemicLoad || null,
