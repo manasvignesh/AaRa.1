@@ -81,6 +81,14 @@ function normalizeIngredientsList(availableIngredients: string[] = []): string[]
     .slice(0, 20);
 }
 
+const GEMINI_MODEL_FALLBACKS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-001",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash-lite-001",
+] as const;
+
 export function registerRoutes(
   httpServer: Server,
   app: Express
@@ -782,7 +790,6 @@ export function registerRoutes(
     if (process.env.GEMINI_API_KEY && pantry.length > 0) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
         const calorieTarget = Math.max(120, originalMeal.calories);
         const proteinTarget = Math.max(10, originalMeal.protein);
         const prompt = `
@@ -821,7 +828,7 @@ JSON shape:
 
         let rawText = "";
         let lastGeminiError: unknown = null;
-        for (const modelName of modelNames) {
+        for (const modelName of GEMINI_MODEL_FALLBACKS) {
           try {
             const model = genAI.getGenerativeModel({ model: modelName });
             const result = await model.generateContent(prompt);
@@ -1247,8 +1254,6 @@ Rules:
       });
 
       // 1. Try a small set of models for compatibility across keys/projects.
-      const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-
       // 2. Input MUST be passed using contents
       const contents = [
         {
@@ -1282,7 +1287,7 @@ Rules:
         let result: any = null;
         let lastErr: any = null;
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-        for (const name of modelNames) {
+        for (const name of GEMINI_MODEL_FALLBACKS) {
           try {
             const model = genAI.getGenerativeModel({ model: name });
             result = await model.generateContent({ contents });

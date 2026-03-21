@@ -5,6 +5,14 @@ import { loadMeals } from "../data/loadMeals";
 import { loadWorkouts } from "../data/workout-lib";
 import { calculateCategoryTargets, getWeightCategoryDisplayName, mapPrimaryGoalToPlanGoal } from "./planGenerator";
 
+const GEMINI_MODEL_FALLBACKS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-001",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash-lite-001",
+] as const;
+
 const generatedMealSchema = z.object({
   mealType: z.enum(["breakfast", "lunch", "dinner"]),
   name: z.string().min(2),
@@ -135,10 +143,9 @@ async function generateStructuredJson<T>(
   label: string,
 ): Promise<T | null> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
   let lastError: unknown = null;
 
-  for (const modelName of modelNames) {
+  for (const modelName of GEMINI_MODEL_FALLBACKS) {
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
