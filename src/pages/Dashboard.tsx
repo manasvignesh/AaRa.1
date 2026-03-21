@@ -410,10 +410,10 @@ export default function Dashboard() {
             {meals.slice(0, 3).map((meal: any, index: number) => (
               <Link key={meal.id} href={`/meal/${format(selectedDate, "yyyy-MM-dd")}/${meal.id}`}>
                 <div className={`wellness-card cursor-pointer p-[16px] ${["stagger-1", "stagger-2", "stagger-3"][index]}`}>
-                  <div className="flex items-start justify-between">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[4px]" style={{ color: "var(--text-secondary)" }}>{meal.type}</div>
-                      <h3 className="text-[15px] font-semibold text-primary truncate leading-tight">
+                      <h3 className="text-[15px] font-semibold text-primary leading-tight" style={{ overflowWrap: "anywhere" }}>
                         {meal.name}
                         {meal.isWeightLossFriendly &&
                           ["overweight", "obese", "severely_obese"].includes(String(user?.weightCategory)) && (
@@ -461,7 +461,7 @@ export default function Dashboard() {
                         {meal.calories} kcal · {meal.protein}g protein
                       </p>
                     </div>
-                    <span className={cn(meal.isConsumed ? "pill-green" : "pill-brand", "text-[11px]")}>{meal.isConsumed ? "Logged" : "Planned"}</span>
+                    <span className={cn(meal.isConsumed ? "pill-green" : "pill-brand", "text-[11px] shrink-0 self-start")}>{meal.isConsumed ? "Logged" : "Planned"}</span>
                   </div>
                 </div>
               </Link>

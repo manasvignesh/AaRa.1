@@ -147,23 +147,23 @@ export default function MealsPage() {
                                             setShowConsumptionPrompt(true);
                                         }}
                                         className={cn(
-                                            "rounded-[20px] px-[16px] py-[14px] flex items-center justify-between border transition-all cursor-pointer shadow-[0_4px_20px_rgba(47,128,237,0.07)] hover:shadow-md h-auto",
+                                            "rounded-[20px] px-[16px] py-[14px] flex items-start justify-between gap-3 border transition-all cursor-pointer shadow-[0_4px_20px_rgba(47,128,237,0.07)] hover:shadow-md h-auto",
                                             meal.isConsumed || meal.consumedAlternative ? "" : "feature-card"
                                         )}
                                         style={meal.isConsumed || meal.consumedAlternative ? { backgroundColor: "rgba(39,174,96,0.12)", borderColor: "rgba(39,174,96,0.25)" } : { backgroundColor: "var(--surface-1)", borderColor: "var(--border)" }}
                                     >
-                                        <div className="flex items-center gap-[12px] min-w-0 pr-2">
+                                        <div className="flex items-start gap-[12px] min-w-0 flex-1 pr-2">
                                             <div className={cn(
                                                 "w-[40px] h-[40px] rounded-[12px] flex items-center justify-center shrink-0 transition-colors",
                                                 meal.isConsumed || meal.consumedAlternative ? "bg-[#27AE60] text-white shadow-sm" : "text-brand"
                                             )}>
                                                 {meal.isConsumed || meal.consumedAlternative ? <CheckCircle2 className="w-[20px] h-[20px]" /> : <Utensils className="w-[18px] h-[18px]" />}
                                             </div>
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 flex-1">
                                                 <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-[2px]" style={{ color: "var(--text-secondary)" }}>
                                                     {meal.type}
                                                 </p>
-                                                <h4 className={cn("text-[15px] font-semibold truncate leading-tight", (meal.isConsumed || meal.consumedAlternative) ? "text-[#27AE60] line-through decoration-[#27AE60]/30" : "")} style={{ color: meal.isConsumed || meal.consumedAlternative ? "#27AE60" : "var(--text-primary)" }}>
+                                                <h4 className={cn("text-[15px] font-semibold leading-tight", (meal.isConsumed || meal.consumedAlternative) ? "text-[#27AE60] line-through decoration-[#27AE60]/30" : "")} style={{ color: meal.isConsumed || meal.consumedAlternative ? "#27AE60" : "var(--text-primary)", overflowWrap: "anywhere" }}>
                                                     {meal.consumedAlternative ? meal.alternativeDescription : meal.name}
                                                     {!meal.consumedAlternative && meal.isWeightLossFriendly &&
                                                         ["overweight", "obese", "severely_obese"].includes(String(user?.weightCategory)) && (
@@ -217,7 +217,7 @@ export default function MealsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="w-[32px] h-[32px] shrink-0 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--surface-2)", color: "var(--text-muted)" }}>
+                                        <div className="w-[32px] h-[32px] shrink-0 rounded-full flex items-center justify-center self-start" style={{ backgroundColor: "var(--surface-2)", color: "var(--text-muted)" }}>
                                             <ChevronRight className="w-4 h-4" />
                                         </div>
                                     </motion.div>
