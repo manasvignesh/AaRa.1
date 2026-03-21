@@ -42,7 +42,7 @@ const generatedPlanSchema = z.object({
   breakfast: generatedMealSchema,
   lunch: generatedMealSchema,
   dinner: generatedMealSchema,
-  workout: generatedWorkoutSchema,
+  workout: generatedWorkoutSchema.optional().nullable(),
 });
 
 type GeneratedPlan = z.infer<typeof generatedPlanSchema>;
@@ -66,7 +66,17 @@ type PlannerProfile = {
 
 function parseJsonBlock(text: string): unknown {
   const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/i);
-  return JSON.parse((fenced?.[1] ?? text).trim());
+  const candidate = (fenced?.[1] ?? text).trim();
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const start = candidate.indexOf("{");
+    const end = candidate.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(candidate.slice(start, end + 1));
+    }
+    throw new Error("Could not parse Gemini JSON response");
+  }
 }
 
 function normalizeDiet(value: string | null | undefined): "veg" | "non_veg" {
@@ -227,15 +237,24 @@ Return only valid JSON matching this exact shape:
   }
 }`;
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const parsed = generatedPlanSchema.parse(parseJsonBlock(text));
-    return parsed;
-  } catch (error) {
-    console.error("[AI_PLAN] Failed to generate AI plan:", error);
-    return null;
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+
+  let lastError: unknown = null;
+  for (const modelName of modelNames) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const parsed = generatedPlanSchema.parse(parseJsonBlock(text));
+      console.log(`[AI_PLAN] Generated plan successfully with ${modelName}`);
+      return parsed;
+    } catch (error) {
+      lastError = error;
+      console.warn(`[AI_PLAN] Model ${modelName} failed:`, error);
+    }
   }
+
+  console.error("[AI_PLAN] Failed to generate AI plan with all models:", lastError);
+  return null;
 }
