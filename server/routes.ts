@@ -405,8 +405,20 @@ export function registerRoutes(
 
       // Check if plan already exists for today
       const existingFullPlan = await storage.getDailyPlan(userId, date);
-      const existingHasMeals = Boolean(existingFullPlan?.meals && existingFullPlan.meals.length > 0);
-      const existingHasWorkouts = Boolean(existingFullPlan?.workouts && existingFullPlan.workouts.length > 0);
+      let existingHasMeals = Boolean(existingFullPlan?.meals && existingFullPlan.meals.length > 0);
+      let existingHasWorkouts = Boolean(existingFullPlan?.workouts && existingFullPlan.workouts.length > 0);
+      const existingLooksAiGenerated = Boolean(
+        existingFullPlan?.meals?.some((meal) => String(meal.libraryMealId || "").startsWith("ai-generated")) ||
+        existingFullPlan?.workouts?.some((workout) => String(workout.description || "").includes("AI-generated")),
+      );
+
+      if (existingFullPlan && process.env.GEMINI_API_KEY && !existingLooksAiGenerated) {
+        console.log(`[GENERATION] Upgrading existing plan ${existingFullPlan.id} to AI-generated content`);
+        await storage.clearPlanDetails(existingFullPlan.id);
+        existingHasMeals = false;
+        existingHasWorkouts = false;
+      }
+
       if (existingFullPlan && existingHasMeals && existingHasWorkouts) {
         // Fix legacy plans that used meal-sum calories as "daily target".
         // Always ensure targets are based on the user's profile math.
@@ -594,7 +606,7 @@ export function registerRoutes(
           fats: Math.round(Number((m as any).fat || (m as any).fats || 0)) || null,
           fiber: Math.round(Number((m as any).fiber || 0)) || null,
           cookingMethod: String((m as any).cookingMethod || ""),
-          libraryMealId: String((m as any).id || ""),
+          libraryMealId: aiPlan ? `ai-generated-${String((m as any).mealType || "meal")}` : String((m as any).id || ""),
           suitableForCategories: (m as any).suitableForCategories || null,
           calorieDensity: (m as any).calorieDensity || null,
           glycemicLoad: (m as any).glycemicLoad || null,
@@ -616,7 +628,9 @@ export function registerRoutes(
           planId,
           type: String((pPlan.workout as any).workoutType || (pPlan.workout as any).workout_type || "strength") as any,
           name: String((pPlan.workout as any).name || (pPlan.workout as any).workout_name || "Workout"),
-          description: (pPlan.workout as any).description || null,
+          description: aiPlan
+            ? `AI-generated workout. ${String((pPlan.workout as any).description || "")}`.trim()
+            : (pPlan.workout as any).description || null,
           duration: durationMin,
           difficulty: mapWorkoutDifficultyToDb((pPlan.workout as any).level || (pPlan.workout as any).difficulty),
           exercises: toWorkoutDbExercises(pPlan.workout as any),
