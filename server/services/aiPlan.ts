@@ -38,14 +38,14 @@ const generatedWorkoutSchema = z.object({
   ).min(3).max(12),
 });
 
-const generatedPlanSchema = z.object({
-  breakfast: generatedMealSchema,
-  lunch: generatedMealSchema,
-  dinner: generatedMealSchema,
-  workout: generatedWorkoutSchema.optional().nullable(),
-});
-
-type GeneratedPlan = z.infer<typeof generatedPlanSchema>;
+type GeneratedMeal = z.infer<typeof generatedMealSchema>;
+type GeneratedWorkout = z.infer<typeof generatedWorkoutSchema>;
+type GeneratedPlan = {
+  breakfast?: GeneratedMeal | null;
+  lunch?: GeneratedMeal | null;
+  dinner?: GeneratedMeal | null;
+  workout?: GeneratedWorkout | null;
+};
 
 type PlannerProfile = {
   age: number;
@@ -128,6 +128,36 @@ function buildWorkoutExamples(profile: PlannerProfile) {
     }));
 }
 
+async function generateStructuredJson<T>(
+  apiKey: string,
+  prompt: string,
+  schema: z.ZodSchema<T>,
+  label: string,
+): Promise<T | null> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  let lastError: unknown = null;
+
+  for (const modelName of modelNames) {
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const parsed = schema.parse(parseJsonBlock(text));
+        console.log(`[AI_PLAN] Generated ${label} successfully with ${modelName} on attempt ${attempt}`);
+        return parsed;
+      } catch (error) {
+        lastError = error;
+        console.warn(`[AI_PLAN] ${label} failed with ${modelName} on attempt ${attempt}:`, error);
+      }
+    }
+  }
+
+  console.error(`[AI_PLAN] Failed to generate ${label}:`, lastError);
+  return null;
+}
+
 export async function generateAiPlan(profile: PlannerProfile): Promise<GeneratedPlan | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
@@ -154,8 +184,8 @@ export async function generateAiPlan(profile: PlannerProfile): Promise<Generated
     protein: Math.max(18, Math.round(targets.proteinTarget * 0.35)),
   };
 
-  const prompt = `
-You are building a single realistic Indian day plan for AARA.
+  const baseContext = `
+You are building a realistic Indian plan for AARA.
 
 User:
 - Name: ${profile.displayName || "User"}
@@ -193,68 +223,93 @@ Real-life rules:
 - Workout must fit within time available and gym access.
 - If BMI phase suggests caution, keep the workout sustainable and realistic.
 - Prefer consistency over intensity.
+`;
 
-Inspiration from current backup libraries:
-- Breakfast examples: ${JSON.stringify(mealExamples[0])}
-- Lunch examples: ${JSON.stringify(mealExamples[1])}
-- Dinner examples: ${JSON.stringify(mealExamples[2])}
-- Workout examples: ${JSON.stringify(workoutExamples)}
+  const mealPrompts: Array<{
+    key: "breakfast" | "lunch" | "dinner";
+    target: { calories: number; protein: number };
+    examples: unknown;
+  }> = [
+    { key: "breakfast", target: breakfastTarget, examples: mealExamples[0] },
+    { key: "lunch", target: lunchTarget, examples: mealExamples[1] },
+    { key: "dinner", target: dinnerTarget, examples: mealExamples[2] },
+  ];
 
-Return only valid JSON matching this exact shape:
+  const mealResults = await Promise.all(
+    mealPrompts.map(async ({ key, target, examples }) => {
+      const prompt = `
+${baseContext}
+
+Create only one ${key} meal.
+
+Target for this meal:
+- Calories: about ${target.calories} kcal
+- Protein: about ${target.protein} g
+
+Inspiration from backup meal library:
+- ${key} examples: ${JSON.stringify(examples)}
+
+Return only valid JSON matching exactly:
 {
-  "breakfast": {
-    "mealType": "breakfast",
-    "name": "string",
-    "calories": 300,
-    "protein": 18,
-    "carbs": 35,
-    "fat": 9,
-    "fiber": 6,
-    "ingredients": ["item 1", "item 2"],
-    "instructions": "short practical steps",
-    "cookingMethod": "string",
-    "region": "north_indian"
-  },
-  "lunch": { "...same shape..." },
-  "dinner": { "...same shape..." },
-  "workout": {
-    "name": "string",
-    "workoutType": "strength or cardio or mobility",
-    "difficulty": "easy or medium or hard",
-    "durationMinutes": 30,
-    "description": "string",
-    "warmup": ["step 1"],
-    "cooldown": ["step 1"],
-    "exercises": [
-      {
-        "name": "string",
-        "sets": 3,
-        "reps": "10-12",
-        "rest_seconds": 45,
-        "notes": "string"
-      }
-    ]
-  }
+  "mealType": "${key}",
+  "name": "string",
+  "calories": 300,
+  "protein": 18,
+  "carbs": 35,
+  "fat": 9,
+  "fiber": 6,
+  "ingredients": ["item 1", "item 2"],
+  "instructions": "short practical steps",
+  "cookingMethod": "string",
+  "region": "north_indian"
 }`;
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      const meal = await generateStructuredJson(apiKey, prompt, generatedMealSchema, `${key} meal`);
+      return [key, meal] as const;
+    }),
+  );
 
-  let lastError: unknown = null;
-  for (const modelName of modelNames) {
-    try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const parsed = generatedPlanSchema.parse(parseJsonBlock(text));
-      console.log(`[AI_PLAN] Generated plan successfully with ${modelName}`);
-      return parsed;
-    } catch (error) {
-      lastError = error;
-      console.warn(`[AI_PLAN] Model ${modelName} failed:`, error);
+  const workoutPrompt = `
+${baseContext}
+
+Create only one workout for today.
+
+Workout rules:
+- Keep it practical and safe.
+- Duration must fit within ${profile.timeAvailability} minutes.
+- Respect gym access: ${profile.gymAccess ? "yes" : "no"}.
+
+Inspiration from backup workout library:
+- Workout examples: ${JSON.stringify(workoutExamples)}
+
+Return only valid JSON matching exactly:
+{
+  "name": "string",
+  "workoutType": "strength or cardio or mobility",
+  "difficulty": "easy or medium or hard",
+  "durationMinutes": 30,
+  "description": "string",
+  "warmup": ["step 1"],
+  "cooldown": ["step 1"],
+  "exercises": [
+    {
+      "name": "string",
+      "sets": 3,
+      "reps": "10-12",
+      "rest_seconds": 45,
+      "notes": "string"
     }
+  ]
+}`;
+
+  const workout = await generateStructuredJson(apiKey, workoutPrompt, generatedWorkoutSchema, "workout");
+
+  const generatedPlan = Object.fromEntries(mealResults) as GeneratedPlan;
+  generatedPlan.workout = workout;
+
+  if (!generatedPlan.breakfast && !generatedPlan.lunch && !generatedPlan.dinner) {
+    return null;
   }
 
-  console.error("[AI_PLAN] Failed to generate AI plan with all models:", lastError);
-  return null;
+  return generatedPlan;
 }
