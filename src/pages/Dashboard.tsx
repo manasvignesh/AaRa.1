@@ -6,21 +6,71 @@ import { Droplets, Footprints, Loader2, Plus, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { usePlanMeta, useGeneratePlan, useUpdateWater, useWorkouts } from "@/hooks/use-plans";
-import { useUserProfile } from "@/hooks/use-user";
+import { useUserProfile, useUserStats } from "@/hooks/use-user";
 import { useMeals } from "@/hooks/use-meals";
 import { PageLayout, SectionHeader } from "@/components/PageLayout";
 import { MacroRing } from "@/components/MacroRing";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { healthService, type ActivityStats } from "@/lib/health";
+
+const bmiDisplayNames: Record<
+  string,
+  { label: string; color: string; bgColor: string; borderColor: string; tip: string }
+> = {
+  underweight: {
+    label: "Building Phase",
+    color: "#6AAFF5",
+    bgColor: "rgba(47,128,237,0.1)",
+    borderColor: "rgba(47,128,237,0.25)",
+    tip: "Focus on calorie-dense nutritious meals",
+  },
+  healthy: {
+    label: "In the Zone",
+    color: "#27AE60",
+    bgColor: "rgba(39,174,96,0.1)",
+    borderColor: "rgba(39,174,96,0.25)",
+    tip: "Maintain your great habits",
+  },
+  overweight: {
+    label: "Active Transformation",
+    color: "#E8A93A",
+    bgColor: "rgba(232,169,58,0.1)",
+    borderColor: "rgba(232,169,58,0.25)",
+    tip: "High fiber meals are your best friend",
+  },
+  obese: {
+    label: "Power Journey",
+    color: "#F5A623",
+    bgColor: "rgba(245,166,35,0.1)",
+    borderColor: "rgba(245,166,35,0.25)",
+    tip: "Small consistent steps create big changes",
+  },
+  severely_obese: {
+    label: "Strong Start",
+    color: "#E8A93A",
+    bgColor: "rgba(232,169,58,0.1)",
+    borderColor: "rgba(232,169,58,0.25)",
+    tip: "Every healthy choice counts. You've got this",
+  },
+};
 
 export default function Dashboard() {
   const [selectedDate] = useState(new Date());
   const { data: user, isLoading: userLoading } = useUserProfile();
+  const { data: stats, isLoading: statsLoading } = useUserStats();
   const { data: plan, isLoading: planLoading } = usePlanMeta(selectedDate);
   const { data: meals = [] } = useMeals(selectedDate);
   const { data: workouts = [] } = useWorkouts(selectedDate);
   const { mutate: generatePlan, isPending: isGenerating } = useGeneratePlan();
   const { mutate: updateWater } = useUpdateWater();
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<ActivityStats>({
+    steps: 0,
+    distance: 0,
+    calories: 0,
+    activeTime: 0,
+  });
+  const [noticeAcknowledged, setNoticeAcknowledged] = useState(true);
 
   const caloriesProgress = meals.reduce((sum: number, meal: any) => {
     if (meal.consumedAlternative) return sum + (meal.alternativeCalories || 0);
@@ -42,7 +92,23 @@ export default function Dashboard() {
     }
   }, [plan, planLoading, isGenerating, selectedDate, generatePlan, user, userLoading, generationError]);
 
-  if (userLoading || (planLoading && !plan) || isGenerating) {
+  useEffect(() => {
+    const unsub = healthService.subscribe(setActivity);
+    // Start motion-based steps tracking when the dashboard is open (works while app is open).
+    // On iOS this may require user gesture; if permission isn't granted, it silently stays disabled.
+    void healthService.enableStepCounter();
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    try {
+      setNoticeAcknowledged(localStorage.getItem("aara_notice_ack") === "true");
+    } catch {
+      setNoticeAcknowledged(true);
+    }
+  }, []);
+
+  if (userLoading || statsLoading || (planLoading && !plan) || isGenerating) {
     return (
       <PageLayout>
         <div className="page-transition flex min-h-[70vh] items-center justify-center">
@@ -62,6 +128,10 @@ export default function Dashboard() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  const stepsGoal = 10000;
+  const stepsProgress = Math.max(0, Math.floor(activity.steps || 0));
+  const stepsPercent = Math.min(100, Math.round((stepsProgress / stepsGoal) * 100));
+
   return (
     <PageLayout
       header={
@@ -80,6 +150,124 @@ export default function Dashboard() {
       }
     >
       <div className="space-y-[24px] page-transition">
+        {user?.weightCategory && user?.bmi && bmiDisplayNames[String(user.weightCategory)] && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 16px",
+              borderRadius: "16px",
+              background: bmiDisplayNames[String(user.weightCategory)].bgColor,
+              border: `1px solid ${bmiDisplayNames[String(user.weightCategory)].borderColor}`,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginBottom: "2px",
+                }}
+              >
+                YOUR PHASE
+              </div>
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  color: bmiDisplayNames[String(user.weightCategory)].color,
+                }}
+              >
+                {bmiDisplayNames[String(user.weightCategory)].label}
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                {bmiDisplayNames[String(user.weightCategory)].tip}
+              </div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div
+                style={{
+                  fontSize: "28px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  color: bmiDisplayNames[String(user.weightCategory)].color,
+                  lineHeight: 1,
+                }}
+              >
+                {Number(user.bmi).toFixed(1)}
+              </div>
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginTop: "2px",
+                }}
+              >
+                BMI
+              </div>
+            </div>
+          </div>
+        )}
+
+        {user?.weightCategory === "severely_obese" && !noticeAcknowledged && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.7)",
+              zIndex: 100,
+              display: "flex",
+              alignItems: "flex-end",
+              padding: "16px",
+            }}
+          >
+            <div className="wellness-card" style={{ padding: "24px", width: "100%" }}>
+              <div
+                style={{
+                  fontSize: "20px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: "12px",
+                }}
+              >
+                A note before we start
+              </div>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "var(--text-secondary)",
+                  lineHeight: "1.6",
+                  marginBottom: "20px",
+                }}
+              >
+                AARA is designed to support your journey with personalized Indian meal plans and workouts. For your
+                safety, we recommend consulting a doctor or registered dietitian alongside using this app. We're here
+                to help. Every small step counts.
+              </p>
+              <button
+                className="btn-primary"
+                style={{ width: "100%", height: "52px" }}
+                onClick={() => {
+                  setNoticeAcknowledged(true);
+                  try {
+                    localStorage.setItem("aara_notice_ack", "true");
+                  } catch {}
+                }}
+              >
+                I understand, let's begin
+              </button>
+            </div>
+          </div>
+        )}
+
         <section className="animate-slide-up">
           <div className="wellness-card" style={{
             padding: "16px",
@@ -183,12 +371,14 @@ export default function Dashboard() {
             <div>
               <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[8px]" style={{ color: "var(--text-secondary)" }}>Steps</div>
               <div className="mb-[10px] flex items-center justify-between gap-2">
-                <div className="font-display text-[22px] font-bold leading-none tracking-tight shrink-0">8,204</div>
+                <div className="font-display text-[22px] font-bold leading-none tracking-tight shrink-0">
+                  {stepsProgress.toLocaleString()}
+                </div>
                 <Footprints className="w-[18px] h-[18px] text-brand shrink-0" />
               </div>
             </div>
             <div className="progress-bar h-[4px] mt-auto rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-              <div className="progress-bar-fill h-full bg-brand rounded-full" style={{ width: "82%" }} />
+              <div className="progress-bar-fill h-full bg-brand rounded-full" style={{ width: `${stepsPercent}%` }} />
             </div>
           </div>
 
@@ -196,7 +386,7 @@ export default function Dashboard() {
             <div>
               <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[8px]" style={{ color: "var(--text-secondary)" }}>Streak</div>
               <div className="mb-[10px] flex items-center justify-between gap-2">
-                <div className="font-display text-[22px] font-bold leading-none shrink-0">12</div>
+                <div className="font-display text-[22px] font-bold leading-none shrink-0">{stats?.currentStreak ?? stats?.streak ?? 0}</div>
                 <Trophy className="w-[18px] h-[18px] text-brand shrink-0" />
               </div>
             </div>
@@ -223,7 +413,50 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-[10px] uppercase font-bold tracking-[0.08em] mb-[4px]" style={{ color: "var(--text-secondary)" }}>{meal.type}</div>
-                      <h3 className="text-[15px] font-semibold text-primary truncate leading-tight">{meal.name}</h3>
+                      <h3 className="text-[15px] font-semibold text-primary truncate leading-tight">
+                        {meal.name}
+                        {meal.isWeightLossFriendly &&
+                          ["overweight", "obese", "severely_obese"].includes(String(user?.weightCategory)) && (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                padding: "2px 8px",
+                                borderRadius: "999px",
+                                background: "rgba(39,174,96,0.1)",
+                                border: "1px solid rgba(39,174,96,0.2)",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#27AE60",
+                                marginLeft: "6px",
+                              }}
+                            >
+                              ✓ Recommended
+                            </span>
+                          )}
+                        {meal.isMuscleGainFriendly &&
+                          ["underweight", "healthy"].includes(String(user?.weightCategory)) &&
+                          String(user?.primaryGoal) === "muscle_gain" && (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                padding: "2px 8px",
+                                borderRadius: "999px",
+                                background: "rgba(47,128,237,0.1)",
+                                border: "1px solid rgba(47,128,237,0.2)",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#2F80ED",
+                                marginLeft: "6px",
+                              }}
+                            >
+                              Muscle Fuel
+                            </span>
+                          )}
+                      </h3>
                       <p className="mt-[4px] text-[12px]" style={{ color: "var(--text-secondary)" }}>
                         {meal.calories} kcal · {meal.protein}g protein
                       </p>

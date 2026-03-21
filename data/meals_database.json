@@ -28,7 +28,20 @@
     "carbs": 23.5,
     "fats": 0.4,
     "prep": "Steamed. Fermented batter ~80g. Values: IFCT A015+B003 weighted. No oil.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M002",
@@ -59,7 +72,21 @@
     "carbs": 29.5,
     "fats": 7,
     "prep": "Pan-fried. ~120g dosa + 50g potato bhaji. 1 tsp oil (5g).",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M003",
@@ -90,7 +117,20 @@
     "carbs": 21,
     "fats": 3.2,
     "prep": "Pan-fried. ~90g thin dosa. 1 tsp oil (5g).",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M004",
@@ -121,7 +161,21 @@
     "carbs": 33,
     "fats": 5.5,
     "prep": "Sautéed. 60g rava + veg + 1.5 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M005",
@@ -152,7 +206,20 @@
     "carbs": 31.5,
     "fats": 4,
     "prep": "Sautéed. 50g poha + 10g peanuts + 1 tsp oil.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M006",
@@ -183,7 +250,21 @@
     "carbs": 37,
     "fats": 10.5,
     "prep": "Pan-fried. 2 × 50g dough. 1 tsp ghee each side.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M007",
@@ -214,7 +295,21 @@
     "carbs": 47,
     "fats": 12,
     "prep": "Pan-fried. 2 × 60g stuffed. 1 tsp ghee each.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": false,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M008",
@@ -245,7 +340,17 @@
     "carbs": 21,
     "fats": 9,
     "prep": "Deep-fried. 2 × 40g vadas. Deep fried in refined oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy"
+    ]
   },
   {
     "id": "M009",
@@ -276,7 +381,20 @@
     "carbs": 21,
     "fats": 5,
     "prep": "Pan-fried. 60g besan + veg + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M010",
@@ -307,7 +425,20 @@
     "carbs": 29.5,
     "fats": 5,
     "prep": "Sautéed. 50g oats + veg. Use USDA for oats: 68kcal/50g.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M011",
@@ -338,7 +469,20 @@
     "carbs": 30.9,
     "fats": 0.4,
     "prep": "Boiled. 200g cooked = ~80g raw. Factor 2.5× water absorption.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M012",
@@ -369,7 +513,20 @@
     "carbs": 23.5,
     "fats": 4.5,
     "prep": "Boiled+Tempered. 70g raw dal + 1 tsp ghee tadka. Cooked weight ~200g.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": true,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M013",
@@ -401,7 +558,21 @@
     "carbs": 27,
     "fats": 12,
     "prep": "Slow-cooked. 60g urad + 20g rajmah + 1 tbsp butter + 1 tbsp cream.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": true,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M014",
@@ -432,7 +603,20 @@
     "carbs": 17,
     "fats": 2,
     "prep": "Boiled. 50g dal + mixed veg + 1 tsp oil tadka.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M015",
@@ -463,7 +647,21 @@
     "carbs": 30.5,
     "fats": 4.5,
     "prep": "Pressure-cooked. 80g raw beans cooked + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": true,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M016",
@@ -494,7 +692,21 @@
     "carbs": 32,
     "fats": 6,
     "prep": "Pressure-cooked. 80g raw + tomato-onion gravy + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": true,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M017",
@@ -526,7 +738,19 @@
     "carbs": 10.5,
     "fats": 18,
     "prep": "Sautéed. 60g paneer + 100g spinach + 1 tbsp cream.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight"
+    ]
   },
   {
     "id": "M018",
@@ -558,7 +782,19 @@
     "carbs": 13,
     "fats": 23,
     "prep": "Sautéed. 75g paneer + 1 tbsp butter + 1 tbsp cream.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": false,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight"
+    ]
   },
   {
     "id": "M019",
@@ -590,7 +826,21 @@
     "carbs": 7.5,
     "fats": 12.5,
     "prep": "Braised. 150g skinless chicken + onion-tomato gravy + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": true,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M020",
@@ -622,7 +872,21 @@
     "carbs": 55,
     "fats": 13,
     "prep": "Dum-cooked. 100g raw rice + 100g chicken + spices + 1 tbsp oil.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "very_high",
+    "glycemic_load": "high",
+    "protein_priority": true,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": false,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M021",
@@ -653,7 +917,21 @@
     "carbs": 7.5,
     "fats": 14,
     "prep": "Braised. 2 boiled eggs (120g) + onion-tomato gravy + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M022",
@@ -685,7 +963,21 @@
     "carbs": 5,
     "fats": 8,
     "prep": "Braised. 150g fish + gravy + 1 tsp mustard oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": true,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M023",
@@ -717,7 +1009,21 @@
     "carbs": 5.5,
     "fats": 20,
     "prep": "Pressure-cooked. 150g goat meat + spices + 1 tsp oil.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": true,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": false,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M024",
@@ -748,7 +1054,20 @@
     "carbs": 33,
     "fats": 4.5,
     "prep": "Mixed. 100g cooked rice + 80g curd + tempering.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M025",
@@ -779,7 +1098,21 @@
     "carbs": 36.5,
     "fats": 5,
     "prep": "Sautéed+Boiled. 80g raw rice + 60g mixed veg + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M026",
@@ -810,7 +1143,20 @@
     "carbs": 28.5,
     "fats": 2.2,
     "prep": "Dry-roasted. 2 × 30g dough. No oil on surface.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M027",
@@ -841,7 +1187,20 @@
     "carbs": 14.5,
     "fats": 1.2,
     "prep": "Raw. 50g moong sprouts + veg. No cooking.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M028",
@@ -872,7 +1231,20 @@
     "carbs": 13.5,
     "fats": 2.5,
     "prep": "Roasted. 30g dry roasted chana.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M029",
@@ -903,7 +1275,20 @@
     "carbs": 30,
     "fats": 0.4,
     "prep": "Raw. 120g. IFCT A015 banana montham.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M030",
@@ -934,7 +1319,20 @@
     "carbs": 5,
     "fats": 0.8,
     "prep": "Blended. 83g curd + 167ml water + salt + spices.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M031",
@@ -965,7 +1363,20 @@
     "carbs": 0,
     "fats": 12.5,
     "prep": "Boiled. 2 × 60g boiled eggs.",
-    "calorieTier": 2000
+    "calorieTier": 2000,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M032",
@@ -996,7 +1407,20 @@
     "carbs": 17.5,
     "fats": 6.5,
     "prep": "Cooked. ~20g peanut + 10g jaggery.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M033",
@@ -1027,7 +1451,21 @@
     "carbs": 34.5,
     "fats": 4,
     "prep": "Pressure-cooked. 60g rice + 30g dal + 1 tsp ghee.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "medium",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M034",
@@ -1058,7 +1496,20 @@
     "carbs": 19,
     "fats": 2,
     "prep": "Boiled. 50g raw dal + mild spices + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M035",
@@ -1089,7 +1540,20 @@
     "carbs": 11.5,
     "fats": 1.5,
     "prep": "Boiled. Mixed veg. No cream. 1 tsp oil.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M036",
@@ -1120,7 +1584,20 @@
     "carbs": 4.5,
     "fats": 13,
     "prep": "Scrambled. 2 raw eggs (120g) + onion + tomato + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M037",
@@ -1152,7 +1629,21 @@
     "carbs": 0,
     "fats": 8.5,
     "prep": "Grilled. 150g raw breast. Spices only. No oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": true,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M038",
@@ -1184,7 +1675,19 @@
     "carbs": 7,
     "fats": 18.5,
     "prep": "Sautéed. 80g crumbled paneer + onion + tomato + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight"
+    ]
   },
   {
     "id": "M039",
@@ -1215,7 +1718,20 @@
     "carbs": 8.5,
     "fats": 0.8,
     "prep": "Boiled. 20g dal + tamarind + spices. Thin consistency.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M040",
@@ -1246,7 +1762,20 @@
     "carbs": 20.5,
     "fats": 3.5,
     "prep": "Pressure-cooked. 40g dal + 60g lauki + 1 tsp oil.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M041",
@@ -1278,7 +1807,21 @@
     "carbs": 3.5,
     "fats": 8.5,
     "prep": "Grilled/Baked. 200g chicken. Curd marinade + spices. Oven/grill.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "medium",
+    "glycemic_load": "low",
+    "protein_priority": true,
+    "is_weight_loss_friendly": true,
+    "is_muscle_gain_friendly": true,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M042",
@@ -1309,7 +1852,20 @@
     "carbs": 13,
     "fats": 5,
     "prep": "Sautéed. Mixed 100g veg + 1 tsp oil.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M043",
@@ -1340,7 +1896,20 @@
     "carbs": 8.5,
     "fats": 2.5,
     "prep": "Boiled. 50ml cow milk + 100ml water + 5g sugar + spices.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M044",
@@ -1371,7 +1940,20 @@
     "carbs": 26.5,
     "fats": 5.5,
     "prep": "Blended. 150g curd + 100ml water + 15g sugar.",
-    "calorieTier": 1800
+    "calorieTier": 1800,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   },
   {
     "id": "M045",
@@ -1402,6 +1984,19 @@
     "carbs": 8.5,
     "fats": 0.5,
     "prep": "Raw. Fresh tender coconut water.",
-    "calorieTier": 1600
+    "calorieTier": 1600,
+    "calorie_density": "low",
+    "glycemic_load": "low",
+    "protein_priority": false,
+    "is_weight_loss_friendly": false,
+    "is_muscle_gain_friendly": false,
+    "is_low_calorie": true,
+    "is_high_fiber": false,
+    "suitable_for_categories": [
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ]
   }
 ]

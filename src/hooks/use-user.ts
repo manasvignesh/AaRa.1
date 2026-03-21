@@ -16,6 +16,18 @@ export function useUserProfile() {
   });
 }
 
+export function useUserStats() {
+  return useQuery({
+    queryKey: [api.user.getStats.path],
+    queryFn: async () => {
+      const res = await fetch(api.user.getStats.path, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch stats");
+      return api.user.getStats.responses[200].parse(await res.json());
+    },
+    retry: false,
+  });
+}
+
 export function useCreateProfile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

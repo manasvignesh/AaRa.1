@@ -31,6 +31,7 @@
   --brand-primary-dim: #C4841A;
   --brand-green: #3DAB7A;
   --surface-base: #111318;
+  --surface-base-rgb: 17, 19, 24;
   --surface-1: #181C22;
   --surface-2: #1E2330;
   --surface-3: #252B3A;
@@ -66,6 +67,7 @@
   --brand-primary-dim: #1A65C8;
   --brand-green: #27AE60;
   --surface-base: #F5F9FF;
+  --surface-base-rgb: 245, 249, 255;
   --surface-1: #FFFFFF;
   --surface-2: #EDF4FF;
   --surface-3: #E8F2FF;
@@ -520,6 +522,20 @@ body {
   }
 
   to {
+    opacity: 1;
+  }
+}
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-4px);
     opacity: 1;
   }
 }

@@ -1,174 +1,306 @@
-
 import fs from "fs";
 import path from "path";
+import { calculateBmiKgCm, getWeightCategory, type WeightCategory } from "../services/planGenerator";
 
-// Types matching the JSON structure
-interface WorkoutStep {
-    day_type: string;
-    name: string;
-    type: string;
-    intensity: string;
-    duration_min: number;
-    estimated_calories_burned: number;
-    steps: string[];
-    week_progression: number;
+type WorkoutExercise = {
+  name: string;
+  sets?: number;
+  reps?: string;
+  rest_seconds?: number;
+  notes?: string;
+};
+
+type WorkoutTemplateRaw = {
+  id: string;
+  workout_name: string;
+  workout_type?: string;
+  suitable_for_categories?: WeightCategory[] | string[];
+  primary_goal?: string[];
+  difficulty?: string;
+  duration_minutes?: number;
+  calories_burned_estimate?: number;
+  equipment_needed?: string[];
+  is_hostel_friendly?: boolean;
+  is_no_equipment?: boolean;
+  region_notes?: string;
+  description?: string;
+  exercises?: WorkoutExercise[];
+  warmup?: string[];
+  cooldown?: string[];
+  nutrition_note?: string;
+  tags?: string[];
+};
+
+// Back-compat (older simplified file versions)
+type WorkoutLegacySimple = {
+  id: string;
+  name: string;
+  level?: string;
+  goal?: string[];
+  duration?: string | number;
+};
+
+export type WorkoutTemplate = WorkoutTemplateRaw & {
+  // Normalized aliases used by older parts of the codebase.
+  name: string;
+  level: string;
+  goal: string[];
+  duration: string;
+  suitableForCategories: WeightCategory[];
+  workoutType: string;
+  durationMinutes: number;
+};
+
+type WorkoutLibraryFile = {
+  meta: any;
+  workouts: WorkoutTemplate[];
+};
+
+let cachedWorkouts: WorkoutLibraryFile | null = null;
+
+function normalizeWeightCategories(list: any): WeightCategory[] {
+  const raw = Array.isArray(list) ? list : [];
+  const norm = raw.map((c) => String(c || "").trim().toLowerCase()).filter(Boolean);
+
+  const allowed: WeightCategory[] = ["underweight", "healthy", "overweight", "obese", "severely_obese"];
+  const picked = norm.filter((c) => (allowed as string[]).includes(c)) as WeightCategory[];
+  return picked.length ? picked : allowed;
 }
 
-interface WorkoutCategory {
-    age_range: string;
-    weight_category: string;
-    goal: string;
-    rotation_strategy: {
-        avoid_repeat_days: number;
-        shuffle_weekly: boolean;
+function normalizePrimaryGoals(list: any): string[] {
+  const raw = Array.isArray(list) ? list : [];
+  const norm = raw.map((g) => String(g || "").trim().toLowerCase()).filter(Boolean);
+  return norm.length ? norm : ["maintain"];
+}
+
+function normalizeDifficulty(d: any): string {
+  const v = String(d || "").trim().toLowerCase();
+  if (v === "beginner" || v === "easy") return "beginner";
+  if (v === "intermediate" || v === "medium") return "intermediate";
+  if (v === "advanced" || v === "hard") return "advanced";
+  return "beginner";
+}
+
+function normalizeWorkoutType(t: any): string {
+  const v = String(t || "").trim().toLowerCase();
+  if (!v) return "strength";
+  return v;
+}
+
+function normalizeDurationMinutes(n: any): number {
+  const v = Number(n);
+  if (Number.isFinite(v) && v > 0) return Math.round(v);
+  return 30;
+}
+
+function normalizeRawToTemplate(raw: any): WorkoutTemplate | null {
+  // New format (workout_name, duration_minutes, exercises, suitable_for_categories)
+  if (raw && typeof raw === "object" && typeof raw.workout_name === "string") {
+    const durationMinutes = normalizeDurationMinutes(raw.duration_minutes);
+    const workoutType = normalizeWorkoutType(raw.workout_type);
+    const suitableForCategories = normalizeWeightCategories(raw.suitable_for_categories);
+    const goal = normalizePrimaryGoals(raw.primary_goal);
+    const level = normalizeDifficulty(raw.difficulty);
+
+    return {
+      ...(raw as WorkoutTemplateRaw),
+      name: raw.workout_name,
+      level,
+      goal,
+      duration: String(durationMinutes),
+      suitableForCategories,
+      workoutType,
+      durationMinutes,
     };
-    workout_options: WorkoutStep[];
+  }
+
+  // Legacy simplified list (name/goal/level/duration)
+  if (raw && typeof raw === "object" && typeof raw.name === "string") {
+    const legacy = raw as WorkoutLegacySimple;
+    const durationMinutes = normalizeDurationMinutes(legacy.duration);
+    const workoutType = normalizeWorkoutType((legacy as any).type);
+    const suitableForCategories = normalizeWeightCategories((legacy as any).suitableForCategories);
+    const goal = normalizePrimaryGoals(legacy.goal);
+    const level = normalizeDifficulty(legacy.level);
+    return {
+      id: String(legacy.id || ""),
+      workout_name: legacy.name,
+      workout_type: workoutType,
+      suitable_for_categories: suitableForCategories,
+      primary_goal: goal,
+      difficulty: level,
+      duration_minutes: durationMinutes,
+      calories_burned_estimate: (legacy as any).calories_burned_estimate,
+      equipment_needed: (legacy as any).equipment_needed,
+      is_hostel_friendly: (legacy as any).is_hostel_friendly,
+      is_no_equipment: (legacy as any).is_no_equipment,
+      region_notes: (legacy as any).region_notes,
+      description: (legacy as any).description,
+      exercises: (legacy as any).exercises,
+      warmup: (legacy as any).warmup,
+      cooldown: (legacy as any).cooldown,
+      nutrition_note: (legacy as any).nutrition_note,
+      tags: (legacy as any).tags,
+      name: legacy.name,
+      level,
+      goal,
+      duration: String(durationMinutes),
+      suitableForCategories,
+      workoutType,
+      durationMinutes,
+    };
+  }
+
+  return null;
 }
 
-interface WorkflowFile {
-    meta: any;
-    workouts: WorkoutCategory[];
-}
+export function loadWorkouts(): WorkoutLibraryFile {
+  if (cachedWorkouts) return cachedWorkouts;
 
-let cachedWorkouts: WorkflowFile | null = null;
+  const p = path.join(process.cwd(), "data", "workouts_database.json");
+  if (!fs.existsSync(p)) {
+    console.warn(`[WORKOUT_LIB] Workouts file not found at ${p}. Using empty fallback.`);
+    cachedWorkouts = { meta: {}, workouts: [] };
+    return cachedWorkouts;
+  }
 
-export function loadWorkouts(): WorkflowFile {
-    if (cachedWorkouts) return cachedWorkouts;
+  try {
+    const content = fs.readFileSync(p, "utf8");
+    const parsed = JSON.parse(content);
 
-    const p = path.join(process.cwd(), "data", "workouts_database.json");
-    if (!fs.existsSync(p)) {
-        console.warn(`[WORKOUT_LIB] Workouts file not found at ${p}. Using empty fallback.`);
-        return { meta: {}, workouts: [] };
+    if (Array.isArray(parsed)) {
+      const workouts = parsed.map(normalizeRawToTemplate).filter(Boolean) as WorkoutTemplate[];
+      cachedWorkouts = { meta: {}, workouts };
+    } else if (parsed && typeof parsed === "object" && Array.isArray((parsed as any).workouts)) {
+      // Some older formats store { workouts: [...] }
+      const workouts = (parsed as any).workouts.map(normalizeRawToTemplate).filter(Boolean) as WorkoutTemplate[];
+      cachedWorkouts = { meta: (parsed as any).meta ?? {}, workouts };
+    } else {
+      cachedWorkouts = { meta: {}, workouts: [] };
     }
+  } catch (err) {
+    console.error(`[WORKOUT_LIB] Error parsing workouts database:`, err);
+    cachedWorkouts = { meta: {}, workouts: [] };
+  }
 
-    try {
-        const content = fs.readFileSync(p, "utf8");
-        const parsed = JSON.parse(content);
-
-        // Handle both object { workouts: [] } and direct array [] patterns
-        if (Array.isArray(parsed)) {
-            cachedWorkouts = { meta: {}, workouts: parsed };
-        } else {
-            cachedWorkouts = parsed;
-        }
-
-        if (!cachedWorkouts || !cachedWorkouts.workouts) {
-            cachedWorkouts = { meta: {}, workouts: [] };
-        }
-    } catch (err) {
-        console.error(`[WORKOUT_LIB] Error parsing workouts database:`, err);
-        cachedWorkouts = { meta: {}, workouts: [] };
-    }
-
-    return cachedWorkouts!;
+  return cachedWorkouts!;
 }
 
 export function getWorkoutForProfile(
-    age: number,
-    currentWeight: number,
-    targetWeight: number | null,
-    height: number,
-    dayNumber: number = 1
-): WorkoutStep | null {
-    try {
-        const data = loadWorkouts();
+  age: number,
+  currentWeight: number,
+  targetWeight: number | null,
+  height: number,
+  dayNumber: number = 1,
+): WorkoutTemplate | null {
+  try {
+    const data = loadWorkouts();
+    const all = data.workouts || [];
+    if (!all.length) return null;
 
-        // Determine Categories and Goals
-        // Map strictly to what's in the JSON: 
-        // "underweight" -> "weight_gain"
-        // "overweight" -> "fat_loss"
-        // "obese" -> "safe_fat_loss"
+    const bmi = calculateBmiKgCm(currentWeight, height) ?? 22;
+    const category = getWeightCategory(bmi);
+    const wantsToGain = Boolean(targetWeight && Number(targetWeight) > Number(currentWeight));
 
-        let weightCategory = "overweight";
-        let goal = "fat_loss";
+    // Determine "intent" goals for selection. We keep this loose because the user may not have
+    // explicitly set a workout goal, and the library also includes posture/flexibility/recovery.
+    const desiredGoals = (() => {
+      if (wantsToGain) return ["muscle_gain", "weight_gain", "maintain"];
+      if (category === "overweight" || category === "obese" || category === "severely_obese") {
+        return ["weight_loss", "endurance", "recovery", "flexibility"];
+      }
+      return ["maintain", "endurance", "flexibility", "posture", "recovery"];
+    })();
 
-        // Calculate BMI
-        const heightM = height / 100;
-        const bmi = heightM > 0 ? currentWeight / (heightM * heightM) : 22;
+    console.log(
+      `[WORKOUT_LIB] Profile: Age=${age}, Weight=${currentWeight}, Height=${height}, BMI=${bmi.toFixed(
+        1,
+      )}, Category=${category}, WantsToGain=${wantsToGain}`,
+    );
 
-        console.log(`[WORKOUT_LIB] Profile Analysis: Age=${age}, Weight=${currentWeight}, Height=${height}, BMI=${bmi.toFixed(1)}`);
+    const byCategory = all.filter((w) =>
+      Array.isArray(w.suitableForCategories) ? w.suitableForCategories.includes(category) : true,
+    );
 
-        const wantsToGain = targetWeight && targetWeight > currentWeight;
+    const categoryPool = byCategory.length ? byCategory : all;
+    const goalPool = categoryPool.filter((w) =>
+      w.goal.some((g) => desiredGoals.includes(String(g).toLowerCase())),
+    );
+    const pool = goalPool.length ? goalPool : categoryPool;
 
-        if (wantsToGain) {
-            weightCategory = "underweight";
-            goal = "weight_gain";
-        } else {
-            // Fat loss context
-            if (bmi >= 30) {
-                weightCategory = "obese";
-                goal = "safe_fat_loss";
-            } else {
-                weightCategory = "overweight";
-                // If the user is "normal" (<25) but wants to lose/maintain, we still map to overweight plan
-                goal = "fat_loss";
-            }
-        }
-        console.log(`[WORKOUT_LIB] Mapped Category: ${weightCategory}, Goal: ${goal}`);
+    // Deterministic pick by dayNumber for a stable "daily workout"
+    const sorted = [...pool].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    const idx = ((Number(dayNumber) || 1) - 1) % sorted.length;
+    const selected = sorted[Math.max(0, idx)];
 
-        // Find Matching Category Group
-        let bestMatch: WorkoutCategory | null = null;
+    console.log(`[WORKOUT_LIB] Selected workout: ${selected.name} (${selected.workoutType})`);
+    return selected;
+  } catch (err) {
+    console.error("[WORKOUT_LIB] Error selecting workout:", err);
+    return null;
+  }
+}
 
-        for (const group of data.workouts) {
-            if (group.weight_category !== weightCategory) continue;
-            if (group.goal !== goal) continue;
+export function mapWorkoutDifficultyToDb(difficulty: string | null | undefined): "easy" | "medium" | "hard" {
+  const d = String(difficulty || "").trim().toLowerCase();
+  if (d === "beginner" || d === "easy") return "easy";
+  if (d === "intermediate" || d === "medium") return "medium";
+  if (d === "advanced" || d === "hard") return "hard";
+  return "medium";
+}
 
-            // Check Age Range safely handling potential en-dashes
-            const parts = group.age_range.split(/[-–]/);
-            if (parts.length < 2) continue;
+export function toWorkoutDbExercises(template: WorkoutTemplate): any[] {
+  const warmup = Array.isArray(template.warmup) ? template.warmup : [];
+  const cooldown = Array.isArray(template.cooldown) ? template.cooldown : [];
+  const main = Array.isArray(template.exercises) ? template.exercises : [];
 
-            const min = parseInt(parts[0].trim());
-            const max = parseInt(parts[1].trim());
+  const warmupObjs = warmup
+    .filter(Boolean)
+    .map((w) => ({
+      name: String(w),
+      sets: 1,
+      reps: "60s",
+      rest_seconds: 10,
+      notes: "Warmup",
+      phase: "warmup",
+    }));
 
-            if (age >= min && age <= max) {
-                bestMatch = group;
-                console.log(`[WORKOUT_LIB] Matched Age Group: ${group.age_range}`);
-                break;
-            }
-        }
+  const mainObjs = main
+    .filter((m) => m && typeof m === "object" && typeof (m as any).name === "string")
+    .map((m) => ({
+      name: String(m.name),
+      sets: Number.isFinite(Number(m.sets)) ? Number(m.sets) : 1,
+      reps: m.reps ? String(m.reps) : undefined,
+      rest_seconds: Number.isFinite(Number(m.rest_seconds)) ? Number(m.rest_seconds) : 20,
+      notes: m.notes ? String(m.notes) : undefined,
+      phase: "main",
+    }));
 
-        // Fallback 1: match category/goal, ignoring age
-        if (!bestMatch) {
-            console.warn(`[WORKOUT_LIB] No exact age match. Searching fallback for ${weightCategory}/${goal}`);
-            bestMatch = data.workouts.find(w => w.weight_category === weightCategory && w.goal === goal) || null;
-        }
+  const cooldownObjs = cooldown
+    .filter(Boolean)
+    .map((c) => ({
+      name: String(c),
+      sets: 1,
+      reps: "45s",
+      rest_seconds: 10,
+      notes: "Cooldown",
+      phase: "cooldown",
+    }));
 
-        // Fallback 2: Any match (should not happen if mapped correctly, but just in case)
-        if (!bestMatch) {
-            console.warn(`[WORKOUT_LIB] No match found for Age:${age} Cat:${weightCategory} Goal:${goal}. Using first available.`);
-            bestMatch = data.workouts[0];
-        }
-
-        if (!bestMatch || !bestMatch.workout_options.length) {
-            console.error(`[WORKOUT_LIB] No workouts found in matched group!`);
-            return null;
-        }
-
-        // Select a specific workout from options using ALL types (workout, mobility, recovery, rest)
-        // This ensures the 30-day plan provided in the JSON is followed sequentially
-        const optionsToUse = bestMatch.workout_options;
-
-        console.log(`[WORKOUT_LIB] Selecting from ${optionsToUse.length} options for ${bestMatch.age_range}/${bestMatch.weight_category}. DayNumber=${dayNumber}`);
-
-        // Use DayNumber to pick the workout. If DayNumber > options, it wraps around.
-        const index = (dayNumber - 1) % optionsToUse.length;
-        const selected = optionsToUse[index];
-
-        console.log(`[WORKOUT_LIB] Choice: Day ${dayNumber} -> Index ${index} -> ${selected.name} (${selected.day_type})`);
-        return selected;
-
-    } catch (err) {
-        console.error("[WORKOUT_LIB] Error selecting workout:", err);
-        return null;
-    }
+  const combined = [...warmupObjs, ...mainObjs, ...cooldownObjs];
+  return combined.length
+    ? combined
+    : [{ name: template.name, sets: 1, reps: "as directed", rest_seconds: 20, phase: "main" }];
 }
 
 export function getAllWorkoutCategories() {
-    const data = loadWorkouts();
-    return data.workouts.map(w => ({
-        age: w.age_range,
-        cat: w.weight_category,
-        goal: w.goal,
-        count: w.workout_options.length
-    }));
+  const data = loadWorkouts();
+  const counts: Record<string, number> = {};
+  for (const w of data.workouts) {
+    for (const c of w.suitableForCategories) {
+      counts[c] = (counts[c] || 0) + 1;
+    }
+  }
+  return Object.entries(counts).map(([cat, count]) => ({ cat, count }));
 }
+

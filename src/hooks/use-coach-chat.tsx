@@ -29,9 +29,11 @@ export function CoachProvider({ children }: { children: React.ReactNode }) {
     }, [chatMessages]);
 
     const sendMessage = useCallback(async (userMessage: string) => {
-        if (!userMessage.trim() || isSending) return;
+        const trimmed = userMessage.trim();
+        if (!trimmed || isSending) return;
 
-        setChatMessages(prev => [...prev, { role: "user", content: userMessage }]);
+        const historyForRequest = [...chatMessages, { role: "user" as const, content: trimmed }];
+        setChatMessages(historyForRequest);
         setIsSending(true);
         setStreamingMessage("");
 
@@ -41,16 +43,17 @@ export function CoachProvider({ children }: { children: React.ReactNode }) {
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({
-                    message: userMessage,
-                    conversationHistory: chatMessages
-                })
+                    message: trimmed,
+                    conversationHistory: historyForRequest,
+                }),
             });
 
-            if (!response.ok) throw new Error("Failed to send message");
+            if (!response.ok) throw new Error(`Failed to send message (${response.status})`);
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
             let fullMessage = "";
+            let finished = false;
 
             if (reader) {
                 while (true) {
@@ -61,24 +64,39 @@ export function CoachProvider({ children }: { children: React.ReactNode }) {
                     const lines = chunk.split("\n");
 
                     for (const line of lines) {
-                        if (line.startsWith("data: ")) {
-                            try {
-                                const data = JSON.parse(line.slice(6));
-                                if (data.content) {
-                                    fullMessage += data.content;
-                                    setStreamingMessage(fullMessage);
-                                }
-                                if (data.done) {
-                                    setChatMessages(prev => [...prev, { role: "assistant", content: fullMessage }]);
-                                    setStreamingMessage("");
-                                }
-                            } catch { }
+                        if (!line.startsWith("data: ")) continue;
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            if (data.error) {
+                                finished = true;
+                                setStreamingMessage("");
+                                setChatMessages(prev => [...prev, { role: "assistant", content: String(data.error) }]);
+                                continue;
+                            }
+                            if (data.content) {
+                                fullMessage += String(data.content);
+                                setStreamingMessage(fullMessage);
+                            }
+                            if (data.done) {
+                                finished = true;
+                                setChatMessages(prev => [...prev, { role: "assistant", content: fullMessage }]);
+                                setStreamingMessage("");
+                            }
+                        } catch {
+                            // Ignore malformed lines
                         }
                     }
                 }
             }
+
+            // If the server ended without an explicit {done:true}, finalize the message.
+            if (!finished && fullMessage) {
+                setChatMessages(prev => [...prev, { role: "assistant", content: fullMessage }]);
+                setStreamingMessage("");
+            }
         } catch (err) {
             console.error("Chat error:", err);
+            setStreamingMessage("");
             setChatMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't respond. Please try again." }]);
         } finally {
             setIsSending(false);

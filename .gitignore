@@ -27,6 +27,7 @@ android/
 *.zip
 *.log
 *.txt
+.codex-dev.*
 aura_*.json
 *_fixed.json
 server_startup_log.txt

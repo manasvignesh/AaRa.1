@@ -10,6 +10,20 @@ interface Meal {
     goal: string[];
     calories: number;
     protein: number;
+    carbs?: number;
+    fat?: number;
+    fiber?: number;
+    cookingMethod?: string;
+
+    // Weight-category and nutrition tags (derived + stored in JSON)
+    suitableForCategories?: string[];
+    calorieDensity?: 'low' | 'medium' | 'high' | 'very_high';
+    glycemicLoad?: 'low' | 'medium' | 'high';
+    proteinPriority?: boolean;
+    isWeightLossFriendly?: boolean;
+    isMuscleGainFriendly?: boolean;
+    isLowCalorie?: boolean;
+    isHighFiber?: boolean;
 }
 
 interface RawMealRecord {
@@ -26,7 +40,20 @@ interface RawMealRecord {
     diet_type?: string;
     calories_kcal?: number;
     protein_g?: number;
+    carbs_g?: number;
+    fat_g?: number;
+    fiber_g?: number;
     meal_time?: string;
+    cooking_method?: string;
+
+    suitable_for_categories?: string[];
+    calorie_density?: string;
+    glycemic_load?: string;
+    protein_priority?: boolean;
+    is_weight_loss_friendly?: boolean;
+    is_muscle_gain_friendly?: boolean;
+    is_low_calorie?: boolean;
+    is_high_fiber?: boolean;
 }
 
 const MEAL_TYPE_MAP: Record<string, Meal['mealType'] | null> = {
@@ -78,6 +105,18 @@ function normalizeMeal(rawMeal: RawMealRecord): Meal | null {
             goal: rawMeal.goal,
             calories: Math.round(Number(rawMeal.calories ?? 0)),
             protein: Math.round(Number(rawMeal.protein ?? 0)),
+            carbs: rawMeal.carbs_g ?? (rawMeal as any).carbs,
+            fat: rawMeal.fat_g ?? (rawMeal as any).fats ?? (rawMeal as any).fat,
+            fiber: rawMeal.fiber_g ?? (rawMeal as any).fiber,
+            cookingMethod: rawMeal.cooking_method ?? (rawMeal as any).cookingMethod,
+            suitableForCategories: rawMeal.suitable_for_categories,
+            calorieDensity: rawMeal.calorie_density as any,
+            glycemicLoad: rawMeal.glycemic_load as any,
+            proteinPriority: rawMeal.protein_priority,
+            isWeightLossFriendly: rawMeal.is_weight_loss_friendly,
+            isMuscleGainFriendly: rawMeal.is_muscle_gain_friendly,
+            isLowCalorie: rawMeal.is_low_calorie,
+            isHighFiber: rawMeal.is_high_fiber,
         };
     }
 
@@ -113,6 +152,18 @@ function normalizeMeal(rawMeal: RawMealRecord): Meal | null {
         goal: inferGoals(mealType, calories, protein),
         calories,
         protein,
+        carbs: Number(rawMeal.carbs_g ?? (rawMeal as any).carbs_g ?? (rawMeal as any).carbs ?? 0) || 0,
+        fat: Number(rawMeal.fat_g ?? (rawMeal as any).fat_g ?? (rawMeal as any).fat ?? (rawMeal as any).fats ?? 0) || 0,
+        fiber: Number(rawMeal.fiber_g ?? (rawMeal as any).fiber_g ?? (rawMeal as any).fiber ?? 0) || 0,
+        cookingMethod: String(rawMeal.cooking_method ?? (rawMeal as any).cookingMethod ?? ""),
+        suitableForCategories: Array.isArray(rawMeal.suitable_for_categories) ? rawMeal.suitable_for_categories : undefined,
+        calorieDensity: (rawMeal.calorie_density as any) ?? undefined,
+        glycemicLoad: (rawMeal.glycemic_load as any) ?? undefined,
+        proteinPriority: rawMeal.protein_priority ?? undefined,
+        isWeightLossFriendly: rawMeal.is_weight_loss_friendly ?? undefined,
+        isMuscleGainFriendly: rawMeal.is_muscle_gain_friendly ?? undefined,
+        isLowCalorie: rawMeal.is_low_calorie ?? undefined,
+        isHighFiber: rawMeal.is_high_fiber ?? undefined,
     };
 }
 

@@ -36,6 +36,55 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+const getWeightCategory = (bmi: number) => {
+  if (bmi < 18.5) return "underweight";
+  if (bmi < 23.0) return "healthy";
+  if (bmi < 27.5) return "overweight";
+  if (bmi < 35.0) return "obese";
+  return "severely_obese";
+};
+
+const bmiDisplayNames: Record<
+  string,
+  { label: string; color: string; bgColor: string; borderColor: string; tip: string }
+> = {
+  underweight: {
+    label: "Building Phase",
+    color: "#6AAFF5",
+    bgColor: "rgba(47,128,237,0.1)",
+    borderColor: "rgba(47,128,237,0.25)",
+    tip: "Focus on calorie-dense nutritious meals",
+  },
+  healthy: {
+    label: "In the Zone",
+    color: "#27AE60",
+    bgColor: "rgba(39,174,96,0.1)",
+    borderColor: "rgba(39,174,96,0.25)",
+    tip: "Maintain your great habits",
+  },
+  overweight: {
+    label: "Active Transformation",
+    color: "#E8A93A",
+    bgColor: "rgba(232,169,58,0.1)",
+    borderColor: "rgba(232,169,58,0.25)",
+    tip: "High fiber meals are your best friend",
+  },
+  obese: {
+    label: "Power Journey",
+    color: "#F5A623",
+    bgColor: "rgba(245,166,35,0.1)",
+    borderColor: "rgba(245,166,35,0.25)",
+    tip: "Small consistent steps create big changes",
+  },
+  severely_obese: {
+    label: "Strong Start",
+    color: "#E8A93A",
+    bgColor: "rgba(232,169,58,0.1)",
+    borderColor: "rgba(232,169,58,0.25)",
+    tip: "Every healthy choice counts. You've got this",
+  },
+};
+
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [, setLocation] = useLocation();
@@ -60,6 +109,12 @@ export default function Onboarding() {
 
   const { register, handleSubmit, watch, setValue, trigger } = form;
   const currentStepData = steps[currentStep - 1];
+  const height = Number(watch("height") || 0);
+  const weight = Number(watch("currentWeight") || 0);
+  const calculatedBmi =
+    height > 0 && weight > 0 ? weight / Math.pow(height / 100, 2) : null;
+  const bmiCategory = calculatedBmi ? getWeightCategory(calculatedBmi) : null;
+  const bmiConfig = bmiCategory ? bmiDisplayNames[bmiCategory] : null;
 
   const handleNext = async () => {
     const fields = currentStepData.fields as (keyof FormData)[];
@@ -123,15 +178,67 @@ export default function Onboarding() {
           )}
 
           {currentStep === 2 && (
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="stagger-1">
-                <Label className="section-label mb-2 block">Height (cm)</Label>
-                <Input type="number" className="input-field" {...register("height")} />
+            <div>
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="stagger-1">
+                  <Label className="section-label mb-2 block">Height (cm)</Label>
+                  <Input type="number" className="input-field" {...register("height")} />
+                </div>
+                <div className="stagger-2">
+                  <Label className="section-label mb-2 block">Current Weight (kg)</Label>
+                  <Input type="number" className="input-field" {...register("currentWeight")} />
+                </div>
               </div>
-              <div className="stagger-2">
-                <Label className="section-label mb-2 block">Current Weight (kg)</Label>
-                <Input type="number" className="input-field" {...register("currentWeight")} />
-              </div>
+
+              {calculatedBmi && bmiConfig && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "16px",
+                    borderRadius: "16px",
+                    background: bmiConfig.bgColor,
+                    border: `1px solid ${bmiConfig.borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: "var(--text-muted)",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    YOUR CURRENT BMI
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "42px",
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      color: bmiConfig.color,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {calculatedBmi.toFixed(1)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: 700,
+                      color: bmiConfig.color,
+                      marginTop: "6px",
+                    }}
+                  >
+                    {bmiConfig.label}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                    {bmiConfig.tip}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

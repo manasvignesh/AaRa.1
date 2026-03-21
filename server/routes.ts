@@ -1,4 +1,4 @@
-import type { Express } from "express";
+﻿import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import fs from "fs";
@@ -10,8 +10,9 @@ import { openai } from "./replit_integrations/audio"; // Reuse openai client
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DailyPlanWithDetails, InsertDailyPlan, InsertMeal, InsertWorkout, InsertActivityLog, InsertGpsRoute } from "@shared/schema";
 import { selectDeterministicMeals, selectBestMealForSlot } from "../src/api/diet";
-import { getWorkoutForProfile } from "./data/workout-lib";
+import { getWorkoutForProfile, mapWorkoutDifficultyToDb, toWorkoutDbExercises } from "./data/workout-lib";
 import { generatePersonalizedPlan } from "./data/engine";
+import { calculateCategoryTargets, getWeightCategoryDisplayName } from "./services/planGenerator";
 
 // Google Gemini client for coach chat
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -88,7 +89,14 @@ export function registerRoutes(
       const userId = (req.user as any).id;
       const input = api.user.createProfile.input.parse(req.body);
 
-      const profile = await storage.createUserProfile({ ...input, userId });
+      const computed = calculateCategoryTargets({ ...input, userId } as any);
+      const profile = await storage.createUserProfile({
+        ...input,
+        userId,
+        bmi: computed.bmi,
+        weightCategory: computed.weightCategory,
+        bmiLastCalculated: new Date(),
+      } as any);
       res.status(201).json(profile);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -103,13 +111,22 @@ export function registerRoutes(
       const userId = (req.user as any).id;
       const input = api.user.updateProfile.input.parse(req.body);
 
-      const profile = await storage.updateUserProfile(userId, input);
+      const existing = await storage.getUserProfile(userId);
+      const merged: any = { ...(existing || {}), ...(input || {}) };
+      const computed = calculateCategoryTargets(merged);
+
+      const profile = await storage.updateUserProfile(userId, {
+        ...input,
+        bmi: computed.bmi,
+        weightCategory: computed.weightCategory,
+        bmiLastCalculated: new Date(),
+      } as any);
 
       // Recalculate targets for existing plans after profile update
       const todayStr = new Date().toISOString().split('T')[0];
       const plan = await storage.getDailyPlan(userId, todayStr);
       if (plan) {
-        const { caloriesTarget, proteinTarget } = calculateTargets(profile);
+        const { caloriesTarget, proteinTarget } = calculateCategoryTargets(profile as any);
         await storage.updateDailyPlanTargets(plan.id, caloriesTarget, proteinTarget);
       }
 
@@ -130,6 +147,7 @@ export function registerRoutes(
 
       const weightHistory = await storage.getWeightHistory(userId);
       const recentPlans = await storage.getRecentPlansWithDetails(userId, 30);
+      const gamification = await storage.getGamificationProfile(userId);
 
       // 1. Weight Change
       let weightChange = 0;
@@ -169,38 +187,9 @@ export function registerRoutes(
         : 0;
 
       // 3. Streaks
-      let currentStreak = 0;
-      let bestStreak = 0;
-      let tempStreak = 0;
-
-      // Best streak from historical data
-      for (let i = recentPlans.length - 1; i >= 0; i--) {
-        const p = recentPlans[i];
-        const calorieGoalMet = p.caloriesTarget > 0 && ((p.caloriesConsumed || 0) / p.caloriesTarget) >= 0.8;
-        const proteinGoalMet = p.proteinTarget > 0 && ((p.proteinConsumed || 0) / p.proteinTarget) >= 0.8;
-        const anyWorkoutDone = (p.workouts?.length || 0) > 0 && p.workouts.some(w => w.isCompleted);
-
-        if (calorieGoalMet || proteinGoalMet || anyWorkoutDone) {
-          tempStreak++;
-        } else {
-          bestStreak = Math.max(bestStreak, tempStreak);
-          tempStreak = 0;
-        }
-      }
-      bestStreak = Math.max(bestStreak, tempStreak);
-
-      // Current streak (counting backwards from today)
-      for (const p of recentPlans) {
-        const calorieGoalMet = p.caloriesTarget > 0 && ((p.caloriesConsumed || 0) / p.caloriesTarget) >= 0.8;
-        const proteinGoalMet = p.proteinTarget > 0 && ((p.proteinConsumed || 0) / p.proteinTarget) >= 0.8;
-        const anyWorkoutDone = (p.workouts?.length || 0) > 0 && p.workouts.some(w => w.isCompleted);
-
-        if (calorieGoalMet || proteinGoalMet || anyWorkoutDone) {
-          currentStreak++;
-        } else {
-          break;
-        }
-      }
+      // Use gamification state for a true consecutive-day streak instead of plan completeness.
+      const currentStreak = Number((gamification as any)?.currentStreak || 0);
+      const bestStreak = Number((gamification as any)?.longestStreak || 0);
 
       res.json({
         currentWeight: Number(profile.currentWeight),
@@ -208,8 +197,9 @@ export function registerRoutes(
         caloriesConsistency: Math.round(caloriesAdherence),
         proteinConsistency: Math.round(proteinAdherence),
         workoutConsistency: Math.round(workoutCompletion),
-        currentStreak: Number(currentStreak),
-        bestStreak: Number(bestStreak)
+        currentStreak,
+        streak: currentStreak,
+        bestStreak
       });
     } catch (err) {
       console.error("Stats API Error:", err);
@@ -237,10 +227,24 @@ export function registerRoutes(
     const userId = (req.user as any).id;
     const { date } = req.params;
     console.log(`[API] GET Meta for user ${userId} on ${date}`);
-    const plan = await storage.getDailyPlanMeta(userId, date);
+    let plan = await storage.getDailyPlanMeta(userId, date);
     if (!plan) {
       console.log(`[API] Meta NOT FOUND for user ${userId} on ${date}`);
       return res.status(404).json({ message: "Plan not found" });
+    }
+
+    // Auto-heal legacy plans where targets were accidentally set to the sum of selected meals.
+    // This prevents cases like ~490 kcal/day showing up in the UI.
+    if ((plan.caloriesTarget || 0) < 800) {
+      try {
+        const profile = await storage.getUserProfile(userId);
+        if (profile) {
+          const { caloriesTarget, proteinTarget } = calculateCategoryTargets(profile as any);
+          plan = await storage.updateDailyPlanTargets(plan.id, caloriesTarget, proteinTarget);
+        }
+      } catch (err) {
+        console.warn("[API] Failed to auto-refresh plan targets:", err);
+      }
     }
     console.log(`[API] Meta FOUND: PlanID ${plan.id}`);
     res.json(plan);
@@ -264,6 +268,65 @@ export function registerRoutes(
     const plan = await storage.getDailyPlanMeta(userId, date);
     if (!plan) return res.status(404).json({ message: "Plan not found" });
     let workouts = await storage.getPlanWorkouts(plan.id);
+
+    const isLegacyWorkoutRecord = (w: any) => {
+      if (!w) return true;
+      const ex = (w as any).exercises;
+      const first = Array.isArray(ex) ? ex[0] : null;
+      const instruction = first && typeof first === "object" ? String((first as any).instruction || "") : "";
+
+      const looksLikeOldStepTemplate =
+        !w.description &&
+        Array.isArray(ex) &&
+        ex.length >= 2 &&
+        ex.every((e: any) => {
+          const dur = Number(e?.duration);
+          const instr = String(e?.instruction || "").toLowerCase();
+          // Older fallback created 5-minute blocks with generic instruction text.
+          return Number.isFinite(dur) && dur === 300 && instr.includes("perform as directed");
+        });
+
+      // Legacy placeholder created by older code paths.
+      return (
+        (!w.description &&
+          Array.isArray(ex) &&
+          ex.length <= 1 &&
+          instruction.toLowerCase().includes("follow routine")) ||
+        looksLikeOldStepTemplate
+      );
+    };
+
+    // Auto-heal legacy placeholder workouts so new workout DB "sinks in"
+    // without requiring the user to delete plans manually.
+    if (workouts && workouts.length > 0 && isLegacyWorkoutRecord(workouts[0])) {
+      try {
+        const profile = await storage.getUserProfile(userId);
+        if (profile) {
+          const dayNum = new Date(date).getDate();
+          const template = getWorkoutForProfile(
+            profile.age,
+            profile.currentWeight,
+            profile.targetWeight,
+            profile.height,
+            dayNum,
+          );
+          if (template) {
+            const updated = await storage.updateWorkout(workouts[0].id, {
+              type: ((template as any).workoutType || (template as any).workout_type || "strength") as any,
+              name: (template as any).name,
+              description: (template as any).description || null,
+              duration: Number((template as any).durationMinutes || (template as any).duration_minutes || 30),
+              difficulty: mapWorkoutDifficultyToDb((template as any).level || (template as any).difficulty),
+              exercises: toWorkoutDbExercises(template as any),
+            });
+            workouts[0] = updated as any;
+          }
+        }
+      } catch (err) {
+        console.error("[API] Failed to auto-heal legacy workout:", err);
+      }
+    }
+
     // If no workouts exist for the plan, attempt to load deterministic workouts
     // from age group JSON files based on the user's profile/category.
     if ((!workouts || workouts.length === 0)) {
@@ -272,27 +335,17 @@ export function registerRoutes(
         if (profile) {
           const dayNum = new Date(date).getDate();
           const template = getWorkoutForProfile(profile.age, profile.currentWeight, profile.targetWeight, profile.height, dayNum);
-
           if (template) {
-            const exercises = template.steps.map((s, idx, arr) => {
-              const phase = idx === 0 ? "warmup" : idx === arr.length - 1 ? "cooldown" : "main";
-              // Handle both en-dash and standard hyphen
-              const parts = s.includes(" – ") ? s.split(" – ") : s.includes(" - ") ? s.split(" - ") : [s];
-              return {
-                name: parts[0] || s,
-                duration: 300, // 5 mins default assumption per step
-                instruction: parts[1] || "Perform as directed",
-                phase
-              };
-            });
+            const exercises = toWorkoutDbExercises(template as any);
 
             const newWorkout = await storage.createWorkout({
               planId: plan.id,
-              type: template.type as any,
-              name: template.name,
-              duration: template.duration_min,
-              difficulty: template.intensity as any,
-              exercises
+              type: ((template as any).workoutType || (template as any).workout_type || "strength") as any,
+              name: (template as any).name,
+              description: (template as any).description || null,
+              duration: Number((template as any).durationMinutes || (template as any).duration_minutes || 30),
+              difficulty: mapWorkoutDifficultyToDb((template as any).level || (template as any).difficulty),
+              exercises,
             });
             workouts = [newWorkout];
           }
@@ -330,9 +383,75 @@ export function registerRoutes(
 
       // Check if plan already exists for today
       const existingFullPlan = await storage.getDailyPlan(userId, date);
-      if (existingFullPlan && existingFullPlan.meals && existingFullPlan.meals.length > 0) {
+      const existingHasMeals = Boolean(existingFullPlan?.meals && existingFullPlan.meals.length > 0);
+      const existingHasWorkouts = Boolean(existingFullPlan?.workouts && existingFullPlan.workouts.length > 0);
+      if (existingFullPlan && existingHasMeals && existingHasWorkouts) {
+        // Fix legacy plans that used meal-sum calories as "daily target".
+        // Always ensure targets are based on the user's profile math.
+        try {
+          const { caloriesTarget, proteinTarget } = calculateCategoryTargets(profile as any);
+          await storage.updateDailyPlanTargets(existingFullPlan.id, caloriesTarget, proteinTarget);
+          const refreshed = await storage.getDailyPlan(userId, date);
+          console.log(`[GENERATION] Returning existing plan ${existingFullPlan.id} for ${date} (targets refreshed)`);
+          return res.status(200).json(refreshed ?? existingFullPlan);
+        } catch (err) {
+          console.warn("[GENERATION] Failed to refresh targets for existing plan:", err);
+        }
         console.log(`[GENERATION] Returning existing plan ${existingFullPlan.id} for ${date}`);
         return res.status(200).json(existingFullPlan);
+      }
+
+      // If the plan already exists but is missing workouts, keep meals intact and
+      // add a workout generated from the current workout library.
+      if (existingFullPlan && existingHasMeals && !existingHasWorkouts) {
+        try {
+          const computedTargets = calculateCategoryTargets(profile as any);
+          const { caloriesTarget, proteinTarget } = computedTargets;
+          await storage.updateDailyPlanTargets(existingFullPlan.id, caloriesTarget, proteinTarget);
+
+          const engineProfile = {
+            goal:
+              String(profile.primaryGoal || "").toLowerCase() === "fat_loss"
+                ? "weight_loss"
+                : String(profile.primaryGoal || "").toLowerCase() === "muscle_gain"
+                  ? "weight_gain"
+                  : "maintain",
+            dietType:
+              (() => {
+                const d = String(profile.dietaryPreferences || "").trim().toLowerCase();
+                if (["egg", "eggetarian"].includes(d)) return "veg";
+                if (["non-veg", "nonveg", "non_veg", "non veg"].includes(d)) return "non_veg";
+                return "veg";
+              })(),
+            regionPreference: profile.regionPreference || "north_indian",
+            weightCategory: computedTargets.weightCategory as any,
+            adjustments: {
+              avoid: computedTargets.adjustments.avoid,
+              prefer: computedTargets.adjustments.prefer,
+            },
+          };
+
+          const pPlan = await generatePersonalizedPlan(engineProfile);
+          if (pPlan.workout) {
+            const durationMin =
+              Number((pPlan.workout as any).durationMinutes || (pPlan.workout as any).duration_minutes || parseInt((pPlan.workout as any).duration)) ||
+              30;
+            await storage.createWorkout({
+              planId: existingFullPlan.id,
+              type: String((pPlan.workout as any).workoutType || (pPlan.workout as any).workout_type || "strength") as any,
+              name: String((pPlan.workout as any).name || (pPlan.workout as any).workout_name || "Workout"),
+              description: (pPlan.workout as any).description || null,
+              duration: durationMin,
+              difficulty: mapWorkoutDifficultyToDb((pPlan.workout as any).level || (pPlan.workout as any).difficulty),
+              exercises: toWorkoutDbExercises(pPlan.workout as any),
+            });
+          }
+
+          const refreshed = await storage.getDailyPlan(userId, date);
+          return res.status(201).json(refreshed ?? existingFullPlan);
+        } catch (err) {
+          console.warn("[GENERATION] Failed to backfill workouts for existing plan:", err);
+        }
       }
 
       // Mapping for Personalized Engine
@@ -346,22 +465,37 @@ export function registerRoutes(
         return 'maintain';
       };
 
-      const mapDiet = (dp: string) => {
-        const d = dp.toLowerCase();
-        if (d === 'veg') return 'veg';
-        return 'non_veg';
+      const mapDiet = (dp: string | null | undefined) => {
+        const d = String(dp ?? "").trim().toLowerCase();
+
+        // Keep the engine safe: if preference is missing/unknown, default to veg.
+        if (!d) return "veg";
+
+        // Common variants
+        if (["veg", "vegetarian"].includes(d)) return "veg";
+
+        // We don't have an "egg-only" meal library tier yet; map to veg so we never
+        // accidentally serve meat-based meals to an eggetarian.
+        if (["egg", "eggetarian"].includes(d)) return "veg";
+
+        if (["non-veg", "nonveg", "non_veg", "non veg"].includes(d)) return "non_veg";
+
+        // Fallback: be conservative.
+        return "veg";
       };
+
+      const computedTargets = calculateCategoryTargets(profile as any);
 
       const engineProfile = {
         goal: mapGoal(profile.primaryGoal),
         dietType: mapDiet(profile.dietaryPreferences),
-        regionPreference: (profile as any).regionPreference || 'north_indian'
+        regionPreference: profile.regionPreference || "north_indian",
+        weightCategory: computedTargets.weightCategory,
+        adjustments: {
+          avoid: computedTargets.adjustments.avoid,
+          prefer: computedTargets.adjustments.prefer,
+        },
       };
-
-      // Log warning if regionPreference is missing
-      if (!(profile as any).regionPreference) {
-        console.warn(`[GENERATION] User ${userId} missing regionPreference, using default: north_indian`);
-      }
 
       const pPlan = await generatePersonalizedPlan(engineProfile);
 
@@ -369,8 +503,9 @@ export function registerRoutes(
       const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
       let targetPlan;
 
-      const caloriesTarget = (pPlan.breakfast?.calories || 0) + (pPlan.lunch?.calories || 0) + (pPlan.dinner?.calories || 0);
-      const proteinTarget = (pPlan.breakfast?.protein || 0) + (pPlan.lunch?.protein || 0) + (pPlan.dinner?.protein || 0);
+      // Daily targets should be based on the user's profile (TDEE/BMR + goal),
+      // not the calories of whatever meals happened to be selected.
+      const { caloriesTarget, proteinTarget } = computedTargets;
 
       if (existingPlanMeta) {
         // Update existing plan metadata
@@ -397,24 +532,38 @@ export function registerRoutes(
           name: m.name,
           calories: m.calories,
           protein: m.protein,
+          carbs: Math.round(Number((m as any).carbs || 0)) || null,
+          fats: Math.round(Number((m as any).fat || (m as any).fats || 0)) || null,
+          fiber: Math.round(Number((m as any).fiber || 0)) || null,
+          cookingMethod: String((m as any).cookingMethod || ""),
+          libraryMealId: String((m as any).id || ""),
+          suitableForCategories: (m as any).suitableForCategories || null,
+          calorieDensity: (m as any).calorieDensity || null,
+          glycemicLoad: (m as any).glycemicLoad || null,
+          proteinPriority: Boolean((m as any).proteinPriority),
+          isWeightLossFriendly: Boolean((m as any).isWeightLossFriendly),
+          isMuscleGainFriendly: Boolean((m as any).isMuscleGainFriendly),
+          isLowCalorie: Boolean((m as any).isLowCalorie),
+          isHighFiber: Boolean((m as any).isHighFiber),
           ingredients: [m.name], // Simplified
           instructions: `Region: ${m.region}. Goal: ${m.goal?.join(', ')}.`
         });
       }
-
       // Save Workout
       if (pPlan.workout) {
-        const durationMin = parseInt(pPlan.workout.duration) || 30;
+        const durationMin =
+          Number((pPlan.workout as any).durationMinutes || (pPlan.workout as any).duration_minutes || parseInt((pPlan.workout as any).duration)) ||
+          30;
         await storage.createWorkout({
           planId,
-          type: 'strength', // Default
-          name: pPlan.workout.name,
+          type: String((pPlan.workout as any).workoutType || (pPlan.workout as any).workout_type || "strength") as any,
+          name: String((pPlan.workout as any).name || (pPlan.workout as any).workout_name || "Workout"),
+          description: (pPlan.workout as any).description || null,
           duration: durationMin,
-          difficulty: pPlan.workout.level === 'beginner' ? 'easy' : 'medium',
-          exercises: [{ name: pPlan.workout.name, duration: durationMin * 60, instruction: "Follow routine", phase: 'main' }]
+          difficulty: mapWorkoutDifficultyToDb((pPlan.workout as any).level || (pPlan.workout as any).difficulty),
+          exercises: toWorkoutDbExercises(pPlan.workout as any),
         });
       }
-
       const fullPlan = await storage.getDailyPlan(userId, date);
       console.log(`[GENERATION] Successfully generated and saved personalized plan ${planId} for user ${userId}`);
       res.status(201).json(fullPlan);
@@ -639,6 +788,12 @@ export function registerRoutes(
     const workout = await storage.getWorkout(workoutId);
     if (!workout) return res.status(404).json({ message: "Workout not found" });
 
+    // If there's an existing in-progress session, reuse it (prevents duplicates on refresh).
+    const existing = await storage.getWorkoutSession(workoutId);
+    if (existing && existing.userId === userId && existing.status === "in_progress") {
+      return res.status(200).json(existing);
+    }
+
     const session = await storage.createWorkoutSession({
       workoutId,
       userId,
@@ -681,55 +836,59 @@ export function registerRoutes(
 
       const log = await storage.logWeight({ userId, weight, date });
 
-      // Also update profile's current weight
-      await storage.updateUserProfile(userId, { currentWeight: weight });
+      const previousProfile = await storage.getUserProfile(userId);
+      const oldCategory = String((previousProfile as any)?.weightCategory ?? "");
 
-      res.status(201).json(log);
+      // Update profile's current weight + BMI/category (recalculated on each weight log)
+      const merged: any = { ...(previousProfile || {}), currentWeight: weight };
+      const computed = calculateCategoryTargets(merged);
+      const updatedProfile = await storage.updateUserProfile(userId, {
+        currentWeight: weight,
+        bmi: computed.bmi,
+        weightCategory: computed.weightCategory,
+        bmiLastCalculated: new Date(),
+      } as any);
+
+      // Category transition rewards (XP + badge)
+      const newCategory = String((updatedProfile as any)?.weightCategory ?? computed.weightCategory);
+      let categoryChanged = false;
+      let earnedXp = 0;
+      let earnedBadge: string | null = null;
+
+      if (oldCategory && newCategory && oldCategory !== newCategory) {
+        categoryChanged = true;
+
+        const g = await storage.getGamificationProfile(userId);
+        const currentBadges = new Set<string>((g as any).badges || []);
+        if (!currentBadges.has("category_unlocked")) {
+          currentBadges.add("category_unlocked");
+          earnedBadge = "category_unlocked";
+        }
+
+        earnedXp = 200;
+        await storage.updateGamification(userId, {
+          xp: (g.xp || 0) + earnedXp,
+          level: Math.floor(((g.xp || 0) + earnedXp) / 1000) + 1,
+          badges: Array.from(currentBadges),
+          lastActiveDate: date,
+        });
+      }
+
+      res.status(201).json({
+        ...log,
+        categoryChanged,
+        oldCategory,
+        newCategory,
+        earnedXp,
+        earnedBadge,
+        bmi: computed.bmi,
+        weightCategory: computed.weightCategory,
+      });
     } catch (err) {
       console.error("Weight log error:", err);
       res.status(400).json({ message: "Failed to log weight" });
     }
   });
-
-  function calculateTargets(profile: any) {
-    let bmr = 0;
-    if (profile.gender === 'male') {
-      bmr = 10 * profile.currentWeight + 6.25 * profile.height - 5 * profile.age + 5;
-    } else {
-      bmr = 10 * profile.currentWeight + 6.25 * profile.height - 5 * profile.age - 161;
-    }
-
-    const multipliers: Record<string, number> = {
-      'sedentary': 1.2,
-      'moderate': 1.55,
-      'active': 1.725
-    };
-    const tdee = bmr * (multipliers[profile.activityLevel] || 1.2);
-
-    let adjustment = 0;
-    if (profile.primaryGoal === 'muscle_gain') {
-      adjustment = tdee * 0.10; // 10% surplus
-    } else if (profile.primaryGoal === 'fat_loss') {
-      adjustment = -(tdee * 0.20); // 20% deficit
-      if (adjustment < -700) adjustment = -700;
-    } else {
-      // recomposition / maintenance
-      adjustment = 0;
-    }
-
-    let targetCalories = Math.round(tdee + adjustment);
-    const minCalories = profile.gender === 'male' ? 1500 : 1200;
-    if (targetCalories < minCalories) targetCalories = minCalories;
-
-    // Protein target based on goal
-    let proteinMultiplier = 1.8;
-    if (profile.primaryGoal === 'muscle_gain') proteinMultiplier = 2.2;
-    if (profile.primaryGoal === 'recomposition') proteinMultiplier = 2.0;
-
-    let proteinTarget = Math.round(profile.currentWeight * proteinMultiplier);
-
-    return { caloriesTarget: targetCalories, proteinTarget };
-  }
 
   // === AI COACH CHAT ===
   app.get("/api/coach/messages", isAuthenticated, async (req: any, res) => {
@@ -752,21 +911,36 @@ export function registerRoutes(
         return res.status(400).json({ message: "Message is required" });
       }
 
+      if (!process.env.GEMINI_API_KEY) {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.write(`data: ${JSON.stringify({ error: "AI Coach is not configured (missing GEMINI_API_KEY)." })}\n\n`);
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+        return;
+      }
+
       // Get user context
       const profile = await storage.getUserProfile(userId);
       const todayStr = new Date().toISOString().split('T')[0];
       const plan = await storage.getDailyPlan(userId, todayStr);
+      const categoryContext = profile ? calculateCategoryTargets(profile as any) : null;
+      const phaseName = categoryContext
+        ? getWeightCategoryDisplayName(categoryContext.weightCategory)
+        : null;
 
       // Build context for the coach
       const userContext = profile ? `
-User Profile:
-- Name: ${profile.displayName || 'Unnamed User'}
-- Age: ${profile.age}, Gender: ${profile.gender}
-- Goals: ${profile.primaryGoal?.replace('_', ' ')} (Pace: ${profile.weeklyGoalPace})
-- Weight: Current ${profile.currentWeight}kg, Target ${profile.targetWeight}kg
-- Health Metrics: Sleep ${profile.sleepDuration}hrs, Stress ${profile.stressLevel}
-- Lifestyle: Activity ${profile.activityLevel}, Diet ${profile.dietaryPreferences}
-- Coaching Preferences: Tone ${profile.coachingTone}, Frequency ${profile.reminderFrequency}
+ User Profile:
+ - Name: ${profile.displayName || 'Unnamed User'}
+ - Age: ${profile.age}, Gender: ${profile.gender}
+ - Goals: ${profile.primaryGoal?.replace('_', ' ')} (Pace: ${profile.weeklyGoalPace})
+ - Weight: Current ${profile.currentWeight}kg, Target ${profile.targetWeight}kg
+ - Phase: ${phaseName || 'Unknown'} (BMI: ${categoryContext?.bmi ?? 'N/A'})
+ - Health Metrics: Sleep ${profile.sleepDuration}hrs, Stress ${profile.stressLevel}
+ - Lifestyle: Activity ${profile.activityLevel}, Diet ${profile.dietaryPreferences}
+ - Coaching Preferences: Tone ${profile.coachingTone}, Frequency ${profile.reminderFrequency}
 ` : '';
 
       const planContext = plan ? `
@@ -791,6 +965,18 @@ Prioritize long-term health and sustainable habits over quick fixes.
 ${userContext}
 ${planContext}
 
+## Weight Category Guidance (Indian BMI cutoffs)
+- Current BMI: ${categoryContext?.bmi ?? 'N/A'} (${phaseName || 'Unknown Phase'})
+- Category-specific daily calories: ${categoryContext?.caloriesTarget ?? 'N/A'} kcal
+- Protein priority: ${categoryContext ? `${categoryContext.adjustments.protein_per_kg}g/kg` : 'N/A'}
+- Notes: ${categoryContext?.adjustments.notes ?? ''}
+${categoryContext?.adjustments?.show_doctor_notice ? "- Safety: Encourage consulting a doctor/dietitian alongside app use.\n" : ""}
+
+Constraints you MUST follow:
+- Never recommend calorie restriction for underweight users.
+- Never recommend deep-fried or sugary foods for overweight/obese/severely_obese users.
+- When suggesting meals: only suggest meals compatible with the user's diet AND aligned with their weight category preferences (high-fiber/high-protein/low calorie density where appropriate).
+
 ## Coaching Logic
 1. Analyze: Check sleep, stress, and adherence data first.
 2. Prioritize: Address the biggest bottleneck (usually sleep or protein).
@@ -804,7 +990,7 @@ Rules:
 ## Communication Style
 - Language: Professional, clear, and grounded.
 - Tone: ${profile?.coachingTone || 'supportive'}.
-- No gamified or playful language. No motivational clichés.
+- No gamified or playful language. No motivational clichÃ©s.
 - Address the user by name: ${profile?.displayName || 'there'}.
 - Keep responses concise (2-4 sentences).
 
@@ -832,8 +1018,8 @@ Rules:
         content: message
       });
 
-      // 1. Use gemini-2.5-flash (verified model for this key)
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      // 1. Try a small set of models for compatibility across keys/projects.
+      const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
       // 2. Input MUST be passed using contents
       const contents = [
@@ -864,8 +1050,20 @@ Rules:
       console.log("Gemini Request Payload (contents):", JSON.stringify(contents, null, 2));
 
       try {
-        // 3. Call Gemini
-        const result = await model.generateContent({ contents });
+        // 3. Call Gemini (fallback across models if one isn't available for this key)
+        let result: any = null;
+        let lastErr: any = null;
+        for (const name of modelNames) {
+          try {
+            const model = genAI.getGenerativeModel({ model: name });
+            result = await model.generateContent({ contents });
+            lastErr = null;
+            break;
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        if (!result) throw lastErr || new Error("Gemini call failed");
 
         console.log("Gemini Response Metadata:", JSON.stringify({
           candidatesCount: result.response.candidates?.length,
@@ -919,7 +1117,11 @@ Rules:
       console.error("Coach chat route catch block triggered:", err.message);
 
       // 6. Fallback message on failure
-      const fallbackMessage = "AI Coach is temporarily unavailable. Please try again.";
+      const detail =
+        process.env.NODE_ENV !== "production" && err?.message
+          ? ` (${String(err.message)})`
+          : "";
+      const fallbackMessage = `AI Coach is temporarily unavailable. Please try again.${detail}`;
 
       if (res.headersSent) {
         res.write(`data: ${JSON.stringify({ error: fallbackMessage })}\n\n`);
@@ -947,6 +1149,20 @@ Rules:
       // 2. Gamification Logic
       let gamification = await storage.getGamificationProfile(userId);
       const newBadges: string[] = [];
+      const today = String(input.date);
+      const previousActiveDate = String((gamification as any).lastActiveDate || "");
+
+      const parseDateUtc = (dateStr: string) => {
+        const d = new Date(`${dateStr}T00:00:00Z`);
+        return Number.isNaN(d.getTime()) ? null : d;
+      };
+
+      const diffDays = (a: string, b: string) => {
+        const da = parseDateUtc(a);
+        const db = parseDateUtc(b);
+        if (!da || !db) return null;
+        return Math.round((da.getTime() - db.getTime()) / 86400000);
+      };
 
       // XP Calculation (Simplified)
       const stepsXp = (activity.steps || 0) * 0.1;
@@ -982,10 +1198,30 @@ Rules:
       // Level Logic
       let level = Math.floor(totalXp / 1000) + 1;
 
+      // Real streak logic:
+      // - Same day: preserve current streak.
+      // - Consecutive day: increment.
+      // - Gap of more than one day: reset to 1 on the next active day.
+      let currentStreak = Number((gamification as any).currentStreak || 0);
+      let longestStreak = Number((gamification as any).longestStreak || 0);
+      const dayGap = previousActiveDate ? diffDays(today, previousActiveDate) : null;
+      if (!previousActiveDate) {
+        currentStreak = 1;
+      } else if (dayGap === 0) {
+        // Same day sync, keep current streak as-is.
+      } else if (dayGap === 1) {
+        currentStreak = currentStreak + 1;
+      } else if (dayGap && dayGap > 1) {
+        currentStreak = 1;
+      }
+      longestStreak = Math.max(longestStreak, currentStreak);
+
       // Update Gamification
       gamification = await storage.updateGamification(userId, {
         xp: totalXp,
         level,
+        currentStreak,
+        longestStreak,
         lastActiveDate: input.date,
         badges: Array.from(currentBadges)
       });
@@ -1031,3 +1267,4 @@ Rules:
 
   return httpServer;
 }
+

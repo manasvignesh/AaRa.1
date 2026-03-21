@@ -21,10 +21,19 @@ import { motion } from "framer-motion";
 
 type ViewType = "7 days" | "30 days" | "all time";
 
+const bmiDisplayNames: Record<string, { label: string; color: string }> = {
+  underweight: { label: "Building Phase", color: "#6AAFF5" },
+  healthy: { label: "In the Zone", color: "#27AE60" },
+  overweight: { label: "Active Transformation", color: "#E8A93A" },
+  obese: { label: "Power Journey", color: "#F5A623" },
+  severely_obese: { label: "Strong Start", color: "#E8A93A" },
+};
+
 export default function ProgressTracker() {
   const [view, setView] = useState<ViewType>("7 days");
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [newWeight, setNewWeight] = useState("");
+  const [categoryChange, setCategoryChange] = useState<null | { oldCategory: string; newCategory: string; earnedXp?: number }>(null);
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const queryClient = useQueryClient();
 
@@ -56,11 +65,20 @@ export default function ProgressTracker() {
       if (!res.ok) throw new Error("Failed to log weight");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: [api.weight.getHistory.path] });
       queryClient.invalidateQueries({ queryKey: [api.user.getStats.path] });
+      queryClient.invalidateQueries({ queryKey: [api.user.getProfile.path] });
       setShowLogDialog(false);
       setNewWeight("");
+
+      if (data?.categoryChanged && data?.oldCategory && data?.newCategory) {
+        setCategoryChange({
+          oldCategory: String(data.oldCategory),
+          newCategory: String(data.newCategory),
+          earnedXp: Number(data.earnedXp || 0) || undefined,
+        });
+      }
     }
   });
 
@@ -88,11 +106,17 @@ export default function ProgressTracker() {
     );
   }
 
-  const chartData = weightHistory?.map((log: any) => ({
+  const heightM = Number(profile.height || 0) > 0 ? Number(profile.height) / 100 : 0;
+  const chartData = weightHistory?.map((log: any) => {
+    const weight = parseFloat(log.weight);
+    const bmi = heightM > 0 ? weight / (heightM * heightM) : null;
+    return {
     date: format(new Date(log.date), "MMM d"),
-    weight: parseFloat(log.weight),
+    weight,
+    bmi: bmi != null ? Math.round(bmi * 10) / 10 : null,
     rawDate: new Date(log.date)
-  })).sort((a: any, b: any) => a.rawDate.getTime() - b.rawDate.getTime()) || [];
+    };
+  }).sort((a: any, b: any) => a.rawDate.getTime() - b.rawDate.getTime()) || [];
 
   const filteredChartData = view === "7 days" ? chartData.slice(-7) : view === "30 days" ? chartData.slice(-30) : chartData;
 
@@ -160,7 +184,7 @@ export default function ProgressTracker() {
           {/* Global Statistics */}
           <section className="grid grid-cols-3 gap-[10px] stagger-2">
             {[
-              { label: "Streak", val: stats.streak || 0, icon: Trophy, color: "text-amber-500 bg-amber-500/10", unit: "d" },
+              { label: "Streak", val: stats.currentStreak || stats.streak || 0, icon: Trophy, color: "text-amber-500 bg-amber-500/10", unit: "d" },
               { label: "Sessions", val: stats.completedWorkouts || 0, icon: CheckCircle2, color: "text-brand bg-[#2F80ED]/10", unit: "" },
               { label: "Energy", val: stats.totalCalories || 0, icon: Flame, color: "text-[#27AE60] bg-[#27AE60]/10", unit: "cal" }
             ].map((item, i) => (
@@ -231,6 +255,45 @@ export default function ProgressTracker() {
             </div>
           </section>
 
+          {/* BMI Trend */}
+          <section className="space-y-[12px] stagger-3 mb-[24px]">
+            <SectionHeader title="BMI Trend" />
+            <div className="wellness-card h-[220px] rounded-[24px] pt-[16px] px-[16px] pb-[12px] shadow-[0_4px_20px_rgba(47,128,237,0.07)]">
+              {filteredChartData.filter((d: any) => d.bmi != null).length >= 2 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={filteredChartData}>
+                    <defs>
+                      <linearGradient id="bmiGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#27AE60" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#27AE60" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(39,174,96,0.06)" />
+                    <XAxis dataKey="date" hide />
+                    <YAxis hide domain={['dataMin - 0.5', 'dataMax + 0.5']} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(39,174,96,0.12)',
+                        color: '#1E2A3A',
+                        fontSize: '12px',
+                        boxShadow: '0 4px 20px rgba(39,174,96,0.08)'
+                      }}
+                      itemStyle={{ color: '#27AE60', fontWeight: 'bold' }}
+                    />
+                    <Area type="monotone" dataKey="bmi" stroke="#27AE60" strokeWidth={3} fill="url(#bmiGrad)" animationDuration={2000} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center opacity-30 gap-2">
+                  <Activity className="w-8 h-8 text-[var(--text-muted)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Incomplete Data Range</p>
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Entry History */}
           <section className="space-y-4 stagger-4">
             <SectionHeader title="Temporal Ledger" />
@@ -283,6 +346,37 @@ export default function ProgressTracker() {
               >
                 {logWeightMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                 Save Entry
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!categoryChange} onOpenChange={(open) => !open && setCategoryChange(null)}>
+          <DialogContent className="max-w-[360px] rounded-[32px] p-0 overflow-hidden border-none bg-[var(--surface-1)] shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="p-8 text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center border" style={{ borderColor: "rgba(255,255,255,0.08)", background: "var(--surface-2)" }}>
+                <Trophy className="w-8 h-8 text-brand" />
+              </div>
+              <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--text-primary)]">Phase Unlocked</h3>
+              {categoryChange && (
+                <div className="space-y-2">
+                  <p className="text-[13px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                    You moved from{" "}
+                    <span style={{ color: bmiDisplayNames[categoryChange.oldCategory]?.color || "var(--text-primary)", fontWeight: 700 }}>
+                      {bmiDisplayNames[categoryChange.oldCategory]?.label || "your previous phase"}
+                    </span>{" "}
+                    to{" "}
+                    <span style={{ color: bmiDisplayNames[categoryChange.newCategory]?.color || "var(--text-primary)", fontWeight: 700 }}>
+                      {bmiDisplayNames[categoryChange.newCategory]?.label || "a new phase"}
+                    </span>.
+                  </p>
+                  <p className="text-[12px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                    Bonus {categoryChange.earnedXp ? `+${categoryChange.earnedXp} XP` : "+200 XP"}
+                  </p>
+                </div>
+              )}
+              <button className="btn-primary w-full h-14 rounded-full font-bold uppercase tracking-widest text-[12px]" onClick={() => setCategoryChange(null)}>
+                Let’s go
               </button>
             </div>
           </DialogContent>

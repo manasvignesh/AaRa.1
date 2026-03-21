@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, date, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -19,6 +19,10 @@ export const userProfiles = pgTable("user_profiles", {
   height: integer("height").notNull(), // in cm
   currentWeight: integer("current_weight").notNull(), // in kg
   targetWeight: integer("target_weight").notNull(), // in kg - strictly fat loss
+  // BMI & weight category (Indian cutoffs) - calculated on save
+  bmi: numeric("bmi", { precision: 4, scale: 1 }),
+  weightCategory: text("weight_category"), // underweight|healthy|overweight|obese|severely_obese
+  bmiLastCalculated: timestamp("bmi_last_calculated"),
   dailyMealCount: integer("daily_meal_count").default(3), // Fixed for the day
   activityLevel: text("activity_level").notNull(), // 'sedentary', 'moderate', 'active'
   dietaryPreferences: text("dietary_preferences").notNull(), // 'veg', 'non-veg', 'egg'
@@ -65,10 +69,21 @@ export const meals = pgTable("meals", {
   type: text("type").notNull(), // 'breakfast', 'lunch', 'dinner', 'snack'
   name: text("name").notNull(),
   description: text("description"),
+  libraryMealId: text("library_meal_id"),
   calories: integer("calories").notNull(),
   protein: integer("protein").notNull(),
   carbs: integer("carbs"),
   fats: integer("fats"),
+  fiber: integer("fiber"),
+  cookingMethod: text("cooking_method"),
+  suitableForCategories: jsonb("suitable_for_categories").$type<string[]>(),
+  calorieDensity: text("calorie_density"), // low|medium|high|very_high
+  glycemicLoad: text("glycemic_load"), // low|medium|high
+  proteinPriority: boolean("protein_priority").default(false),
+  isWeightLossFriendly: boolean("is_weight_loss_friendly").default(false),
+  isMuscleGainFriendly: boolean("is_muscle_gain_friendly").default(false),
+  isLowCalorie: boolean("is_low_calorie").default(false),
+  isHighFiber: boolean("is_high_fiber").default(false),
   ingredients: jsonb("ingredients").$type<string[]>(), // List of ingredients
   instructions: text("instructions"),
   isConsumed: boolean("is_consumed").default(false),
@@ -237,7 +252,10 @@ export const userGamificationRelations = relations(userGamification, ({ one }) =
 export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
   id: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  bmi: true,
+  weightCategory: true,
+  bmiLastCalculated: true,
 });
 
 export const insertDailyPlanSchema = createInsertSchema(dailyPlans).omit({

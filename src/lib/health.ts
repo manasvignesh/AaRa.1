@@ -24,6 +24,7 @@ class HealthService {
 
     private isTracking = false;
     private isGpsEnabled = false;
+    private isStepCounterEnabled = false;
 
     // GPS
     private watchId: number | null = null;
@@ -35,6 +36,14 @@ class HealthService {
     private readonly MIN_DISTANCE_THRESHOLD = 5; // meters
     private readonly AVG_STRIDE_LENGTH = 0.762; // meters per step
     private readonly CALORIES_PER_STEP = 0.04; // kcal
+
+    // Motion step counter (works while app is open; avoids hard native dependencies)
+    private motionHandler: ((e: DeviceMotionEvent) => void) | null = null;
+    private lastStepAtMs = 0;
+    private stepArmed = true;
+    private readonly STEP_DEBOUNCE_MS = 260;
+    private readonly STEP_ARM_THRESHOLD = 1.0; // m/s^2 (below this re-arms)
+    private readonly STEP_TRIGGER_THRESHOLD = 2.0; // m/s^2 (above this counts a step)
 
     // Listeners
     private listeners: HealthUpdateListener[] = [];
@@ -86,6 +95,75 @@ class HealthService {
 
     // Removed Random Simulation - Strict GPS Only
 
+    public async enableStepCounter() {
+        if (this.isStepCounterEnabled) return;
+        if (typeof window === "undefined") return;
+        if (typeof (window as any).DeviceMotionEvent === "undefined") return;
+
+        // iOS requires a user gesture to call requestPermission(). If this throws, keep disabled.
+        try {
+            const DME: any = (window as any).DeviceMotionEvent;
+            if (typeof DME?.requestPermission === "function") {
+                const result = await DME.requestPermission();
+                if (result !== "granted") return;
+            }
+        } catch {
+            return;
+        }
+
+        this.isStepCounterEnabled = true;
+        this.isTracking = true;
+
+        this.lastStepAtMs = 0;
+        this.stepArmed = true;
+
+        this.motionHandler = (e: DeviceMotionEvent) => {
+            const acc = e.accelerationIncludingGravity;
+            if (!acc) return;
+
+            const ax = acc.x ?? 0;
+            const ay = acc.y ?? 0;
+            const az = acc.z ?? 0;
+            const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
+
+            // Approximate dynamic acceleration by removing gravity.
+            const dynamic = Math.abs(magnitude - 9.81);
+
+            if (dynamic < this.STEP_ARM_THRESHOLD) {
+                this.stepArmed = true;
+                return;
+            }
+
+            const now = typeof e.timeStamp === "number" ? e.timeStamp : Date.now();
+            if (this.stepArmed && dynamic >= this.STEP_TRIGGER_THRESHOLD && now - this.lastStepAtMs >= this.STEP_DEBOUNCE_MS) {
+                this.stepArmed = false;
+                this.lastStepAtMs = now;
+
+                this.stats.steps += 1;
+                this.stats.distance += this.AVG_STRIDE_LENGTH;
+                this.stats.calories += this.CALORIES_PER_STEP;
+                this.notifyListeners();
+            }
+        };
+
+        window.addEventListener("devicemotion", this.motionHandler, { passive: true });
+    }
+
+    public disableStepCounter() {
+        if (!this.isStepCounterEnabled) return;
+        if (typeof window === "undefined") return;
+
+        if (this.motionHandler) {
+            window.removeEventListener("devicemotion", this.motionHandler as any);
+        }
+
+        this.motionHandler = null;
+        this.isStepCounterEnabled = false;
+        this.isTracking = this.isGpsEnabled;
+
+        this.sync();
+    }
+
     public enableGps() {
         if (!navigator.geolocation) {
             console.error("Geolocation not supported");
@@ -94,6 +172,8 @@ class HealthService {
 
         this.isGpsEnabled = true;
         this.isTracking = true;
+        // Avoid double-counting: GPS-derived steps while GPS is enabled.
+        this.disableStepCounter();
         this.routeStartTime = new Date();
         this.pendingRoutePoints = [];
         this.lastPosition = null;
@@ -176,7 +256,7 @@ class HealthService {
             this.watchId = null;
         }
         this.isGpsEnabled = false;
-        this.isTracking = false;
+        this.isTracking = this.isStepCounterEnabled;
 
         // Save Route
         if (this.pendingRoutePoints.length > 2) {

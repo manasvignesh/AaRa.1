@@ -2,6 +2,47 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
 
+export function useStartWorkoutSession() {
+  return useMutation({
+    mutationFn: async (workoutId: number) => {
+      const url = buildUrl(api.workouts.startSession.path, { id: workoutId });
+      const res = await fetch(url, {
+        method: api.workouts.startSession.method,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to start workout session");
+      return api.workouts.startSession.responses[201].parse(await res.json());
+    },
+  });
+}
+
+export function useUpdateWorkoutSession() {
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      updates,
+    }: {
+      sessionId: number;
+      updates: Partial<{
+        status: string;
+        currentPhase: string;
+        currentExerciseIndex: number;
+        totalDuration: number;
+      }>;
+    }) => {
+      const url = buildUrl(api.workouts.updateSession.path, { id: sessionId });
+      const res = await fetch(url, {
+        method: api.workouts.updateSession.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to update workout session");
+      return api.workouts.updateSession.responses[200].parse(await res.json());
+    },
+  });
+}
+
 export function useCompleteWorkout() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

@@ -165,6 +165,47 @@ export default function MealsPage() {
                                                 </p>
                                                 <h4 className={cn("text-[15px] font-semibold truncate leading-tight", (meal.isConsumed || meal.consumedAlternative) ? "text-[#27AE60] line-through decoration-[#27AE60]/30" : "")} style={{ color: meal.isConsumed || meal.consumedAlternative ? "#27AE60" : "var(--text-primary)" }}>
                                                     {meal.consumedAlternative ? meal.alternativeDescription : meal.name}
+                                                    {!meal.consumedAlternative && meal.isWeightLossFriendly &&
+                                                        ["overweight", "obese", "severely_obese"].includes(String(user?.weightCategory)) && (
+                                                            <span
+                                                                style={{
+                                                                    display: "inline-flex",
+                                                                    alignItems: "center",
+                                                                    gap: "4px",
+                                                                    padding: "2px 8px",
+                                                                    borderRadius: "999px",
+                                                                    background: "rgba(39,174,96,0.1)",
+                                                                    border: "1px solid rgba(39,174,96,0.2)",
+                                                                    fontSize: "10px",
+                                                                    fontWeight: 600,
+                                                                    color: "#27AE60",
+                                                                    marginLeft: "6px",
+                                                                }}
+                                                            >
+                                                                ✓ Recommended
+                                                            </span>
+                                                        )}
+                                                    {!meal.consumedAlternative && meal.isMuscleGainFriendly &&
+                                                        ["underweight", "healthy"].includes(String(user?.weightCategory)) &&
+                                                        String(user?.primaryGoal) === "muscle_gain" && (
+                                                            <span
+                                                                style={{
+                                                                    display: "inline-flex",
+                                                                    alignItems: "center",
+                                                                    gap: "4px",
+                                                                    padding: "2px 8px",
+                                                                    borderRadius: "999px",
+                                                                    background: "rgba(47,128,237,0.1)",
+                                                                    border: "1px solid rgba(47,128,237,0.2)",
+                                                                    fontSize: "10px",
+                                                                    fontWeight: 600,
+                                                                    color: "#2F80ED",
+                                                                    marginLeft: "6px",
+                                                                }}
+                                                            >
+                                                                Muscle Fuel
+                                                            </span>
+                                                        )}
                                                 </h4>
                                                 <div className="flex items-center gap-[6px] mt-1">
                                                     <span className="h-[26px] px-[10px] rounded-full inline-flex items-center text-brand text-[11px] font-bold" style={{ backgroundColor: "var(--surface-2)" }}>

@@ -14,8 +14,10 @@ export async function runStartupMigrations(): Promise<void> {
                 user_id INTEGER NOT NULL,
                 date DATE NOT NULL,
                 steps INTEGER DEFAULT 0,
-                calories_burned INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT NOW()
+                distance INTEGER DEFAULT 0,
+                calories INTEGER DEFAULT 0,
+                active_time INTEGER DEFAULT 0,
+                last_synced_at TIMESTAMP DEFAULT NOW()
             )`,
         },
         {
@@ -25,8 +27,43 @@ export async function runStartupMigrations(): Promise<void> {
                 user_id INTEGER UNIQUE NOT NULL,
                 xp INTEGER DEFAULT 0,
                 level INTEGER DEFAULT 1,
-                streak INTEGER DEFAULT 0,
+                current_streak INTEGER DEFAULT 0,
+                longest_streak INTEGER DEFAULT 0,
+                last_active_date DATE,
                 badges JSONB DEFAULT '[]',
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )`,
+        },
+        {
+            name: "conversations",
+            sql: `CREATE TABLE IF NOT EXISTS conversations (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            )`,
+        },
+        {
+            name: "messages",
+            sql: `CREATE TABLE IF NOT EXISTS messages (
+                id SERIAL PRIMARY KEY,
+                conversation_id INTEGER NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            )`,
+        },
+        {
+            name: "gps_routes",
+            sql: `CREATE TABLE IF NOT EXISTS gps_routes (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                start_time TIMESTAMP NOT NULL,
+                end_time TIMESTAMP,
+                distance INTEGER DEFAULT 0,
+                duration INTEGER DEFAULT 0,
+                route_points JSONB,
                 created_at TIMESTAMP DEFAULT NOW()
             )`,
         },
@@ -45,6 +82,51 @@ export async function runStartupMigrations(): Promise<void> {
 
     // === Phase 2: Ensure required columns exist ===
     const migrations: { column: string; sql: string }[] = [
+        // Align tables with Drizzle schema even if older tables were created previously
+        {
+            column: "activity_logs.distance",
+            sql: `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS distance INTEGER DEFAULT 0`,
+        },
+        {
+            column: "activity_logs.calories",
+            sql: `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS calories INTEGER DEFAULT 0`,
+        },
+        {
+            column: "activity_logs.active_time",
+            sql: `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS active_time INTEGER DEFAULT 0`,
+        },
+        {
+            column: "activity_logs.last_synced_at",
+            sql: `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP DEFAULT NOW()`,
+        },
+        {
+            column: "user_gamification.current_streak",
+            sql: `ALTER TABLE user_gamification ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0`,
+        },
+        {
+            column: "user_gamification.longest_streak",
+            sql: `ALTER TABLE user_gamification ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0`,
+        },
+        {
+            column: "user_gamification.last_active_date",
+            sql: `ALTER TABLE user_gamification ADD COLUMN IF NOT EXISTS last_active_date DATE`,
+        },
+        {
+            column: "user_gamification.updated_at",
+            sql: `ALTER TABLE user_gamification ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`,
+        },
+        {
+            column: "conversations.created_at",
+            sql: `ALTER TABLE conversations ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+        },
+        {
+            column: "conversations.user_id",
+            sql: `ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id INTEGER`,
+        },
+        {
+            column: "messages.created_at",
+            sql: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+        },
         {
             column: "region_preference",
             sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS region_preference TEXT DEFAULT 'north_indian'`,
@@ -92,6 +174,63 @@ export async function runStartupMigrations(): Promise<void> {
         {
             column: "daily_meal_count",
             sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS daily_meal_count INTEGER DEFAULT 3`,
+        },
+        // Meals metadata (weight-category aware meal library tags)
+        {
+            column: "meals.library_meal_id",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS library_meal_id TEXT`,
+        },
+        {
+            column: "meals.fiber",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS fiber INTEGER`,
+        },
+        {
+            column: "meals.cooking_method",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS cooking_method TEXT`,
+        },
+        {
+            column: "meals.suitable_for_categories",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS suitable_for_categories JSONB`,
+        },
+        {
+            column: "meals.calorie_density",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS calorie_density TEXT`,
+        },
+        {
+            column: "meals.glycemic_load",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS glycemic_load TEXT`,
+        },
+        {
+            column: "meals.protein_priority",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS protein_priority BOOLEAN DEFAULT FALSE`,
+        },
+        {
+            column: "meals.is_weight_loss_friendly",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS is_weight_loss_friendly BOOLEAN DEFAULT FALSE`,
+        },
+        {
+            column: "meals.is_muscle_gain_friendly",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS is_muscle_gain_friendly BOOLEAN DEFAULT FALSE`,
+        },
+        {
+            column: "meals.is_low_calorie",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS is_low_calorie BOOLEAN DEFAULT FALSE`,
+        },
+        {
+            column: "meals.is_high_fiber",
+            sql: `ALTER TABLE meals ADD COLUMN IF NOT EXISTS is_high_fiber BOOLEAN DEFAULT FALSE`,
+        },
+        {
+            column: "bmi",
+            sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bmi numeric(4,1)`,
+        },
+        {
+            column: "weight_category",
+            sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS weight_category TEXT`,
+        },
+        {
+            column: "bmi_last_calculated",
+            sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bmi_last_calculated TIMESTAMP`,
         },
     ];
 
