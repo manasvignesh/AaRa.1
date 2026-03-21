@@ -25,10 +25,18 @@ export function PageLayout({
 
   return (
     <div
-      className="min-h-screen flex flex-col font-sans"
+      className="flex h-[100dvh] flex-col overflow-hidden font-sans"
       style={{ backgroundColor: "var(--surface-base)", color: "var(--text-primary)" }}
     >
-      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: "max(48px, env(safe-area-inset-top))", paddingBottom: "max(80px, env(safe-area-inset-bottom))" }}>
+      <main
+        className="flex-1 overflow-y-auto overflow-x-hidden"
+        style={{
+          paddingTop: "max(48px, env(safe-area-inset-top))",
+          paddingBottom: "calc(88px + env(safe-area-inset-bottom))",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+        }}
+      >
         <div className={cn("mx-auto px-5", maxWidthClass)}>
           {header && <header className="mb-[24px] animate-slide-up">{header}</header>}
           <div className={cn("animate-slide-up space-y-[24px]", className)}>{children}</div>
