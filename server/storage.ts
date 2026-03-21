@@ -355,24 +355,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentMealNames(userId: number, limit: number = 20): Promise<string[]> {
-    const userPlans = await db.select({ id: dailyPlans.id })
-      .from(dailyPlans)
-      .where(eq(dailyPlans.userId, userId))
-      .orderBy(desc(dailyPlans.date), desc(dailyPlans.createdAt))
-      .limit(10); // Check last 10 plans
-
-    if (userPlans.length === 0) return [];
-
-    const recentMeals = await db.select({ name: meals.name })
-      .from(meals)
-      .where(and(
-        // Use inArray if I had more than one planId, but for now I'll just map
-        // Actually, drizzle inArray is fine.
-        // eq for simple test
-      ))
-      .limit(limit);
-
-    // Simpler way to get recent meal names across plans
     const allRecentMeals = await db.select({ name: meals.name })
       .from(meals)
       .innerJoin(dailyPlans, eq(meals.planId, dailyPlans.id))
