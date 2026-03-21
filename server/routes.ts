@@ -782,7 +782,7 @@ export function registerRoutes(
     if (process.env.GEMINI_API_KEY && pantry.length > 0) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
         const calorieTarget = Math.max(120, originalMeal.calories);
         const proteinTarget = Math.max(10, originalMeal.protein);
         const prompt = `
@@ -819,8 +819,25 @@ JSON shape:
   "instructions": "2-4 concise steps"
 }`;
 
-        const result = await model.generateContent(prompt);
-        const rawText = result.response.text();
+        let rawText = "";
+        let lastGeminiError: unknown = null;
+        for (const modelName of modelNames) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            rawText = result.response.text();
+            console.log(`[MEAL_REGEN] Gemini optimization succeeded with ${modelName}`);
+            break;
+          } catch (modelError) {
+            lastGeminiError = modelError;
+            console.warn(`[MEAL_REGEN] Model ${modelName} failed:`, modelError);
+          }
+        }
+
+        if (!rawText) {
+          throw lastGeminiError || new Error("Gemini meal optimization failed");
+        }
+
         const aiMeal = generatedMealSchema.parse(toJsonObject(rawText));
 
         const updatedMeal = await storage.updateMeal(id, {
@@ -1098,10 +1115,10 @@ JSON shape:
   });
 
   app.post("/api/coach/chat", isAuthenticated, async (req: any, res) => {
+    const isProduction = process.env.NODE_ENV === "production";
     try {
       const userId = (req.user as any).id;
       const { message, conversationHistory = [] } = req.body;
-      const isProduction = process.env.NODE_ENV === "production";
 
       if (!message) {
         return res.status(400).json({ message: "Message is required" });
