@@ -1,23 +1,52 @@
+import { useState } from "react";
+import { format } from "date-fns";
 import { useLocation, useRoute } from "wouter";
-import { useMeals, useToggleMealConsumed, useRegenerateMeal, useLogAlternativeMeal } from "@/hooks/use-meals";
+import {
+  ArrowLeft,
+  ChefHat,
+  Flame,
+  Info,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  Target,
+  UtensilsCrossed,
+  Zap,
+  X,
+} from "lucide-react";
+
+import { PageLayout, SectionHeader } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Check, RefreshCw, Loader2, X, Flame, Target, Utensils, Info, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { PageLayout, SectionHeader } from "@/components/PageLayout";
-import { motion, AnimatePresence } from "framer-motion";
+import { useMeals, useToggleMealConsumed, useRegenerateMeal, useLogAlternativeMeal } from "@/hooks/use-meals";
+
+function toTitleCase(value?: string | null) {
+  return String(value || "")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function formatIngredient(item: any) {
+  if (typeof item === "string") return item;
+  if (!item) return "";
+  const label = String(item.name || item.item || item.ingredient || "").trim();
+  const amount = String(item.quantity || item.amount || "").trim();
+  const unit = String(item.unit || "").trim();
+  return [label, [amount, unit].filter(Boolean).join(" ")].filter(Boolean).join(" - ");
+}
 
 export default function MealDetail() {
   const [, params] = useRoute("/meal/:date/:id");
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const planDate = params?.date ? new Date(params.date) : new Date();
-  const dateStr = params?.date || format(new Date(), 'yyyy-MM-dd');
+  const dateStr = params?.date || format(new Date(), "yyyy-MM-dd");
 
   const { data: meals = [], isLoading: mealsLoading } = useMeals(planDate);
   const { mutate: toggleConsumed, isPending: isToggling } = useToggleMealConsumed();
@@ -27,283 +56,475 @@ export default function MealDetail() {
   const [regenReason, setRegenReason] = useState("");
   const [availableIngredients, setAvailableIngredients] = useState("");
   const [isRegenOpen, setIsRegenOpen] = useState(false);
-
-  const [showConsumptionPrompt, setShowConsumptionPrompt] = useState(false);
   const [showAlternativeForm, setShowAlternativeForm] = useState(false);
   const [altDescription, setAltDescription] = useState("");
   const [altPortionSize, setAltPortionSize] = useState<"small" | "medium" | "large">("medium");
 
-  const meal = meals.find(m => m.id === Number(params?.id));
+  const meal = meals.find((item) => item.id === Number(params?.id));
+  const ingredientList = Array.isArray(meal?.ingredients) ? meal.ingredients : [];
+  const parsedIngredients = ingredientList
+    .map((ingredient) => formatIngredient(ingredient))
+    .filter(Boolean);
+  const macroCards = [
+    {
+      label: "Calories",
+      value: meal?.calories ?? 0,
+      suffix: "kcal",
+      icon: <Flame className="h-5 w-5 text-white" />,
+      accent: "linear-gradient(135deg, #2F80ED 0%, #28B5A0 100%)",
+      textColor: "#FFFFFF",
+      surface: true,
+    },
+    {
+      label: "Protein",
+      value: meal?.protein ?? 0,
+      suffix: "g",
+      icon: <Target className="h-5 w-5" style={{ color: "var(--brand-primary)" }} />,
+      accent: "var(--surface-1)",
+      textColor: "var(--text-primary)",
+    },
+    {
+      label: "Carbs",
+      value: meal?.carbs ?? 0,
+      suffix: "g",
+      icon: <Zap className="h-5 w-5 text-[#3DAB7A]" />,
+      accent: "var(--surface-1)",
+      textColor: "var(--text-primary)",
+    },
+    {
+      label: "Fats",
+      value: meal?.fats ?? 0,
+      suffix: "g",
+      icon: <ChefHat className="h-5 w-5 text-[#6AAFF5]" />,
+      accent: "var(--surface-1)",
+      textColor: "var(--text-primary)",
+    },
+  ];
 
   if (mealsLoading) {
     return (
-      <div className="page-transition">
-        <PageLayout header={<div><h1 className="font-display text-4xl font-bold tracking-tighter" style={{ color: "var(--text-primary)" }}>Loading...</h1></div>}>
-          <div className="min-h-[60vh] flex items-center justify-center">
-            <Loader2 className="w-10 h-10 text-brand animate-spin" />
-          </div>
-        </PageLayout>
-      </div>
+      <PageLayout
+        header={<h1 className="font-display text-4xl font-bold tracking-tight">Loading meal...</h1>}
+      >
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-brand" />
+        </div>
+      </PageLayout>
     );
   }
 
   if (!meal) {
     return (
-      <div className="page-transition">
-        <PageLayout header={<div><h1 className="font-display text-4xl font-bold tracking-tighter" style={{ color: "var(--text-primary)" }}>Not Found</h1></div>}>
-          <div className="min-h-[40vh] flex flex-col items-center justify-center p-10 text-center gap-6">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2" style={{ backgroundColor: "var(--surface-2)" }}>
-              <Info className="w-10 h-10" style={{ color: "var(--text-muted)" }} />
-            </div>
-            <h2 className="font-display text-xl font-bold uppercase tracking-tighter" style={{ color: "var(--text-primary)" }}>Selection Missing</h2>
-            <Button onClick={() => setLocation("/dashboard")} className="rounded-full h-14 px-8 btn-primary text-white font-bold uppercase tracking-widest text-[11px] shadow-[0_4px_20px_rgba(47,128,237,0.07)] border-none">Return to Console</Button>
+      <PageLayout
+        header={<h1 className="font-display text-4xl font-bold tracking-tight">Meal Missing</h1>}
+      >
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-5 text-center">
+          <div
+            className="flex h-20 w-20 items-center justify-center rounded-full"
+            style={{ background: "var(--surface-2)" }}
+          >
+            <Info className="h-9 w-9" style={{ color: "var(--text-muted)" }} />
           </div>
-        </PageLayout>
-      </div>
+          <p style={{ color: "var(--text-secondary)" }}>
+            This meal is no longer available for the selected day.
+          </p>
+          <Button onClick={() => setLocation("/meals")} className="btn-primary rounded-full px-8">
+            Back to Meals
+          </Button>
+        </div>
+      </PageLayout>
     );
   }
 
   const handleRegenerate = () => {
-    if (!meal.id) return;
+    const pantry = availableIngredients
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
     regenerate(
       {
         id: meal.id,
-        reason: regenReason,
-        availableIngredients: availableIngredients.split(',').map(i => i.trim()).filter(i => i !== ""),
-        date: dateStr
+        reason: regenReason.trim(),
+        availableIngredients: pantry,
+        date: dateStr,
       },
       {
         onSuccess: () => {
           setIsRegenOpen(false);
           setRegenReason("");
           setAvailableIngredients("");
-        }
-      }
+        },
+      },
     );
   };
 
   const handleConfirmAlternative = () => {
     logAlternative(
-      { id: meal.id, description: altDescription, portionSize: altPortionSize, date: dateStr },
+      {
+        id: meal.id,
+        description: altDescription,
+        portionSize: altPortionSize,
+        date: dateStr,
+      },
       {
         onSuccess: () => {
           setShowAlternativeForm(false);
           setAltDescription("");
           setAltPortionSize("medium");
-        }
-      }
+        },
+      },
     );
   };
 
   const isLogged = meal.isConsumed || meal.consumedAlternative;
 
   return (
-    <div className="page-transition">
-      <PageLayout
-        maxWidth="md"
-        header={
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => window.history.back()}
-                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-all"
-                style={{ backgroundColor: "var(--surface-1)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <p className="section-label mb-0.5">{meal.type}</p>
-                <p className="text-[12px] font-bold uppercase" style={{ color: "var(--text-muted)" }}>{format(planDate, "MMM do, yyyy")}</p>
+    <PageLayout
+      maxWidth="md"
+      header={
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.history.back()}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl transition-all active:scale-95"
+              style={{
+                background: "var(--surface-1)",
+                border: "1px solid var(--border)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <div className="section-label mb-1">{meal.type}</div>
+              <div className="text-[12px] font-bold uppercase" style={{ color: "var(--text-muted)" }}>
+                {format(planDate, "MMM do, yyyy")}
               </div>
             </div>
-            {isLogged && (
-              <div className="pill-green px-4 py-1.5 text-[10px] font-bold border border-[#27AE60]/20">
-                Logged
+          </div>
+          {isLogged ? <div className="pill-green px-3 py-1.5 text-[10px] font-bold">Logged</div> : null}
+        </div>
+      }
+    >
+      <div className="space-y-7 pb-40">
+        <section className="space-y-5">
+          <div className="space-y-3">
+            <h1
+              className="font-display text-[34px] font-bold leading-[1.05] tracking-tight sm:text-[40px]"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {toTitleCase(meal.name)}
+            </h1>
+            <div
+              className="rounded-[24px] p-4"
+              style={{
+                background: "linear-gradient(145deg, rgba(47,128,237,0.08), rgba(40,181,160,0.08))",
+                border: "1px solid rgba(47,128,237,0.12)",
+              }}
+            >
+              <div className="section-label mb-2">Optimization Target</div>
+              <p className="text-[14px] leading-6" style={{ color: "var(--text-secondary)" }}>
+                AARA can rebuild this {meal.type} using the ingredients you already have while aiming for about{" "}
+                <span style={{ color: "var(--text-primary)", fontWeight: 700 }}>{meal.calories} kcal</span> and{" "}
+                <span style={{ color: "var(--text-primary)", fontWeight: 700 }}>{meal.protein}g protein</span>.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {macroCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[24px] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+                style={{
+                  background: item.accent,
+                  border: item.surface ? "none" : "1px solid var(--border)",
+                }}
+              >
+                <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15">
+                  {item.icon}
+                </div>
+                <div className="font-display text-[30px] font-bold leading-none" style={{ color: item.textColor }}>
+                  {item.value}
+                  <span className="ml-1 text-[16px] font-semibold">{item.suffix}</span>
+                </div>
+                <div
+                  className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+                  style={{ color: item.surface ? "rgba(255,255,255,0.84)" : "var(--text-muted)" }}
+                >
+                  {item.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {meal.consumedAlternative ? (
+          <div
+            className="wellness-card flex gap-4 p-5"
+            style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.22)" }}
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-500">
+              <RefreshCw className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="section-label text-amber-500">Manual Override</div>
+              <div className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                {meal.alternativeDescription}
+              </div>
+              <div className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+                {meal.alternativeCalories} kcal · {meal.alternativeProtein}g protein
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <section className="space-y-4">
+          <SectionHeader title="Ingredients" />
+          <div className="wellness-card overflow-hidden">
+            {parsedIngredients.length > 0 ? (
+              parsedIngredients.map((ingredient, index) => (
+                <div
+                  key={`${ingredient}-${index}`}
+                  className="flex items-start gap-3 px-5 py-4"
+                  style={{
+                    borderBottom:
+                      index < parsedIngredients.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                  }}
+                >
+                  <div
+                    className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: "var(--brand-primary)" }}
+                  />
+                  <div className="text-[14px] leading-6" style={{ color: "var(--text-primary)" }}>
+                    {ingredient}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center gap-3 px-5 py-5">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl"
+                  style={{ background: "rgba(232,169,58,0.12)" }}
+                >
+                  <UtensilsCrossed className="h-5 w-5" style={{ color: "var(--brand-primary)" }} />
+                </div>
+                <div style={{ color: "var(--text-secondary)" }}>Ingredient details are not available for this meal yet.</div>
               </div>
             )}
           </div>
-        }
-      >
-        <div className="space-y-10 pb-40">
-          {/* Hero Section */}
-          <section className="space-y-8 stagger-1">
-            <h1 className="font-display text-4xl font-bold tracking-tight leading-none uppercase" style={{ color: "var(--text-primary)" }}>{meal.name}</h1>
+        </section>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="wellness-card p-5 brand-gradient text-white flex flex-col gap-3 shadow-[0_4px_20px_rgba(47,128,237,0.07)]">
-                <Flame className="w-6 h-6 opacity-80" />
-                <div>
-                  <p className="font-display text-3xl font-bold tracking-tighter leading-none">{meal.calories}</p>
-                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-80 mt-1">Daily kcal</p>
-                </div>
-              </div>
-              <div className="wellness-card p-5 flex flex-col gap-3" style={{ backgroundColor: "var(--surface-1)", border: "1px solid var(--border)" }}>
-                <Target className="w-6 h-6 opacity-80 text-brand" />
-                <div>
-                  <p className="font-display text-3xl font-bold tracking-tighter leading-none" style={{ color: "var(--text-primary)" }}>{meal.protein}g</p>
-                  <p className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: "var(--text-muted)" }}>Protein</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {meal.consumedAlternative && (
-            <div className="wellness-card p-5 flex gap-4 items-start stagger-2" style={{ backgroundColor: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.22)" }}>
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-500 shrink-0">
-                <RefreshCw className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="section-label text-amber-500 mb-1 opacity-80">Manual Override</p>
-                <p className="text-[15px] font-bold leading-tight mb-2" style={{ color: "var(--text-primary)" }}>"{meal.alternativeDescription}"</p>
-                <div className="flex gap-4">
-                  <span className="section-label">{meal.alternativeCalories} kcal</span>
-                  <span className="section-label">{meal.alternativeProtein}g protein</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-10">
-            <section className="space-y-4 stagger-2">
-              <SectionHeader title="Ingredients" />
-              <div className="wellness-card p-6 divide-y shadow-[0_4px_20px_rgba(47,128,237,0.07)]" style={{ backgroundColor: "var(--surface-1)", border: "1px solid var(--border)", borderColor: "var(--border)" }}>
-                {meal.ingredients?.map((ing: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                    <span className="text-[14px] font-bold tracking-tight lowercase first-letter:uppercase" style={{ color: "var(--text-primary)" }}>
-                      {typeof ing === 'object' ? String((ing as any).item) : String(ing)}
-                    </span>
-                    {typeof ing === 'object' && (
-                      <span className="section-label text-brand">{String((ing as any).amount)}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="space-y-4 stagger-3">
-              <SectionHeader title="Methodology" />
-              <div className="wellness-card p-8 relative overflow-hidden group shadow-[0_4px_20px_rgba(47,128,237,0.07)]" style={{ backgroundColor: "var(--surface-1)", border: "1px solid var(--border)" }}>
-                <div className="absolute top-0 right-0 p-6 opacity-[0.03] -z-10 group-hover:scale-110 transition-transform">
-                  <Utensils className="w-32 h-32 text-brand" />
-                </div>
-                <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium" style={{ color: "var(--text-secondary)" }}>
-                  {meal.instructions || "Focus on bio-available nutrients and thermal processing optimization."}
-                </p>
-              </div>
-            </section>
+        <section className="space-y-4">
+          <SectionHeader title="Preparation" />
+          <div className="wellness-card p-5">
+            <p className="whitespace-pre-wrap text-[14px] leading-7" style={{ color: "var(--text-secondary)" }}>
+              {meal.instructions || "Preparation details will appear here once the meal has been generated."}
+            </p>
           </div>
+        </section>
 
-          {/* Action Dock */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 p-6 pt-10" style={{ background: "linear-gradient(to top, var(--surface-base) 35%, color-mix(in srgb, var(--surface-base) 85%, transparent) 70%, transparent 100%)" }}>
-            <div className="max-w-md mx-auto flex flex-col gap-3">
-              {!isLogged ? (
-                <>
-                  <button
-                    className="w-full h-16 rounded-full btn-primary text-white font-bold text-sm uppercase tracking-widest shadow-[0_4px_20px_rgba(47,128,237,0.07)] active:scale-95 transition-all flex items-center justify-center gap-2 border-none"
-                    disabled={isToggling}
-                    onClick={() => toggleConsumed({ id: meal.id, isConsumed: true, date: dateStr })}
-                  >
-                    {isToggling ? <Loader2 className="animate-spin w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
-                    Synchronize Consumption
-                  </button>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      className="h-14 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm"
-                      style={{ backgroundColor: "var(--surface-1)", color: "var(--text-primary)", borderColor: "var(--border)" }}
-                      onClick={() => setShowAlternativeForm(true)}
-                    >
-                      Custom Log
-                    </button>
-                    <button
-                      className="h-14 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm"
-                      style={{ backgroundColor: "var(--surface-1)", color: "#F59E0B", borderColor: "rgba(245, 158, 11, 0.25)" }}
-                      onClick={() => setIsRegenOpen(true)}
-                    >
-                      Optimize
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <button
-                  className="w-full h-16 rounded-full font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm"
-                  style={{ backgroundColor: "var(--surface-1)", color: "#EF4444", border: "1px solid rgba(239, 68, 68, 0.24)" }}
-                  disabled={isToggling}
-                  onClick={() => toggleConsumed({ id: meal.id, isConsumed: false, date: dateStr })}
-                >
-                  {isToggling ? <Loader2 className="animate-spin w-5 h-5" /> : <X className="w-5 h-5" />}
-                  Revert Entry
-                </button>
-              )}
-            </div>
+        <section className="space-y-4">
+          <SectionHeader title="Meal Controls" />
+          <div className="grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
+            <button
+              type="button"
+              onClick={() => setIsRegenOpen(true)}
+              className="wellness-card flex items-center justify-between gap-4 p-5 text-left transition-all active:scale-[0.99]"
+            >
+              <div>
+                <div className="section-label mb-2">Gemini Meal Remix</div>
+                <div className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Build a new meal from your available ingredients
+                </div>
+                <div className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                  Aims for this meal's calorie and protein targets.
+                </div>
+              </div>
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                style={{ background: "rgba(47,128,237,0.1)" }}
+              >
+                <Sparkles className="h-5 w-5 text-brand" />
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAlternativeForm(true)}
+              className="wellness-card flex items-center justify-between gap-4 p-5 text-left transition-all active:scale-[0.99]"
+            >
+              <div>
+                <div className="section-label mb-2">Custom Log</div>
+                <div className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Ate something different?
+                </div>
+                <div className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                  Log a substitute and keep your day accurate.
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 px-5 pb-[calc(20px+env(safe-area-inset-bottom))] pt-8"
+          style={{
+            background:
+              "linear-gradient(to top, var(--surface-base) 44%, color-mix(in srgb, var(--surface-base) 82%, transparent) 76%, transparent 100%)",
+          }}
+        >
+          <div className="mx-auto max-w-md">
+            {!isLogged ? (
+              <button
+                className="btn-primary flex h-[60px] w-full items-center justify-center gap-2 rounded-[20px] border-none text-sm font-bold uppercase tracking-[0.08em]"
+                disabled={isToggling}
+                onClick={() => toggleConsumed({ id: meal.id, isConsumed: true, date: dateStr })}
+              >
+                {isToggling ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                Sync Consumption
+              </button>
+            ) : (
+              <button
+                className="flex h-[60px] w-full items-center justify-center gap-2 rounded-[20px] text-sm font-bold uppercase tracking-[0.08em]"
+                style={{
+                  background: "var(--surface-1)",
+                  border: "1px solid rgba(239,68,68,0.22)",
+                  color: "#EF4444",
+                }}
+                disabled={isToggling}
+                onClick={() => toggleConsumed({ id: meal.id, isConsumed: false, date: dateStr })}
+              >
+                {isToggling ? <Loader2 className="h-5 w-5 animate-spin" /> : <X className="h-5 w-5" />}
+                Revert Entry
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Regeneration Modal */}
         <Dialog open={isRegenOpen} onOpenChange={setIsRegenOpen}>
-          <DialogContent className="max-w-[320px] rounded-[32px] p-0 overflow-hidden backdrop-blur-3xl shadow-[0_4px_20px_rgba(47,128,237,0.07)] page-transition" style={{ backgroundColor: "color-mix(in srgb, var(--surface-1) 94%, transparent)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-            <div className="brand-gradient p-10 text-center text-white space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-1)]/20 backdrop-blur-xl mx-auto flex items-center justify-center border border-white/20">
-                <RefreshCw className="w-8 h-8" />
+          <DialogContent
+            className="max-w-[360px] overflow-hidden rounded-[28px] p-0"
+            style={{
+              background: "color-mix(in srgb, var(--surface-1) 96%, transparent)",
+              border: "1px solid var(--border)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <div className="brand-gradient px-6 py-7 text-white">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="font-display text-xl font-bold tracking-tighter uppercase">Optimizer</h3>
+              <h3 className="font-display text-2xl font-bold">Cook With What You Have</h3>
+              <p className="mt-2 text-[13px] leading-6 text-white/85">
+                Gemini will redesign this {meal.type} around your pantry while aiming for about {meal.calories} kcal
+                and {meal.protein}g protein.
+              </p>
             </div>
-            <div className="p-8 space-y-6">
-              <Textarea
-                placeholder="Preference (e.g. no nuts)..."
-                className="min-h-[80px] rounded-[24px] px-4 py-3 font-medium text-sm"
-                style={{ backgroundColor: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-                value={regenReason}
-                onChange={(e) => setRegenReason(e.target.value)}
-              />
+            <div className="space-y-5 p-6">
+              <div className="space-y-2">
+                <Label className="section-label">Available Ingredients</Label>
+                <Input
+                  placeholder="oats, curd, onions, peanuts"
+                  className="input-field"
+                  value={availableIngredients}
+                  onChange={(event) => setAvailableIngredients(event.target.value)}
+                />
+                <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+                  Separate each item with a comma.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label className="section-label">Extra Preference</Label>
+                <Textarea
+                  placeholder="high protein, no peanuts, hostel-friendly..."
+                  className="min-h-[96px] rounded-[20px] px-4 py-3 text-sm"
+                  style={{
+                    background: "var(--surface-2)",
+                    borderColor: "var(--border)",
+                    color: "var(--text-primary)",
+                  }}
+                  value={regenReason}
+                  onChange={(event) => setRegenReason(event.target.value)}
+                />
+              </div>
               <button
-                className="w-full h-14 rounded-full btn-primary text-white font-bold text-sm uppercase tracking-widest shadow-[0_4px_20px_rgba(47,128,237,0.07)] border-none"
+                className="btn-primary flex h-14 w-full items-center justify-center gap-2 rounded-[18px] border-none text-sm font-bold uppercase tracking-[0.08em]"
                 onClick={handleRegenerate}
-                disabled={isRegenerating}
+                disabled={isRegenerating || !availableIngredients.trim()}
               >
-                {isRegenerating ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Re-generate"}
+                {isRegenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                Generate New Meal
               </button>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Alternative Form Modal */}
-        <Dialog open={showAlternativeForm} onOpenChange={() => setShowAlternativeForm(false)}>
-          <DialogContent className="max-w-[320px] rounded-[32px] p-0 overflow-hidden backdrop-blur-3xl shadow-[0_4px_20px_rgba(47,128,237,0.07)] page-transition" style={{ backgroundColor: "color-mix(in srgb, var(--surface-1) 94%, transparent)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-            <div className="brand-gradient p-10 text-center text-white space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-1)]/20 backdrop-blur-xl mx-auto flex items-center justify-center border border-white/20">
-                <Sparkles className="w-8 h-8" />
+        <Dialog open={showAlternativeForm} onOpenChange={setShowAlternativeForm}>
+          <DialogContent
+            className="max-w-[360px] overflow-hidden rounded-[28px] p-0"
+            style={{
+              background: "color-mix(in srgb, var(--surface-1) 96%, transparent)",
+              border: "1px solid var(--border)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <div className="brand-gradient px-6 py-7 text-white">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                <RefreshCw className="h-6 w-6" />
               </div>
-              <h3 className="font-display text-xl font-bold tracking-tighter uppercase">Manual Log</h3>
+              <h3 className="font-display text-2xl font-bold">Log Another Meal</h3>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="space-y-5 p-6">
               <Textarea
-                placeholder="Describe what you ate..."
-                className="min-h-[100px] rounded-[24px] px-4 py-3 font-medium text-sm"
-                style={{ backgroundColor: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                placeholder="Describe what you actually ate..."
+                className="min-h-[110px] rounded-[20px] px-4 py-3 text-sm"
+                style={{
+                  background: "var(--surface-2)",
+                  borderColor: "var(--border)",
+                  color: "var(--text-primary)",
+                }}
                 value={altDescription}
-                onChange={(e) => setAltDescription(e.target.value)}
+                onChange={(event) => setAltDescription(event.target.value)}
               />
-              <RadioGroup value={altPortionSize} onValueChange={(v: any) => setAltPortionSize(v)} className="flex gap-2">
-                {['small', 'medium', 'large'].map(s => (
-                  <div key={s} className="flex-1">
-                    <RadioGroupItem value={s} id={s} className="sr-only" />
-                    <Label htmlFor={s} className={cn("block text-center py-2 rounded-xl text-[10px] font-bold uppercase border transition-all cursor-pointer", altPortionSize === s ? "btn-primary text-white border-none shadow-[0_4px_20px_rgba(47,128,237,0.07)]" : "")} style={altPortionSize === s ? undefined : { backgroundColor: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text-muted)" }}>
-                      {s}
+              <RadioGroup value={altPortionSize} onValueChange={(value: any) => setAltPortionSize(value)} className="grid grid-cols-3 gap-2">
+                {["small", "medium", "large"].map((size) => (
+                  <div key={size}>
+                    <RadioGroupItem value={size} id={size} className="sr-only" />
+                    <Label
+                      htmlFor={size}
+                      className={cn(
+                        "block cursor-pointer rounded-2xl border py-3 text-center text-[11px] font-bold uppercase tracking-[0.08em] transition-all",
+                        altPortionSize === size ? "btn-primary border-none text-white" : "",
+                      )}
+                      style={
+                        altPortionSize === size
+                          ? undefined
+                          : {
+                              background: "var(--surface-2)",
+                              borderColor: "var(--border)",
+                              color: "var(--text-secondary)",
+                            }
+                      }
+                    >
+                      {size}
                     </Label>
                   </div>
                 ))}
               </RadioGroup>
               <button
-                className="w-full h-14 rounded-full btn-primary text-white font-bold text-sm uppercase tracking-widest shadow-[0_4px_20px_rgba(47,128,237,0.07)] border-none"
+                className="btn-primary flex h-14 w-full items-center justify-center gap-2 rounded-[18px] border-none text-sm font-bold uppercase tracking-[0.08em]"
                 onClick={handleConfirmAlternative}
-                disabled={isLoggingAlt || !altDescription}
+                disabled={isLoggingAlt || !altDescription.trim()}
               >
-                {isLoggingAlt ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Verify & Log"}
+                {isLoggingAlt ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                Verify and Log
               </button>
             </div>
           </DialogContent>
         </Dialog>
-      </PageLayout>
-    </div>
+      </div>
+    </PageLayout>
   );
 }

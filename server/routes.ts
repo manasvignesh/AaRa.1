@@ -56,6 +56,30 @@ async function fetchNutritionInfo(query: string) {
   }
 }
 
+const generatedMealSchema = z.object({
+  name: z.string().min(2),
+  calories: z.number().int().min(50).max(1200),
+  protein: z.number().int().min(1).max(120),
+  carbs: z.number().int().min(0).max(200).optional().default(0),
+  fats: z.number().int().min(0).max(120).optional().default(0),
+  ingredients: z.array(z.string().min(1)).min(2).max(16),
+  instructions: z.string().min(12).max(1200),
+  description: z.string().max(240).optional().default(""),
+});
+
+function toJsonObject(text: string): unknown {
+  const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/i);
+  const candidate = fenced?.[1] ?? text;
+  return JSON.parse(candidate.trim());
+}
+
+function normalizeIngredientsList(availableIngredients: string[] = []): string[] {
+  return availableIngredients
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
 export function registerRoutes(
   httpServer: Server,
   app: Express
@@ -641,6 +665,13 @@ export function registerRoutes(
   app.post(api.meals.regenerate.path, isAuthenticated, async (req: any, res) => {
     const id = parseInt(req.params.id);
     const userId = (req.user as any).id;
+    const parsedInput = api.meals.regenerate.input.safeParse(req.body);
+
+    if (!parsedInput.success) {
+      return res.status(400).json({ message: "Invalid meal optimization input." });
+    }
+
+    const { reason, availableIngredients = [] } = parsedInput.data;
 
     // 1. Get original meal to know targets
     const originalMeal = await storage.getMeal(id);
@@ -650,8 +681,96 @@ export function registerRoutes(
     const profile = await storage.getUserProfile(userId);
     if (!profile) return res.status(400).json({ message: "Profile not found" });
 
+    const pantry = normalizeIngredientsList(availableIngredients);
+    const planMeta = await storage.getPlanMetaById(originalMeal.planId);
+    const planMeals = await storage.getPlanMeals(originalMeal.planId);
+    const otherMeals = planMeals.filter((meal) => meal.id !== originalMeal.id);
+    const consumedCalories = otherMeals.reduce((sum, meal) => {
+      if (meal.consumedAlternative) return sum + (meal.alternativeCalories || 0);
+      if (meal.isConsumed) return sum + (meal.calories || 0);
+      return sum;
+    }, 0);
+    const consumedProtein = otherMeals.reduce((sum, meal) => {
+      if (meal.consumedAlternative) return sum + (meal.alternativeProtein || 0);
+      if (meal.isConsumed) return sum + (meal.protein || 0);
+      return sum;
+    }, 0);
+    const remainingCalories = planMeta
+      ? Math.max((planMeta.caloriesTarget || 0) - consumedCalories, originalMeal.calories)
+      : originalMeal.calories;
+    const remainingProtein = planMeta
+      ? Math.max((planMeta.proteinTarget || 0) - consumedProtein, originalMeal.protein)
+      : originalMeal.protein;
+
     // 3. Get recent history to avoid repeating too soon
     const recentMeals = await storage.getRecentMealNames(userId, 20);
+
+    if (process.env.GEMINI_API_KEY && pantry.length > 0) {
+      try {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const calorieTarget = Math.max(120, originalMeal.calories);
+        const proteinTarget = Math.max(10, originalMeal.protein);
+        const prompt = `
+You are designing one Indian ${originalMeal.type} meal for AARA.
+
+User requirements:
+- Diet: ${profile.dietaryPreferences}
+- Meal slot: ${originalMeal.type}
+- Preferred ingredients to use: ${pantry.join(", ")}
+- Avoid repeating recent meals: ${recentMeals.join(", ") || "none"}
+- User note: ${reason || "No extra note provided"}
+- Original meal being replaced: ${originalMeal.name}
+- Target calories for this meal: about ${calorieTarget} kcal
+- Target protein for this meal: at least ${proteinTarget} g
+- Remaining day budget reference: ${remainingCalories} kcal and ${remainingProtein} g protein
+
+Rules:
+- Use the listed ingredients as the base pantry. You may add at most 3 common Indian staples if absolutely needed.
+- Keep the meal realistic for a student/home kitchen.
+- Match calories within about 15 percent of target.
+- Try to meet or slightly exceed the protein target without becoming unrealistic.
+- Respect the user's diet strictly.
+- Return only valid JSON, no markdown.
+
+JSON shape:
+{
+  "name": "string",
+  "description": "short one-line summary",
+  "calories": 320,
+  "protein": 18,
+  "carbs": 34,
+  "fats": 10,
+  "ingredients": ["item 1", "item 2"],
+  "instructions": "2-4 concise steps"
+}`;
+
+        const result = await model.generateContent(prompt);
+        const rawText = result.response.text();
+        const aiMeal = generatedMealSchema.parse(toJsonObject(rawText));
+
+        const updatedMeal = await storage.updateMeal(id, {
+          name: aiMeal.name,
+          description: aiMeal.description || `AI-optimized ${originalMeal.type} built from your available ingredients.`,
+          calories: aiMeal.calories,
+          protein: aiMeal.protein,
+          carbs: aiMeal.carbs ?? 0,
+          fats: aiMeal.fats ?? 0,
+          ingredients: aiMeal.ingredients,
+          instructions: aiMeal.instructions,
+          isConsumed: false,
+          consumedAlternative: false,
+          alternativeDescription: null,
+          alternativeCalories: null,
+          alternativeProtein: null,
+          feedback: reason || null,
+        });
+
+        return res.json(updatedMeal);
+      } catch (error) {
+        console.error("[MEAL_REGEN] Gemini optimization failed, falling back to library swap:", error);
+      }
+    }
 
     // 4. Deterministic "Next Best" selection
     try {
@@ -676,8 +795,13 @@ export function registerRoutes(
 
       const updatedMeal = await storage.updateMeal(id, {
         name: nextBest.name,
+        description: pantry.length
+          ? `Fallback meal picked for ${originalMeal.type} after pantry optimization could not be generated.`
+          : "Fallback meal picked from the AARA meal library.",
         calories: nextBest.calories,
         protein: nextBest.protein,
+        carbs: nextBest.carbs ?? 0,
+        fats: nextBest.fats ?? 0,
         ingredients: [nextBest.prep],
         instructions: "Follow traditional Indian home-style preparation. Keep oil minimal. Garnish with fresh coriander if available.",
         isConsumed: false // reset

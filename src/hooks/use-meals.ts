@@ -137,7 +137,16 @@ export function useRegenerateMeal() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Failed to regenerate meal");
+      if (!res.ok) {
+        let message = "Failed to regenerate meal";
+        try {
+          const body = await res.json();
+          message = body?.message || message;
+        } catch {
+          // Keep default message when body is not JSON.
+        }
+        throw new Error(message);
+      }
       return api.meals.regenerate.responses[200].parse(await res.json());
     },
     onSuccess: (updatedMeal: any, { date }) => {
@@ -147,6 +156,9 @@ export function useRegenerateMeal() {
       });
 
       toast({ title: "Meal Regenerated", description: "New option created based on your feedback." });
+    },
+    onError: (err) => {
+      toast({ title: "Optimization Failed", description: err.message, variant: "destructive" });
     },
   });
 }
