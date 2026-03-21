@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 const steps = [
   { id: 1, title: "Identity", subtitle: "Tell us about yourself.", fields: ["displayName", "age", "gender"], icon: User },
   { id: 2, title: "Body Stats", subtitle: "Your current metrics.", fields: ["height", "currentWeight"], icon: Scale },
-  { id: 3, title: "Your Goal", subtitle: "Where do you want to be?", fields: ["targetWeight", "dailyMealCount"], icon: Target },
+  { id: 3, title: "Your Goal", subtitle: "Where do you want to be, and by when?", fields: ["targetWeight", "dailyMealCount", "weeklyGoalPace"], icon: Target },
   { id: 4, title: "Lifestyle", subtitle: "Activity and access.", fields: ["activityLevel", "timeAvailability", "gymAccess"], icon: Zap },
   { id: 5, title: "Kitchen", subtitle: "Food and cooking preference.", fields: ["dietaryPreferences", "cookingAccess"], icon: Utensils },
 ];
@@ -28,6 +28,7 @@ const formSchema = z.object({
   currentWeight: z.coerce.number().min(30).max(300),
   targetWeight: z.coerce.number().min(30),
   dailyMealCount: z.coerce.number().min(3).max(5).default(3),
+  weeklyGoalPace: z.enum(["slow", "balanced", "aggressive"]).default("balanced"),
   activityLevel: z.string().min(1),
   dietaryPreferences: z.string().min(1),
   cookingAccess: z.string().min(1),
@@ -36,6 +37,12 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const paceConfig = {
+  slow: { title: "Slow", subtitle: "Easy to stick with", lossRate: 0.25, gainRate: 0.2 },
+  balanced: { title: "Balanced", subtitle: "Recommended", lossRate: 0.5, gainRate: 0.3 },
+  aggressive: { title: "Fast", subtitle: "Quicker results", lossRate: 0.75, gainRate: 0.45 },
+} as const;
 
 const getWeightCategory = (bmi: number) => {
   if (bmi < 18.5) return "underweight";
@@ -100,6 +107,7 @@ export default function Onboarding() {
       height: 170,
       currentWeight: 70,
       targetWeight: 65,
+      weeklyGoalPace: "balanced",
       activityLevel: "",
       dietaryPreferences: "",
       cookingAccess: "",
@@ -112,10 +120,24 @@ export default function Onboarding() {
   const currentStepData = steps[currentStep - 1];
   const height = Number(watch("height") || 0);
   const weight = Number(watch("currentWeight") || 0);
+  const targetWeight = Number(watch("targetWeight") || 0);
+  const goalPace = watch("weeklyGoalPace");
   const calculatedBmi =
     height > 0 && weight > 0 ? weight / Math.pow(height / 100, 2) : null;
   const bmiCategory = calculatedBmi ? getWeightCategory(calculatedBmi) : null;
   const bmiConfig = bmiCategory ? bmiDisplayNames[bmiCategory] : null;
+  const weightDelta = targetWeight > 0 ? Math.abs(weight - targetWeight) : 0;
+  const isGainPhase = targetWeight > weight;
+  const paceDetails = paceConfig[goalPace];
+  const weeklyChangeRate = isGainPhase ? paceDetails.gainRate : paceDetails.lossRate;
+  const estimatedWeeks =
+    weightDelta > 0 && weeklyChangeRate > 0 ? Math.max(1, Math.ceil(weightDelta / weeklyChangeRate)) : null;
+  const estimatedMonths =
+    estimatedWeeks ? Math.max(1, Math.round((estimatedWeeks / 4) * 10) / 10) : null;
+  const estimatedDate = estimatedWeeks ? new Date(Date.now() + estimatedWeeks * 7 * 24 * 60 * 60 * 1000) : null;
+  const formattedEstimatedDate = estimatedDate
+    ? estimatedDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    : null;
 
   const handleNext = async () => {
     const fields = currentStepData.fields as (keyof FormData)[];
@@ -301,6 +323,51 @@ export default function Onboarding() {
                   ))}
                 </div>
               </div>
+              <div className="stagger-3">
+                <Label className="section-label mb-2 block">How Fast Do You Want To Reach It?</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {Object.entries(paceConfig).map(([value, pace]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={cardClass(goalPace === value)}
+                      style={goalPace === value ? { borderColor: "var(--brand-primary)" } : undefined}
+                      onClick={() => setValue("weeklyGoalPace", value as FormData["weeklyGoalPace"])}
+                    >
+                      <div className="font-display text-lg" style={{ color: "var(--text-primary)" }}>
+                        {pace.title}
+                      </div>
+                      <div className="mt-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                        {pace.subtitle}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {estimatedWeeks ? (
+                <div
+                  className="stagger-4 rounded-[20px] p-4"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(47,128,237,0.08), rgba(40,181,160,0.08))",
+                    border: "1px solid rgba(47,128,237,0.12)",
+                  }}
+                >
+                  <div className="section-label mb-2">Estimated Timeframe</div>
+                  <div className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                    Around {estimatedWeeks} week{estimatedWeeks === 1 ? "" : "s"}
+                    {estimatedMonths ? ` (${estimatedMonths} month${estimatedMonths === 1 ? "" : "s"})` : ""}
+                  </div>
+                  <div className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                    This is a rough estimate for {isGainPhase ? "gaining" : "losing"} {weightDelta} kg at a{" "}
+                    {paceDetails.title.toLowerCase()} pace.
+                  </div>
+                  {formattedEstimatedDate ? (
+                    <div className="mt-2 text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>
+                      You could reach this around {formattedEstimatedDate}.
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           )}
 
