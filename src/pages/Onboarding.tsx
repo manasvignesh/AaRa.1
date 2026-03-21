@@ -131,11 +131,11 @@ export default function Onboarding() {
     cn("wellness-card cursor-pointer p-4 text-left transition-all", selected && "");
 
   return (
-    <div className="page-transition min-h-screen px-6 py-8">
-      <div className="mx-auto max-w-xl space-y-8">
+    <div className="page-transition min-h-[100dvh] overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-[420px] space-y-6 sm:max-w-xl sm:space-y-8">
         <div className="animate-slide-up text-center">
           <div className="section-label mb-3">Setup</div>
-          <h1 className="font-display text-4xl">{currentStepData.title}</h1>
+          <h1 className="font-display text-[clamp(2.4rem,9vw,4rem)]">{currentStepData.title}</h1>
           <p className="mt-3" style={{ color: "var(--text-secondary)" }}>
             {currentStepData.subtitle}
           </p>
@@ -145,7 +145,7 @@ export default function Onboarding() {
           <p className="section-label mt-3">Step {currentStep} of {steps.length}</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="wellness-card animate-slide-up p-6 md:p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="wellness-card animate-slide-up p-5 sm:p-6 md:p-8">
           {currentStep === 1 && (
             <div className="space-y-5">
               <div className="stagger-1">
@@ -334,18 +334,26 @@ export default function Onboarding() {
             </div>
           )}
 
-          <div className="mt-8 flex gap-3 border-t pt-6" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-            <button type="button" onClick={() => setCurrentStep((s) => Math.max(s - 1, 1))} disabled={currentStep === 1} className="btn-ghost">
+          <div
+            className="mt-7 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:pt-6"
+            style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          >
+            <button
+              type="button"
+              onClick={() => setCurrentStep((s) => Math.max(s - 1, 1))}
+              disabled={currentStep === 1}
+              className="btn-ghost w-full sm:w-auto"
+            >
               <ChevronLeft className="h-4 w-4" />
               Back
             </button>
             {currentStep < steps.length ? (
-              <button type="button" onClick={handleNext} className="btn-primary ml-auto">
+              <button type="button" onClick={handleNext} className="btn-primary w-full sm:ml-auto sm:w-auto">
                 Next
                 <ChevronRight className="h-4 w-4" />
               </button>
             ) : (
-              <button type="submit" disabled={isPending} className="btn-primary ml-auto">
+              <button type="submit" disabled={isPending} className="btn-primary w-full sm:ml-auto sm:w-auto">
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Generate Plan
               </button>

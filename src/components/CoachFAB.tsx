@@ -7,7 +7,7 @@ export function CoachFAB() {
   const [location] = useLocation();
   const { theme } = useTheme();
 
-  if (location === "/coach") return null;
+  if (location === "/coach" || location === "/onboarding") return null;
 
   return (
     <AnimatePresence>
@@ -15,7 +15,7 @@ export function CoachFAB() {
         initial={{ scale: 0, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0, opacity: 0, y: 20 }}
-        className="fixed bottom-24 right-6 z-50 md:hidden"
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 md:hidden"
       >
         <Link href="/coach">
           <button
