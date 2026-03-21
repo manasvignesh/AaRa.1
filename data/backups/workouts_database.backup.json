@@ -1,0 +1,1930 @@
+[
+  {
+    "id": "W001",
+    "workout_name": "Full Body Strength Foundation",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "underweight"
+    ],
+    "primary_goal": [
+      "muscle_gain",
+      "weight_gain"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 40,
+    "calories_burned_estimate": 180,
+    "equipment_needed": [
+      "dumbbells",
+      "bench"
+    ],
+    "is_hostel_friendly": false,
+    "is_no_equipment": false,
+    "region_notes": "Standard gym workout",
+    "description": "Compound movements to stimulate maximum muscle growth. Focus on progressive overload each session.",
+    "exercises": [
+      {
+        "name": "Barbell Squat",
+        "sets": 4,
+        "reps": "8-10",
+        "rest_seconds": 90,
+        "notes": "Keep chest up, drive through heels"
+      },
+      {
+        "name": "Bench Press",
+        "sets": 4,
+        "reps": "8-10",
+        "rest_seconds": 90,
+        "notes": "Full range of motion"
+      },
+      {
+        "name": "Bent Over Row",
+        "sets": 4,
+        "reps": "8-10",
+        "rest_seconds": 90,
+        "notes": "Squeeze shoulder blades"
+      },
+      {
+        "name": "Overhead Press",
+        "sets": 3,
+        "reps": "8-10",
+        "rest_seconds": 75,
+        "notes": "Keep core tight"
+      },
+      {
+        "name": "Romanian Deadlift",
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 75,
+        "notes": "Feel the hamstring stretch"
+      },
+      {
+        "name": "Dumbbell Curl",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Controlled movement"
+      }
+    ],
+    "warmup": [
+      "5 min light cardio",
+      "Arm circles 30 sec",
+      "Leg swings 30 sec"
+    ],
+    "cooldown": [
+      "Full body stretch 5 min",
+      "Deep breathing"
+    ],
+    "nutrition_note": "Eat a protein-rich meal within 30 minutes post workout. Aim for 30g protein.",
+    "tags": [
+      "compound",
+      "strength",
+      "mass_building"
+    ]
+  },
+  {
+    "id": "W002",
+    "workout_name": "Bodyweight Mass Builder",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "underweight"
+    ],
+    "primary_goal": [
+      "muscle_gain",
+      "weight_gain"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 35,
+    "calories_burned_estimate": 160,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "region_notes": "Perfect for hostel room or small space",
+    "description": "High volume bodyweight training to build muscle without any equipment. Ideal for hostel students.",
+    "exercises": [
+      {
+        "name": "Push Ups",
+        "sets": 4,
+        "reps": "12-15",
+        "rest_seconds": 60,
+        "notes": "Keep body straight as a plank"
+      },
+      {
+        "name": "Pike Push Ups",
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60,
+        "notes": "Targets shoulders"
+      },
+      {
+        "name": "Bodyweight Squats",
+        "sets": 4,
+        "reps": "20",
+        "rest_seconds": 60,
+        "notes": "Go as deep as comfortable"
+      },
+      {
+        "name": "Reverse Lunges",
+        "sets": 3,
+        "reps": "12 each leg",
+        "rest_seconds": 60,
+        "notes": "Step back, knee near floor"
+      },
+      {
+        "name": "Diamond Push Ups",
+        "sets": 3,
+        "reps": "10",
+        "rest_seconds": 60,
+        "notes": "Targets triceps"
+      },
+      {
+        "name": "Glute Bridge",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Squeeze at top"
+      },
+      {
+        "name": "Superman Hold",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Hold 2 seconds at top"
+      }
+    ],
+    "warmup": [
+      "Jumping jacks 1 min",
+      "Neck rolls",
+      "Hip circles"
+    ],
+    "cooldown": [
+      "Child pose 30 sec",
+      "Pigeon pose each side",
+      "Seated forward fold"
+    ],
+    "nutrition_note": "Have a banana with peanut butter before this workout for sustained energy.",
+    "tags": [
+      "bodyweight",
+      "no_equipment",
+      "hostel_friendly",
+      "mass_building"
+    ]
+  },
+  {
+    "id": "W003",
+    "workout_name": "Upper Body Power Day",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy"
+    ],
+    "primary_goal": [
+      "muscle_gain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 45,
+    "calories_burned_estimate": 200,
+    "equipment_needed": [
+      "dumbbells",
+      "pull_up_bar"
+    ],
+    "is_hostel_friendly": false,
+    "is_no_equipment": false,
+    "description": "Focused upper body session for building chest, back, shoulders and arms.",
+    "exercises": [
+      {
+        "name": "Pull Ups",
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 90,
+        "notes": "Full hang at bottom"
+      },
+      {
+        "name": "Dumbbell Bench Press",
+        "sets": 4,
+        "reps": "10-12",
+        "rest_seconds": 75,
+        "notes": "Touch chest at bottom"
+      },
+      {
+        "name": "Single Arm Dumbbell Row",
+        "sets": 4,
+        "reps": "10 each",
+        "rest_seconds": 60,
+        "notes": "Elbow stays close to body"
+      },
+      {
+        "name": "Lateral Raises",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Slight bend in elbow"
+      },
+      {
+        "name": "Tricep Dips",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Use chair if no dip bar"
+      },
+      {
+        "name": "Hammer Curls",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Neutral grip throughout"
+      },
+      {
+        "name": "Face Pulls",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Good for shoulder health"
+      }
+    ],
+    "warmup": [
+      "Band pull aparts 20 reps",
+      "Arm circles",
+      "Shoulder rotations"
+    ],
+    "cooldown": [
+      "Chest opener stretch",
+      "Lat stretch",
+      "Tricep stretch"
+    ],
+    "nutrition_note": "This is a high protein demand session. Target 35g protein post workout.",
+    "tags": [
+      "upper_body",
+      "strength",
+      "pull_push"
+    ]
+  },
+  {
+    "id": "W004",
+    "workout_name": "Leg Day for Growth",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy"
+    ],
+    "primary_goal": [
+      "muscle_gain",
+      "weight_gain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 50,
+    "calories_burned_estimate": 220,
+    "equipment_needed": [
+      "barbell",
+      "dumbbells"
+    ],
+    "is_hostel_friendly": false,
+    "is_no_equipment": false,
+    "description": "Heavy leg session targeting quads, hamstrings and glutes for maximum mass gain.",
+    "exercises": [
+      {
+        "name": "Back Squat",
+        "sets": 5,
+        "reps": "6-8",
+        "rest_seconds": 120,
+        "notes": "King of all exercises"
+      },
+      {
+        "name": "Romanian Deadlift",
+        "sets": 4,
+        "reps": "8-10",
+        "rest_seconds": 90,
+        "notes": "Feel the hamstring stretch"
+      },
+      {
+        "name": "Bulgarian Split Squat",
+        "sets": 3,
+        "reps": "10 each",
+        "rest_seconds": 90,
+        "notes": "Rear foot elevated"
+      },
+      {
+        "name": "Leg Press",
+        "sets": 3,
+        "reps": "12-15",
+        "rest_seconds": 75,
+        "notes": "Full range of motion"
+      },
+      {
+        "name": "Standing Calf Raises",
+        "sets": 4,
+        "reps": "20",
+        "rest_seconds": 45,
+        "notes": "Pause at top and bottom"
+      },
+      {
+        "name": "Leg Curl",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Controlled negative"
+      }
+    ],
+    "warmup": [
+      "5 min cycling",
+      "Hip flexor stretch",
+      "Leg swings"
+    ],
+    "cooldown": [
+      "Quad stretch",
+      "Hamstring stretch",
+      "Hip flexor stretch"
+    ],
+    "nutrition_note": "Biggest workout of the week — eat a full meal 2 hours before. Post workout: rice + dal + chicken.",
+    "tags": [
+      "legs",
+      "compound",
+      "strength",
+      "mass_building"
+    ]
+  },
+  {
+    "id": "W005",
+    "workout_name": "Full Body Athletic Circuit",
+    "workout_type": "hiit",
+    "suitable_for_categories": [
+      "healthy"
+    ],
+    "primary_goal": [
+      "maintain",
+      "muscle_gain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 35,
+    "calories_burned_estimate": 320,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "High intensity circuit combining strength and cardio to maintain fitness and burn fat.",
+    "exercises": [
+      {
+        "name": "Burpees",
+        "sets": 4,
+        "reps": "10",
+        "rest_seconds": 45,
+        "notes": "Full jump at top"
+      },
+      {
+        "name": "Jump Squats",
+        "sets": 4,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Land softly"
+      },
+      {
+        "name": "Push Up to T Rotation",
+        "sets": 3,
+        "reps": "10 each side",
+        "rest_seconds": 45,
+        "notes": "Rotate and hold 1 sec"
+      },
+      {
+        "name": "Mountain Climbers",
+        "sets": 4,
+        "reps": "20 each leg",
+        "rest_seconds": 30,
+        "notes": "Keep hips low"
+      },
+      {
+        "name": "Squat Jumps",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Explode through heels"
+      },
+      {
+        "name": "Plank to Downward Dog",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 30,
+        "notes": "Controlled movement"
+      },
+      {
+        "name": "High Knees",
+        "sets": 3,
+        "reps": "30 seconds",
+        "rest_seconds": 30,
+        "notes": "Drive knees to chest"
+      }
+    ],
+    "warmup": [
+      "Jumping jacks 2 min",
+      "High knees 1 min",
+      "Arm swings"
+    ],
+    "cooldown": [
+      "Full body stretch",
+      "Child pose",
+      "Seated spinal twist"
+    ],
+    "nutrition_note": "Stay hydrated. Light snack 1 hour before — banana or handful of peanuts works great.",
+    "tags": [
+      "hiit",
+      "circuit",
+      "no_equipment",
+      "hostel_friendly",
+      "cardio_strength"
+    ]
+  },
+  {
+    "id": "W006",
+    "workout_name": "Morning Yoga Flow",
+    "workout_type": "yoga",
+    "suitable_for_categories": [
+      "healthy",
+      "underweight",
+      "overweight"
+    ],
+    "primary_goal": [
+      "maintain",
+      "flexibility"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 120,
+    "equipment_needed": [
+      "yoga_mat"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Energizing morning yoga sequence combining traditional Indian asanas with modern flow.",
+    "exercises": [
+      {
+        "name": "Surya Namaskar (Sun Salutation)",
+        "sets": 5,
+        "reps": "1 round",
+        "rest_seconds": 30,
+        "notes": "Sync breath with movement"
+      },
+      {
+        "name": "Warrior I (Virabhadrasana I)",
+        "sets": 1,
+        "reps": "45 sec each side",
+        "rest_seconds": 15,
+        "notes": "Ground back heel"
+      },
+      {
+        "name": "Warrior II (Virabhadrasana II)",
+        "sets": 1,
+        "reps": "45 sec each side",
+        "rest_seconds": 15,
+        "notes": "Open hips to side"
+      },
+      {
+        "name": "Triangle Pose (Trikonasana)",
+        "sets": 1,
+        "reps": "30 sec each side",
+        "rest_seconds": 15,
+        "notes": "Reach long, not just down"
+      },
+      {
+        "name": "Boat Pose (Navasana)",
+        "sets": 3,
+        "reps": "30 sec hold",
+        "rest_seconds": 30,
+        "notes": "Core tight"
+      },
+      {
+        "name": "Seated Forward Fold (Paschimottanasana)",
+        "sets": 1,
+        "reps": "60 sec hold",
+        "rest_seconds": 0,
+        "notes": "Exhale to go deeper"
+      },
+      {
+        "name": "Shavasana",
+        "sets": 1,
+        "reps": "3 min",
+        "rest_seconds": 0,
+        "notes": "Full relaxation"
+      }
+    ],
+    "warmup": [
+      "Deep breathing 2 min",
+      "Neck rolls",
+      "Gentle spinal twist"
+    ],
+    "cooldown": [
+      "Included in shavasana"
+    ],
+    "nutrition_note": "Best done on an empty stomach or 2 hours after a light meal.",
+    "tags": [
+      "yoga",
+      "flexibility",
+      "morning",
+      "traditional_indian",
+      "hostel_friendly"
+    ]
+  },
+  {
+    "id": "W007",
+    "workout_name": "Push Pull Legs Split — Push Day",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "healthy"
+    ],
+    "primary_goal": [
+      "muscle_gain",
+      "maintain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 50,
+    "calories_burned_estimate": 230,
+    "equipment_needed": [
+      "dumbbells",
+      "bench",
+      "cables"
+    ],
+    "is_hostel_friendly": false,
+    "is_no_equipment": false,
+    "description": "Classic push day targeting chest, shoulders and triceps with progressive overload.",
+    "exercises": [
+      {
+        "name": "Incline Dumbbell Press",
+        "sets": 4,
+        "reps": "10-12",
+        "rest_seconds": 75,
+        "notes": "30-45 degree incline"
+      },
+      {
+        "name": "Flat Bench Press",
+        "sets": 4,
+        "reps": "8-10",
+        "rest_seconds": 90,
+        "notes": "Control the descent"
+      },
+      {
+        "name": "Cable Lateral Raise",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Constant tension"
+      },
+      {
+        "name": "Overhead Dumbbell Press",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Seated for stability"
+      },
+      {
+        "name": "Tricep Rope Pushdown",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Spread rope at bottom"
+      },
+      {
+        "name": "Overhead Tricep Extension",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Keep elbows in"
+      },
+      {
+        "name": "Cable Chest Flye",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Hug a tree motion"
+      }
+    ],
+    "warmup": [
+      "Light bench press warm up set",
+      "Rotator cuff work",
+      "Band pull aparts"
+    ],
+    "cooldown": [
+      "Pec stretch",
+      "Shoulder cross-body stretch",
+      "Tricep stretch"
+    ],
+    "nutrition_note": "Pre-workout meal 90 minutes before. Post-workout protein shake or curd + banana.",
+    "tags": [
+      "push",
+      "chest",
+      "shoulders",
+      "triceps",
+      "gym"
+    ]
+  },
+  {
+    "id": "W008",
+    "workout_name": "Low Impact Fat Burn",
+    "workout_type": "cardio",
+    "suitable_for_categories": [
+      "overweight",
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 200,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "Gentle but effective low-impact cardio. No jumping, safe for joints. Perfect starting point.",
+    "exercises": [
+      {
+        "name": "Marching in Place",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 30,
+        "notes": "Swing arms naturally"
+      },
+      {
+        "name": "Side Steps",
+        "sets": 1,
+        "reps": "2 minutes",
+        "rest_seconds": 30,
+        "notes": "Wide steps, stay controlled"
+      },
+      {
+        "name": "Slow Squats",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "4 sec down, 4 sec up"
+      },
+      {
+        "name": "Standing Calf Raises",
+        "sets": 3,
+        "reps": "20",
+        "rest_seconds": 30,
+        "notes": "Hold wall if needed"
+      },
+      {
+        "name": "Wall Push Ups",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Great starting push up"
+      },
+      {
+        "name": "Seated Leg Raises",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 30,
+        "notes": "Sit on chair edge"
+      },
+      {
+        "name": "Standing Hip Circles",
+        "sets": 2,
+        "reps": "10 each direction",
+        "rest_seconds": 20,
+        "notes": "Hands on hips"
+      },
+      {
+        "name": "March in Place Finish",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Cool down pace"
+      }
+    ],
+    "warmup": [
+      "Slow marching 2 min",
+      "Gentle neck rolls",
+      "Shoulder shrugs"
+    ],
+    "cooldown": [
+      "Seated forward fold",
+      "Ankle circles",
+      "Deep breathing 2 min"
+    ],
+    "nutrition_note": "Drink 500ml water before this session. Avoid eating 1 hour before.",
+    "tags": [
+      "low_impact",
+      "beginner_friendly",
+      "joint_safe",
+      "fat_burn",
+      "no_equipment"
+    ]
+  },
+  {
+    "id": "W009",
+    "workout_name": "Strength + Cardio Combo",
+    "workout_type": "hiit",
+    "suitable_for_categories": [
+      "overweight"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 35,
+    "calories_burned_estimate": 280,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "Alternates strength moves with light cardio bursts to maximize calorie burn and preserve muscle.",
+    "exercises": [
+      {
+        "name": "Bodyweight Squats",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Sit back into the squat"
+      },
+      {
+        "name": "March in Place",
+        "sets": 1,
+        "reps": "60 seconds",
+        "rest_seconds": 15,
+        "notes": "Cardio burst"
+      },
+      {
+        "name": "Modified Push Ups (knee)",
+        "sets": 3,
+        "reps": "10",
+        "rest_seconds": 45,
+        "notes": "Build to full push ups"
+      },
+      {
+        "name": "Side Steps",
+        "sets": 1,
+        "reps": "60 seconds",
+        "rest_seconds": 15,
+        "notes": "Cardio burst"
+      },
+      {
+        "name": "Glute Bridge",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Strengthen posterior chain"
+      },
+      {
+        "name": "Step Touch",
+        "sets": 1,
+        "reps": "60 seconds",
+        "rest_seconds": 15,
+        "notes": "Cardio burst"
+      },
+      {
+        "name": "Standing Row (resistance band)",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Or towel row"
+      },
+      {
+        "name": "Plank Hold",
+        "sets": 3,
+        "reps": "20-30 sec",
+        "rest_seconds": 45,
+        "notes": "Progress duration weekly"
+      }
+    ],
+    "warmup": [
+      "3 min slow marching",
+      "Arm swings",
+      "Hip circles"
+    ],
+    "cooldown": [
+      "Full body stretch 5 min",
+      "Child pose",
+      "Seated twist"
+    ],
+    "nutrition_note": "No food 2 hours before. Post-workout: buttermilk or sprouts chaat — light protein.",
+    "tags": [
+      "strength_cardio",
+      "fat_burn",
+      "beginner",
+      "no_equipment"
+    ]
+  },
+  {
+    "id": "W010",
+    "workout_name": "Intermediate Fat Burn HIIT",
+    "workout_type": "hiit",
+    "suitable_for_categories": [
+      "overweight"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 350,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "Higher intensity interval training. 40 seconds work, 20 seconds rest per exercise.",
+    "exercises": [
+      {
+        "name": "Squat to Calf Raise",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Continuous motion"
+      },
+      {
+        "name": "Push Ups",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Modify on knees if needed"
+      },
+      {
+        "name": "Reverse Lunges",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Alternate legs"
+      },
+      {
+        "name": "Mountain Climbers (slow)",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Control the pace"
+      },
+      {
+        "name": "Sumo Squat",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Wide stance, toes out"
+      },
+      {
+        "name": "Plank Shoulder Taps",
+        "sets": 4,
+        "reps": "40 sec on / 20 sec off",
+        "rest_seconds": 20,
+        "notes": "Minimize hip rotation"
+      }
+    ],
+    "warmup": [
+      "5 min low intensity cardio",
+      "Dynamic stretching"
+    ],
+    "cooldown": [
+      "Static stretching 5 min",
+      "Foam roll if available"
+    ],
+    "nutrition_note": "Post-workout window is critical — eat within 45 minutes. Curd rice or egg bhurji are perfect.",
+    "tags": [
+      "hiit",
+      "interval",
+      "fat_burn",
+      "moderate_intensity",
+      "no_equipment"
+    ]
+  },
+  {
+    "id": "W011",
+    "workout_name": "Brisk Walk Protocol",
+    "workout_type": "walk_run",
+    "suitable_for_categories": [
+      "overweight",
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 45,
+    "calories_burned_estimate": 220,
+    "equipment_needed": [
+      "good_shoes"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Structured walk protocol using intervals of brisk and moderate pace for maximum benefit.",
+    "exercises": [
+      {
+        "name": "Warm Up Walk",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Easy comfortable pace"
+      },
+      {
+        "name": "Brisk Walk Interval",
+        "sets": 6,
+        "reps": "4 minutes",
+        "rest_seconds": 60,
+        "notes": "Slightly breathless but can talk"
+      },
+      {
+        "name": "Moderate Walk Recovery",
+        "sets": 5,
+        "reps": "2 minutes",
+        "rest_seconds": 0,
+        "notes": "Between brisk intervals"
+      },
+      {
+        "name": "Cool Down Walk",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Slow comfortable pace"
+      }
+    ],
+    "warmup": [
+      "Included in warm up walk"
+    ],
+    "cooldown": [
+      "Calf stretch",
+      "Quad stretch",
+      "Hip flexor stretch"
+    ],
+    "nutrition_note": "Walk before breakfast for maximum fat burn. Drink water every 15 minutes.",
+    "tags": [
+      "walking",
+      "low_impact",
+      "outdoors",
+      "fat_burn",
+      "beginner",
+      "daily"
+    ]
+  },
+  {
+    "id": "W012",
+    "workout_name": "Chair Based Strength",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 25,
+    "calories_burned_estimate": 150,
+    "equipment_needed": [
+      "chair"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "All exercises use a chair for support. Completely safe for joints. Perfect starting point for Power Journey.",
+    "exercises": [
+      {
+        "name": "Seated March",
+        "sets": 3,
+        "reps": "2 minutes",
+        "rest_seconds": 30,
+        "notes": "Lift knees alternately while seated"
+      },
+      {
+        "name": "Sit to Stand (Chair Squat)",
+        "sets": 3,
+        "reps": "10",
+        "rest_seconds": 60,
+        "notes": "Use arms for support if needed"
+      },
+      {
+        "name": "Seated Leg Extensions",
+        "sets": 3,
+        "reps": "15 each",
+        "rest_seconds": 30,
+        "notes": "Hold 2 sec at top"
+      },
+      {
+        "name": "Seated Calf Raises",
+        "sets": 3,
+        "reps": "20",
+        "rest_seconds": 30,
+        "notes": "Both feet together"
+      },
+      {
+        "name": "Chair Supported Side Steps",
+        "sets": 3,
+        "reps": "10 each side",
+        "rest_seconds": 45,
+        "notes": "Hold chair for balance"
+      },
+      {
+        "name": "Wall Push Ups",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Stand further for more challenge"
+      },
+      {
+        "name": "Seated Torso Rotation",
+        "sets": 2,
+        "reps": "10 each side",
+        "rest_seconds": 30,
+        "notes": "Core activation"
+      }
+    ],
+    "warmup": [
+      "Seated deep breathing 2 min",
+      "Neck rolls",
+      "Shoulder rolls"
+    ],
+    "cooldown": [
+      "Seated forward fold",
+      "Ankle circles",
+      "Deep breathing"
+    ],
+    "nutrition_note": "Hydrate well. After exercise have a glass of buttermilk or coconut water.",
+    "tags": [
+      "chair_workout",
+      "joint_safe",
+      "beginner",
+      "seated",
+      "accessible"
+    ]
+  },
+  {
+    "id": "W013",
+    "workout_name": "Water Walking Protocol",
+    "workout_type": "walk_run",
+    "suitable_for_categories": [
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 180,
+    "equipment_needed": [
+      "good_shoes"
+    ],
+    "is_hostel_friendly": false,
+    "is_no_equipment": false,
+    "description": "Gentle walking protocol to build the habit. Focus is on consistency over intensity.",
+    "exercises": [
+      {
+        "name": "Slow Warm Up Walk",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Very comfortable pace"
+      },
+      {
+        "name": "Comfortable Walk",
+        "sets": 4,
+        "reps": "5 minutes",
+        "rest_seconds": 90,
+        "notes": "Steady comfortable pace — no breathlessness"
+      },
+      {
+        "name": "Cool Down Stroll",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Slow down gradually"
+      }
+    ],
+    "warmup": [
+      "Included"
+    ],
+    "cooldown": [
+      "Stand and stretch calves",
+      "Hip flexor stretch against wall"
+    ],
+    "nutrition_note": "Morning walk before breakfast is ideal. Carry water. No rushing.",
+    "tags": [
+      "walking",
+      "gentle",
+      "habit_building",
+      "daily",
+      "beginner"
+    ]
+  },
+  {
+    "id": "W014",
+    "workout_name": "Standing Low Impact Circuit",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 200,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "All standing exercises — no getting up and down from floor. Joint-friendly and effective.",
+    "exercises": [
+      {
+        "name": "Standing March",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 30,
+        "notes": "Warm up the body"
+      },
+      {
+        "name": "Wide Stance Squat (partial)",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Only go as low as comfortable"
+      },
+      {
+        "name": "Standing Side Leg Raise",
+        "sets": 3,
+        "reps": "15 each",
+        "rest_seconds": 45,
+        "notes": "Hold wall for balance"
+      },
+      {
+        "name": "Standing Calf Raises",
+        "sets": 3,
+        "reps": "20",
+        "rest_seconds": 30,
+        "notes": "Full range"
+      },
+      {
+        "name": "Standing Torso Twist",
+        "sets": 3,
+        "reps": "15 each side",
+        "rest_seconds": 30,
+        "notes": "Arms extended"
+      },
+      {
+        "name": "Modified Wall Push Up",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 45,
+        "notes": "Stand 2 feet from wall"
+      },
+      {
+        "name": "Hip Circles Standing",
+        "sets": 2,
+        "reps": "10 each direction",
+        "rest_seconds": 20,
+        "notes": "Hands on hips"
+      },
+      {
+        "name": "Slow March Cool Down",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Gradually slow pace"
+      }
+    ],
+    "warmup": [
+      "Included in standing march"
+    ],
+    "cooldown": [
+      "Standing quad stretch (hold wall)",
+      "Calf stretch on step",
+      "Deep breathing"
+    ],
+    "nutrition_note": "Post-workout: glass of chaas (buttermilk) with a pinch of jeera — good for digestion and protein.",
+    "tags": [
+      "standing_only",
+      "no_floor",
+      "joint_safe",
+      "no_equipment",
+      "beginner"
+    ]
+  },
+  {
+    "id": "W015",
+    "workout_name": "Obese Intermediate Strength",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "obese"
+    ],
+    "primary_goal": [
+      "weight_loss",
+      "muscle_gain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 40,
+    "calories_burned_estimate": 260,
+    "equipment_needed": [
+      "resistance_bands"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Building real strength with resistance bands — progressive and joint-friendly.",
+    "exercises": [
+      {
+        "name": "Band Squat",
+        "sets": 4,
+        "reps": "15",
+        "rest_seconds": 60,
+        "notes": "Band under feet, hold at shoulders"
+      },
+      {
+        "name": "Band Row",
+        "sets": 4,
+        "reps": "15",
+        "rest_seconds": 60,
+        "notes": "Anchor band at door handle height"
+      },
+      {
+        "name": "Band Chest Press",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 60,
+        "notes": "Anchor band behind you"
+      },
+      {
+        "name": "Band Glute Kickback",
+        "sets": 3,
+        "reps": "12 each",
+        "rest_seconds": 45,
+        "notes": "Great for glutes"
+      },
+      {
+        "name": "Band Bicep Curl",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 45,
+        "notes": "Stand on band"
+      },
+      {
+        "name": "Band Lateral Walk",
+        "sets": 3,
+        "reps": "10 each direction",
+        "rest_seconds": 45,
+        "notes": "Band around ankles"
+      },
+      {
+        "name": "Band Overhead Press",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 60,
+        "notes": "Stand on band"
+      }
+    ],
+    "warmup": [
+      "5 min march in place",
+      "Band pull aparts"
+    ],
+    "cooldown": [
+      "Full stretch routine 5 min"
+    ],
+    "nutrition_note": "Resistance bands are your best friend. Post-workout: high protein meal is essential for muscle preservation.",
+    "tags": [
+      "resistance_bands",
+      "strength",
+      "progressive",
+      "joint_friendly"
+    ]
+  },
+  {
+    "id": "W016",
+    "workout_name": "Gentle Daily Movement",
+    "workout_type": "cardio",
+    "suitable_for_categories": [
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 20,
+    "calories_burned_estimate": 100,
+    "equipment_needed": [
+      "chair"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "The safest possible starting point. Focus is purely on building the movement habit. Every minute counts.",
+    "exercises": [
+      {
+        "name": "Seated Deep Breathing",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Inhale 4 sec, hold 2, exhale 6"
+      },
+      {
+        "name": "Seated Ankle Circles",
+        "sets": 2,
+        "reps": "10 each direction",
+        "rest_seconds": 15,
+        "notes": "Improve circulation"
+      },
+      {
+        "name": "Seated Knee Lifts",
+        "sets": 3,
+        "reps": "10 each",
+        "rest_seconds": 30,
+        "notes": "Gentle, controlled"
+      },
+      {
+        "name": "Seated Arm Circles",
+        "sets": 2,
+        "reps": "10 each direction",
+        "rest_seconds": 15,
+        "notes": "Full circles"
+      },
+      {
+        "name": "Supported Stand and Sit",
+        "sets": 3,
+        "reps": "5",
+        "rest_seconds": 60,
+        "notes": "Use chair arms for support"
+      },
+      {
+        "name": "Seated Side Bend",
+        "sets": 2,
+        "reps": "8 each side",
+        "rest_seconds": 20,
+        "notes": "Gentle stretch"
+      },
+      {
+        "name": "Seated Relaxation Breathing",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Celebrate completing the session"
+      }
+    ],
+    "warmup": [
+      "Included"
+    ],
+    "cooldown": [
+      "Included in breathing"
+    ],
+    "nutrition_note": "Consistency is more important than intensity. Any movement is progress. Stay hydrated throughout the day.",
+    "show_doctor_notice": true,
+    "tags": [
+      "gentle",
+      "seated",
+      "habit_building",
+      "safe",
+      "accessible",
+      "daily"
+    ]
+  },
+  {
+    "id": "W017",
+    "workout_name": "Progressive Standing Routine",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "weight_loss"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 25,
+    "calories_burned_estimate": 130,
+    "equipment_needed": [
+      "wall",
+      "chair"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Building standing tolerance and basic strength using wall support. Week 2+ after Gentle Daily Movement.",
+    "exercises": [
+      {
+        "name": "Wall Supported Standing",
+        "sets": 1,
+        "reps": "2 minutes",
+        "rest_seconds": 60,
+        "notes": "Just stand — this is progress"
+      },
+      {
+        "name": "Wall Push Ups",
+        "sets": 3,
+        "reps": "8",
+        "rest_seconds": 60,
+        "notes": "Arms at chest height"
+      },
+      {
+        "name": "Wall Supported Mini Squat",
+        "sets": 3,
+        "reps": "8",
+        "rest_seconds": 90,
+        "notes": "Very slight bend — progress weekly"
+      },
+      {
+        "name": "Side Step (hold wall)",
+        "sets": 3,
+        "reps": "8 each side",
+        "rest_seconds": 60,
+        "notes": "Small controlled steps"
+      },
+      {
+        "name": "Standing Calf Raises (hold wall)",
+        "sets": 3,
+        "reps": "10",
+        "rest_seconds": 45,
+        "notes": "Rise up on toes"
+      },
+      {
+        "name": "Standing Marching (hold chair)",
+        "sets": 1,
+        "reps": "2 minutes",
+        "rest_seconds": 0,
+        "notes": "Slow, controlled"
+      }
+    ],
+    "warmup": [
+      "Seated breathing 2 min",
+      "Neck rolls",
+      "Shoulder rolls"
+    ],
+    "cooldown": [
+      "Seated rest 3 min",
+      "Deep breathing"
+    ],
+    "nutrition_note": "After completing — celebrate. Have a glass of water with lemon. You showed up.",
+    "show_doctor_notice": true,
+    "tags": [
+      "wall_support",
+      "progressive",
+      "standing",
+      "gentle",
+      "week_2_plus"
+    ]
+  },
+  {
+    "id": "W018",
+    "workout_name": "Morning Surya Namaskar",
+    "workout_type": "yoga",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight"
+    ],
+    "primary_goal": [
+      "maintain",
+      "weight_loss",
+      "flexibility"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 20,
+    "calories_burned_estimate": 150,
+    "equipment_needed": [
+      "yoga_mat"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "12 traditional Sun Salutation poses. The most complete Indian workout sequence for all levels.",
+    "exercises": [
+      {
+        "name": "Pranamasana (Prayer Pose)",
+        "sets": 1,
+        "reps": "3 breath",
+        "rest_seconds": 0,
+        "notes": "Stand tall, palms together"
+      },
+      {
+        "name": "Hastauttanasana (Raised Arms)",
+        "sets": 1,
+        "reps": "inhale",
+        "rest_seconds": 0,
+        "notes": "Arch back gently"
+      },
+      {
+        "name": "Hasta Padasana (Hand to Foot)",
+        "sets": 1,
+        "reps": "exhale",
+        "rest_seconds": 0,
+        "notes": "Bend knees if tight"
+      },
+      {
+        "name": "Ashwa Sanchalanasana (Lunge)",
+        "sets": 1,
+        "reps": "inhale",
+        "rest_seconds": 0,
+        "notes": "Right leg back"
+      },
+      {
+        "name": "Dandasana (Plank)",
+        "sets": 1,
+        "reps": "hold",
+        "rest_seconds": 0,
+        "notes": "Body straight"
+      },
+      {
+        "name": "Ashtanga Namaskara (8 Point)",
+        "sets": 1,
+        "reps": "exhale",
+        "rest_seconds": 0,
+        "notes": "Knees, chest, chin down"
+      },
+      {
+        "name": "Bhujangasana (Cobra)",
+        "sets": 1,
+        "reps": "inhale",
+        "rest_seconds": 0,
+        "notes": "Elbows slightly bent"
+      },
+      {
+        "name": "Adho Mukha (Downward Dog)",
+        "sets": 1,
+        "reps": "exhale",
+        "rest_seconds": 0,
+        "notes": "Heels toward floor"
+      },
+      {
+        "name": "Repeat other side + 5 full rounds",
+        "sets": 5,
+        "reps": "full round",
+        "rest_seconds": 30,
+        "notes": "Build to 12 rounds"
+      }
+    ],
+    "warmup": [
+      "Gentle neck rolls",
+      "Wrist circles"
+    ],
+    "cooldown": [
+      "Shavasana 3 min"
+    ],
+    "nutrition_note": "Best on empty stomach — morning before breakfast. Traditional practice.",
+    "tags": [
+      "surya_namaskar",
+      "traditional_indian",
+      "yoga",
+      "morning",
+      "all_levels"
+    ]
+  },
+  {
+    "id": "W019",
+    "workout_name": "Active Rest & Mobility",
+    "workout_type": "yoga",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "maintain",
+      "recovery"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 20,
+    "calories_burned_estimate": 60,
+    "equipment_needed": [
+      "yoga_mat"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Recovery day mobility work. Reduces soreness, improves flexibility, suitable for every category.",
+    "exercises": [
+      {
+        "name": "Child Pose",
+        "sets": 1,
+        "reps": "60 sec",
+        "rest_seconds": 0,
+        "notes": "Arms extended or alongside body"
+      },
+      {
+        "name": "Cat-Cow Stretch",
+        "sets": 1,
+        "reps": "10 rounds",
+        "rest_seconds": 0,
+        "notes": "Sync with breath"
+      },
+      {
+        "name": "Seated Spinal Twist",
+        "sets": 1,
+        "reps": "45 sec each side",
+        "rest_seconds": 0,
+        "notes": "Exhale into the twist"
+      },
+      {
+        "name": "Pigeon Pose",
+        "sets": 1,
+        "reps": "60 sec each side",
+        "rest_seconds": 0,
+        "notes": "Great hip opener"
+      },
+      {
+        "name": "Legs Up the Wall",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Best recovery pose"
+      },
+      {
+        "name": "Supine Spinal Twist",
+        "sets": 1,
+        "reps": "45 sec each side",
+        "rest_seconds": 0,
+        "notes": "Shoulders stay flat"
+      },
+      {
+        "name": "Shavasana",
+        "sets": 1,
+        "reps": "3 minutes",
+        "rest_seconds": 0,
+        "notes": "Complete relaxation"
+      }
+    ],
+    "warmup": [
+      "Deep breathing 2 min"
+    ],
+    "cooldown": [
+      "Included in shavasana"
+    ],
+    "nutrition_note": "Recovery days are when muscle is built. Eat your protein even on rest days.",
+    "tags": [
+      "recovery",
+      "mobility",
+      "flexibility",
+      "rest_day",
+      "all_categories"
+    ]
+  },
+  {
+    "id": "W020",
+    "workout_name": "Evening Walk + Stretch",
+    "workout_type": "walk_run",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight",
+      "obese",
+      "severely_obese"
+    ],
+    "primary_goal": [
+      "maintain",
+      "weight_loss",
+      "recovery"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 150,
+    "equipment_needed": [
+      "good_shoes"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Easy evening walk to aid digestion and wind down. Universal — suitable for every category.",
+    "exercises": [
+      {
+        "name": "Easy Walk",
+        "sets": 1,
+        "reps": "25 minutes",
+        "rest_seconds": 0,
+        "notes": "Comfortable conversational pace"
+      },
+      {
+        "name": "Post Walk Stretch",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Focus on calves and hips"
+      }
+    ],
+    "warmup": [
+      "First 5 min of walk is warm up"
+    ],
+    "cooldown": [
+      "Post walk stretch included"
+    ],
+    "nutrition_note": "Evening walk after dinner aids digestion significantly. Indian practice with solid science behind it.",
+    "tags": [
+      "walking",
+      "evening",
+      "digestion",
+      "gentle",
+      "daily_habit",
+      "all_categories"
+    ]
+  },
+  {
+    "id": "W021",
+    "workout_name": "Couch to 5K — Week 1",
+    "workout_type": "walk_run",
+    "suitable_for_categories": [
+      "overweight",
+      "healthy"
+    ],
+    "primary_goal": [
+      "weight_loss",
+      "endurance"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 30,
+    "calories_burned_estimate": 250,
+    "equipment_needed": [
+      "good_shoes"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Structured walk-run intervals. Week 1 of building to running 5K. Do 3 times this week.",
+    "exercises": [
+      {
+        "name": "Brisk Walk",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Warm up"
+      },
+      {
+        "name": "Run 60 sec + Walk 90 sec",
+        "sets": 8,
+        "reps": "1 round",
+        "rest_seconds": 0,
+        "notes": "Alternate — 8 full rounds"
+      },
+      {
+        "name": "Brisk Walk Cool Down",
+        "sets": 1,
+        "reps": "5 minutes",
+        "rest_seconds": 0,
+        "notes": "Slow gradually"
+      }
+    ],
+    "warmup": [
+      "Included"
+    ],
+    "cooldown": [
+      "Calf stretch",
+      "Quad stretch",
+      "Hip flexor stretch"
+    ],
+    "nutrition_note": "If running before breakfast, eat a banana 30 min before. Post-run: protein within 30 minutes.",
+    "tags": [
+      "running",
+      "walk_run",
+      "couch_to_5k",
+      "progressive",
+      "cardio"
+    ]
+  },
+  {
+    "id": "W022",
+    "workout_name": "Core & Posture Focus",
+    "workout_type": "strength",
+    "suitable_for_categories": [
+      "underweight",
+      "healthy",
+      "overweight"
+    ],
+    "primary_goal": [
+      "maintain",
+      "posture"
+    ],
+    "difficulty": "beginner",
+    "duration_minutes": 25,
+    "calories_burned_estimate": 140,
+    "equipment_needed": [
+      "yoga_mat"
+    ],
+    "is_hostel_friendly": true,
+    "is_no_equipment": false,
+    "description": "Core strengthening with posture correction. Important for desk workers and students.",
+    "exercises": [
+      {
+        "name": "Dead Bug",
+        "sets": 3,
+        "reps": "10 each side",
+        "rest_seconds": 30,
+        "notes": "Lower back stays flat"
+      },
+      {
+        "name": "Bird Dog",
+        "sets": 3,
+        "reps": "10 each side",
+        "rest_seconds": 30,
+        "notes": "Opposite arm and leg"
+      },
+      {
+        "name": "Plank",
+        "sets": 3,
+        "reps": "30-45 sec",
+        "rest_seconds": 45,
+        "notes": "Straight line head to heel"
+      },
+      {
+        "name": "Side Plank",
+        "sets": 3,
+        "reps": "20-30 sec each",
+        "rest_seconds": 30,
+        "notes": "Modify on knee if needed"
+      },
+      {
+        "name": "Glute Bridge",
+        "sets": 3,
+        "reps": "15",
+        "rest_seconds": 30,
+        "notes": "Posterior chain activation"
+      },
+      {
+        "name": "Superman",
+        "sets": 3,
+        "reps": "12",
+        "rest_seconds": 30,
+        "notes": "Hold 2 seconds at top"
+      },
+      {
+        "name": "Cat-Cow",
+        "sets": 2,
+        "reps": "10",
+        "rest_seconds": 20,
+        "notes": "Spinal mobility"
+      }
+    ],
+    "warmup": [
+      "Cat-cow 5 reps",
+      "Hip circles",
+      "Pelvic tilts"
+    ],
+    "cooldown": [
+      "Child pose",
+      "Seated spinal twist",
+      "Pigeon pose"
+    ],
+    "nutrition_note": "Core work is great before study sessions — improves focus. Light snack beforehand is fine.",
+    "tags": [
+      "core",
+      "posture",
+      "desk_worker",
+      "student",
+      "hostel_friendly"
+    ]
+  },
+  {
+    "id": "W023",
+    "workout_name": "Dorm Room HIIT",
+    "workout_type": "hiit",
+    "suitable_for_categories": [
+      "healthy",
+      "overweight"
+    ],
+    "primary_goal": [
+      "weight_loss",
+      "maintain"
+    ],
+    "difficulty": "intermediate",
+    "duration_minutes": 20,
+    "calories_burned_estimate": 280,
+    "equipment_needed": [],
+    "is_hostel_friendly": true,
+    "is_no_equipment": true,
+    "description": "Maximum results in minimum space and time. Designed specifically for hostel rooms.",
+    "exercises": [
+      {
+        "name": "Jump Squats",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Land softly — mind the neighbors below"
+      },
+      {
+        "name": "Push Ups",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Full or modified"
+      },
+      {
+        "name": "Squat Hold",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Isometric — silent"
+      },
+      {
+        "name": "Mountain Climbers",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Low impact version if needed"
+      },
+      {
+        "name": "Lunges",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Alternating"
+      },
+      {
+        "name": "Plank Hold",
+        "sets": 4,
+        "reps": "30 sec on / 15 sec off",
+        "rest_seconds": 15,
+        "notes": "Core stays tight"
+      }
+    ],
+    "warmup": [
+      "2 min jumping jacks or march in place"
+    ],
+    "cooldown": [
+      "Full body stretch 3 min"
+    ],
+    "nutrition_note": "Hostel student special: post-workout have boiled eggs if available, or peanut butter on bread.",
+    "tags": [
+      "hostel_friendly",
+      "dorm_room",
+      "hiit",
+      "no_equipment",
+      "time_efficient"
+    ]
+  }
+]

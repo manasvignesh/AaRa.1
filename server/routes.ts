@@ -13,6 +13,7 @@ import { selectDeterministicMeals, selectBestMealForSlot } from "../src/api/diet
 import { getWorkoutForProfile, mapWorkoutDifficultyToDb, toWorkoutDbExercises } from "./data/workout-lib";
 import { generatePersonalizedPlan } from "./data/engine";
 import { calculateCategoryTargets, getWeightCategoryDisplayName } from "./services/planGenerator";
+import { generateAiPlan } from "./services/aiPlan";
 
 /**
  * Fetch nutrition data from API-Ninjas
@@ -430,6 +431,40 @@ export function registerRoutes(
           const { caloriesTarget, proteinTarget } = computedTargets;
           await storage.updateDailyPlanTargets(existingFullPlan.id, caloriesTarget, proteinTarget);
 
+          const aiPlan = await generateAiPlan(profile as any);
+          if (aiPlan?.workout) {
+            await storage.createWorkout({
+              planId: existingFullPlan.id,
+              type: String(aiPlan.workout.workoutType || "strength") as any,
+              name: aiPlan.workout.name,
+              description: aiPlan.workout.description || null,
+              duration: Math.round(Number(aiPlan.workout.durationMinutes || 30)),
+              difficulty: mapWorkoutDifficultyToDb(aiPlan.workout.difficulty),
+              exercises: toWorkoutDbExercises({
+                id: "ai-generated",
+                workout_name: aiPlan.workout.name,
+                workout_type: aiPlan.workout.workoutType,
+                primary_goal: [String(profile.primaryGoal || "maintain")],
+                difficulty: aiPlan.workout.difficulty,
+                duration_minutes: aiPlan.workout.durationMinutes,
+                exercises: aiPlan.workout.exercises as any,
+                warmup: aiPlan.workout.warmup,
+                cooldown: aiPlan.workout.cooldown,
+                suitable_for_categories: [computedTargets.weightCategory],
+                name: aiPlan.workout.name,
+                level: aiPlan.workout.difficulty,
+                goal: [String(profile.primaryGoal || "maintain")],
+                duration: String(aiPlan.workout.durationMinutes),
+                suitableForCategories: [computedTargets.weightCategory],
+                workoutType: aiPlan.workout.workoutType,
+                durationMinutes: aiPlan.workout.durationMinutes,
+              } as any),
+            });
+
+            const refreshed = await storage.getDailyPlan(userId, date);
+            return res.status(201).json(refreshed ?? existingFullPlan);
+          }
+
           const engineProfile = {
             goal:
               String(profile.primaryGoal || "").toLowerCase() === "fat_loss"
@@ -506,6 +541,7 @@ export function registerRoutes(
       };
 
       const computedTargets = calculateCategoryTargets(profile as any);
+      const aiPlan = await generateAiPlan(profile as any);
 
       const engineProfile = {
         goal: mapGoal(profile.primaryGoal),
@@ -518,7 +554,7 @@ export function registerRoutes(
         },
       };
 
-      const pPlan = await generatePersonalizedPlan(engineProfile);
+      const pPlan = aiPlan ?? await generatePersonalizedPlan(engineProfile);
 
       // Persistence: Save to database
       const existingPlanMeta = await storage.getDailyPlanMeta(userId, date);
@@ -549,10 +585,11 @@ export function registerRoutes(
       for (const m of mealsToSave) {
         await storage.createMeal({
           planId,
-          type: m.mealType,
+          type: (m as any).mealType,
           name: m.name,
-          calories: m.calories,
-          protein: m.protein,
+          description: (m as any).description || null,
+          calories: Math.round(Number(m.calories || 0)),
+          protein: Math.round(Number(m.protein || 0)),
           carbs: Math.round(Number((m as any).carbs || 0)) || null,
           fats: Math.round(Number((m as any).fat || (m as any).fats || 0)) || null,
           fiber: Math.round(Number((m as any).fiber || 0)) || null,
@@ -566,8 +603,8 @@ export function registerRoutes(
           isMuscleGainFriendly: Boolean((m as any).isMuscleGainFriendly),
           isLowCalorie: Boolean((m as any).isLowCalorie),
           isHighFiber: Boolean((m as any).isHighFiber),
-          ingredients: [m.name], // Simplified
-          instructions: `Region: ${m.region}. Goal: ${m.goal?.join(', ')}.`
+          ingredients: Array.isArray((m as any).ingredients) ? (m as any).ingredients : [m.name],
+          instructions: String((m as any).instructions || `Simple ${String((m as any).mealType || "meal")} preparation.`),
         });
       }
       // Save Workout
