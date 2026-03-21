@@ -14,9 +14,6 @@ import { getWorkoutForProfile, mapWorkoutDifficultyToDb, toWorkoutDbExercises } 
 import { generatePersonalizedPlan } from "./data/engine";
 import { calculateCategoryTargets, getWeightCategoryDisplayName } from "./services/planGenerator";
 
-// Google Gemini client for coach chat
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
 /**
  * Fetch nutrition data from API-Ninjas
  */
@@ -906,16 +903,21 @@ export function registerRoutes(
     try {
       const userId = (req.user as any).id;
       const { message, conversationHistory = [] } = req.body;
+      const isProduction = process.env.NODE_ENV === "production";
 
       if (!message) {
         return res.status(400).json({ message: "Message is required" });
       }
 
       if (!process.env.GEMINI_API_KEY) {
+        const missingKeyMessage = "AI Coach is not configured. Set GEMINI_API_KEY in your deployment environment.";
+        if (isProduction) {
+          return res.status(500).json({ message: missingKeyMessage });
+        }
         res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
-        res.write(`data: ${JSON.stringify({ error: "AI Coach is not configured (missing GEMINI_API_KEY)." })}\n\n`);
+        res.write(`data: ${JSON.stringify({ error: missingKeyMessage })}\n\n`);
         res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
         res.end();
         return;
@@ -999,10 +1001,21 @@ Rules:
 - No extreme or unsafe advice.
 - Stay within your user's diet (${profile?.dietaryPreferences}) and lifestyle.`;
 
-      // Set up SSE for streaming
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
+      const sendCoachPayload = (payload: { content?: string; error?: string; done?: boolean; fullResponse?: string }) => {
+        if (isProduction) {
+          return res.json(payload);
+        }
+        if (!res.headersSent) {
+          res.setHeader("Content-Type", "text/event-stream");
+          res.setHeader("Cache-Control", "no-cache");
+          res.setHeader("Connection", "keep-alive");
+        }
+        res.write(`data: ${JSON.stringify(payload)}\n\n`);
+        if (payload.done || payload.error) {
+          res.end();
+        }
+        return undefined;
+      };
 
       // === HARDENED GEMINI INTEGRATION ===
       console.log("--- Gemini API Call Started ---");
@@ -1053,6 +1066,7 @@ Rules:
         // 3. Call Gemini (fallback across models if one isn't available for this key)
         let result: any = null;
         let lastErr: any = null;
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
         for (const name of modelNames) {
           try {
             const model = genAI.getGenerativeModel({ model: name });
@@ -1094,10 +1108,8 @@ Rules:
           content: text
         });
 
-        // Return response in SSE format (single chunk for non-streaming simplify)
-        res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
-        res.write(`data: ${JSON.stringify({ done: true, fullResponse: text })}\n\n`);
-        res.end();
+        // Return JSON in production; SSE in development.
+        sendCoachPayload({ content: text, done: true, fullResponse: text });
 
       } catch (geminiError: any) {
         // 5. Errors (full stack trace)
@@ -1113,17 +1125,16 @@ Rules:
 
       console.log("--- Gemini API Call Completed Successfully ---");
 
-    } catch (err: any) {
-      console.error("Coach chat route catch block triggered:", err.message);
+      } catch (err: any) {
+        console.error("Coach chat route catch block triggered:", err.message);
 
       // 6. Fallback message on failure
-      const detail =
-        process.env.NODE_ENV !== "production" && err?.message
-          ? ` (${String(err.message)})`
-          : "";
+      const detail = err?.message ? ` (${String(err.message)})` : "";
       const fallbackMessage = `AI Coach is temporarily unavailable. Please try again.${detail}`;
 
-      if (res.headersSent) {
+      if (isProduction) {
+        res.status(500).json({ message: fallbackMessage });
+      } else if (res.headersSent) {
         res.write(`data: ${JSON.stringify({ error: fallbackMessage })}\n\n`);
         res.end();
       } else {

@@ -48,7 +48,37 @@ export function CoachProvider({ children }: { children: React.ReactNode }) {
                 }),
             });
 
-            if (!response.ok) throw new Error(`Failed to send message (${response.status})`);
+            if (!response.ok) {
+                let detail = "";
+                try {
+                    const contentType = response.headers.get("content-type") || "";
+                    if (contentType.includes("application/json")) {
+                        const errorData = await response.json();
+                        detail = errorData?.message || errorData?.error || "";
+                    } else {
+                        detail = (await response.text()) || "";
+                    }
+                } catch {
+                    detail = "";
+                }
+                throw new Error(detail || `Failed to send message (${response.status})`);
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            const isJson = contentType.includes("application/json");
+
+            if (isJson) {
+                const data = await response.json();
+                if (data?.error) {
+                    throw new Error(String(data.error));
+                }
+                const content = String(data?.content || data?.fullResponse || "");
+                if (content) {
+                    setChatMessages(prev => [...prev, { role: "assistant", content }]);
+                }
+                setStreamingMessage("");
+                return;
+            }
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
@@ -97,7 +127,11 @@ export function CoachProvider({ children }: { children: React.ReactNode }) {
         } catch (err) {
             console.error("Chat error:", err);
             setStreamingMessage("");
-            setChatMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't respond. Please try again." }]);
+            const fallbackMessage =
+                err instanceof Error && err.message.trim()
+                    ? err.message
+                    : "Sorry, I couldn't respond. Please try again.";
+            setChatMessages(prev => [...prev, { role: "assistant", content: fallbackMessage }]);
         } finally {
             setIsSending(false);
         }
