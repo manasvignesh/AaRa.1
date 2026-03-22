@@ -484,6 +484,13 @@ body {
     animation: shimmer 1.6s ease infinite;
     border-radius: 0.5rem;
   }
+
+  .wave-divider {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2F80ED, #28B5A0, #27AE60);
+    opacity: 0.3;
+  }
 }
 
 ::-webkit-scrollbar {

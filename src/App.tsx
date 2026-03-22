@@ -23,6 +23,9 @@ import CoachPage from "@/pages/CoachPage";
 import WeightLog from "@/pages/WeightLog";
 import LogManualMeal from "@/pages/LogManualMeal";
 import WalkRunPage from "@/pages/WalkRunPage";
+import CheatMeal from "@/pages/CheatMeal";
+import CookWithIngredients from "@/pages/CookWithIngredients";
+import HostelMode from "@/pages/HostelMode";
 import NotFound from "@/pages/not-found";
 
 import { CoachProvider } from "@/hooks/use-coach-chat";
@@ -137,7 +140,11 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     return null;
   }
 
-  return <Component />;
+  return (
+    <div className="page-transition">
+      <Component />
+    </div>
+  );
 }
 
 function Router() {
@@ -203,6 +210,15 @@ function Router() {
       </Route>
       <Route path="/walk-run">
         <ProtectedRoute component={WalkRunPage} />
+      </Route>
+      <Route path="/cheat-meal">
+        <ProtectedRoute component={CheatMeal} />
+      </Route>
+      <Route path="/cook-with-ingredients">
+        <ProtectedRoute component={CookWithIngredients} />
+      </Route>
+      <Route path="/hostel">
+        <ProtectedRoute component={HostelMode} />
       </Route>
 
       <Route component={NotFound} />
