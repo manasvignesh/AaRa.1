@@ -485,11 +485,14 @@ export function registerRoutes(
 
           const engineProfile = {
             goal:
-              String(profile.primaryGoal || "").toLowerCase() === "fat_loss"
+              String(profile.primaryGoal || "").toLowerCase() === "fat_loss" ||
+              String(profile.primaryGoal || "").toLowerCase() === "weight_loss"
                 ? "weight_loss"
-                : String(profile.primaryGoal || "").toLowerCase() === "muscle_gain"
+                : String(profile.primaryGoal || "").toLowerCase() === "weight_gain"
                   ? "weight_gain"
-                  : "maintain",
+                  : String(profile.primaryGoal || "").toLowerCase() === "muscle_gain"
+                    ? "muscle_gain"
+                    : "maintain",
             dietType:
               (() => {
                 const d = String(profile.dietaryPreferences || "").trim().toLowerCase();
@@ -499,6 +502,7 @@ export function registerRoutes(
               })(),
             regionPreference: profile.regionPreference || "north_indian",
             weightCategory: computedTargets.weightCategory as any,
+            livingSituation: String((profile as any).livingSituation || "home"),
             adjustments: {
               avoid: computedTargets.adjustments.avoid,
               prefer: computedTargets.adjustments.prefer,
@@ -534,8 +538,9 @@ export function registerRoutes(
           console.warn(`[GENERATION] Missing primaryGoal for user ${userId}, defaulting to 'maintain'`);
           return 'maintain';
         }
-        if (pg === 'fat_loss') return 'weight_loss';
-        if (pg === 'muscle_gain') return 'weight_gain';
+        if (pg === 'fat_loss' || pg === 'weight_loss') return 'weight_loss';
+        if (pg === 'weight_gain') return 'weight_gain';
+        if (pg === 'muscle_gain') return 'muscle_gain';
         return 'maintain';
       };
 
@@ -566,6 +571,7 @@ export function registerRoutes(
         dietType: mapDiet(profile.dietaryPreferences),
         regionPreference: profile.regionPreference || "north_indian",
         weightCategory: computedTargets.weightCategory,
+        livingSituation: String((profile as any).livingSituation || "home"),
         adjustments: {
           avoid: computedTargets.adjustments.avoid,
           prefer: computedTargets.adjustments.prefer,
@@ -800,7 +806,7 @@ export function registerRoutes(
             region: String(profile.regionPreference || "pan_india"),
             dietType: String(profile.dietaryPreferences || "veg"),
             primaryGoal: String(profile.primaryGoal || "maintain"),
-            livingSituation: profile.cookingAccess === "none" ? "hostel" : "home",
+            livingSituation: String((profile as any).livingSituation || (profile.cookingAccess === "none" ? "hostel" : "home")),
             currentWeight: Number(profile.currentWeight || 70),
             targetWeight: Number(profile.targetWeight || profile.currentWeight || 65),
             heightCm: Number(profile.height || 170),

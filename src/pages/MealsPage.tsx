@@ -10,6 +10,21 @@ import { format, addDays, subDays, isToday, startOfWeek, eachDayOfInterval, isSa
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
+const MEAL_COST_ESTIMATES: Record<string, string> = {
+    "Idli (plain, 2 medium)": "Free (mess)",
+    "Poha": "Free (mess) / Rs 20 canteen",
+    "Boiled Eggs (2)": "Rs 20-30",
+    "Banana (1 medium)": "Rs 10",
+    "Roasted Chana (30g)": "Rs 10",
+    "Sprouts Chaat": "Rs 15-20",
+    "Dal Tadka": "Free (mess)",
+    "Steamed Rice (1 cup cooked)": "Free (mess)",
+    "Egg Bhurji (2 eggs)": "Rs 30-40",
+    "Buttermilk / Chaas": "Free (mess) / Rs 15",
+    "Bread peanut butter": "Rs 25-30",
+    "Oats Upma": "Rs 20 (own oats)",
+};
+
 export default function MealsPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [, setLocation] = useLocation();
@@ -22,6 +37,7 @@ export default function MealsPage() {
 
     const [activeMealId, setActiveMealId] = useState<number | null>(null);
     const [showConsumptionPrompt, setShowConsumptionPrompt] = useState(false);
+    const isHostelMode = ["hostel", "pg"].includes(String((user as any)?.livingSituation || "").toLowerCase());
 
     useEffect(() => {
         if (!userLoading && user && !planLoading && !plan && !isGenerating && !generationError) {
@@ -112,6 +128,11 @@ export default function MealsPage() {
                     {/* Meals List */}
                     <section className="flex flex-col gap-[12px] stagger-2">
                         <SectionHeader title={`Scheduled Intake (${meals.length})`} />
+                        {isHostelMode && (
+                            <div className="rounded-[20px] px-[16px] py-[12px] text-[13px] font-semibold" style={{ backgroundColor: "rgba(39,174,96,0.08)", border: "1px solid rgba(39,174,96,0.18)", color: "var(--text-primary)" }}>
+                                🏫 Hostel Mode — Showing mess-friendly and easy-to-make meals only
+                            </div>
+                        )}
 
                         <div className="flex flex-col gap-[10px]">
                             {generationError && !isLoading && (
@@ -214,6 +235,11 @@ export default function MealsPage() {
                                                     <span className="h-[26px] px-[10px] rounded-full inline-flex items-center text-brand text-[11px] font-bold" style={{ backgroundColor: "var(--surface-2)" }}>
                                                         {meal.consumedAlternative ? meal.alternativeProtein : meal.protein}g prot
                                                     </span>
+                                                    {isHostelMode && !meal.consumedAlternative && (
+                                                        <span className="pill-green h-[26px] px-[10px] inline-flex items-center text-[11px] font-bold whitespace-nowrap">
+                                                            {MEAL_COST_ESTIMATES[String(meal.name || meal.meal_name)] || "Rs 50-100"}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

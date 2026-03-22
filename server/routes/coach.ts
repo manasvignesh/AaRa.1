@@ -65,7 +65,7 @@ const buildUserContext = async (userId: number): Promise<{ profile: AaraUserProf
       region: String(profile.regionPreference || "pan_india"),
       dietType: String(profile.dietaryPreferences || "veg"),
       primaryGoal: String(profile.primaryGoal || "maintain"),
-      livingSituation: profile.cookingAccess === "none" ? "hostel" : "home",
+      livingSituation: String((profile as any).livingSituation || (profile.cookingAccess === "none" ? "hostel" : "home")),
       currentWeight,
       targetWeight: Number(profile.targetWeight || currentWeight),
       heightCm: Number(profile.height || 170),

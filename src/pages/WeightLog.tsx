@@ -29,7 +29,7 @@ export default function WeightLog() {
 
   const chartData = history?.map(log => ({
     date: format(new Date(log.date), "MMM dd"),
-    weight: log.weight,
+    weight: Number(log.weight),
     rawDate: log.date
   })).reverse() || [];
 
@@ -70,8 +70,12 @@ export default function WeightLog() {
                   <Input
                     type="number"
                     step="0.1"
+                    min="20"
+                    max="300"
+                    inputMode="decimal"
+                    pattern="[0-9]*\\.?[0-9]*"
                     className="text-center text-6xl h-24 w-48 font-display font-bold tracking-tighter rounded-[32px] border-none bg-[var(--surface-2)] text-[var(--text-primary)] focus-visible:ring-[#2F80ED]/20 shadow-inner group-focus-within:bg-[var(--surface-1)] group-focus-within:shadow-[0_4px_20px_rgba(47,128,237,0.07)] transition-all"
-                    placeholder="0.0"
+                    placeholder="e.g. 65.5"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     autoFocus
@@ -156,11 +160,11 @@ export default function WeightLog() {
                 <div className="mt-8 grid grid-cols-2 gap-4">
                   <div className="bg-[var(--surface-2)] p-4 rounded-[24px] border border-[var(--border)]">
                     <p className="section-label mb-1">Starting</p>
-                    <p className="font-display text-xl font-bold tracking-tight text-[var(--text-primary)]">{chartData[0]?.weight} <span className="text-xs font-bold text-[var(--text-muted)]">kg</span></p>
+                    <p className="font-display text-xl font-bold tracking-tight text-[var(--text-primary)]">{chartData[0]?.weight?.toFixed(1)} <span className="text-xs font-bold text-[var(--text-muted)]">kg</span></p>
                   </div>
                   <div className="bg-[var(--surface-2)] p-4 rounded-[24px] border border-[var(--border)]">
                     <p className="section-label mb-1">Latest</p>
-                    <p className="font-display text-xl font-bold tracking-tight text-[var(--text-primary)]">{chartData[chartData.length - 1]?.weight} <span className="text-xs font-bold text-[var(--text-muted)]">kg</span></p>
+                    <p className="font-display text-xl font-bold tracking-tight text-[var(--text-primary)]">{chartData[chartData.length - 1]?.weight?.toFixed(1)} <span className="text-xs font-bold text-[var(--text-muted)]">kg</span></p>
                   </div>
                 </div>
               </div>
@@ -182,7 +186,7 @@ export default function WeightLog() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-display text-lg font-bold tracking-tight text-[var(--text-primary)]">{log.weight} <span className="text-xs text-[var(--text-muted)]">kg</span></p>
+                    <p className="font-display text-lg font-bold tracking-tight text-[var(--text-primary)]">{Number(log.weight).toFixed(1)} <span className="text-xs text-[var(--text-muted)]">kg</span></p>
                   </div>
                 </div>
               ))}

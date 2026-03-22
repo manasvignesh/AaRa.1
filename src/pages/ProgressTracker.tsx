@@ -153,7 +153,7 @@ export default function ProgressTracker() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="font-display text-[42px] font-bold tracking-tighter text-brand leading-[1.1]">
-                      {stats.currentWeight}
+                      {Number(stats.currentWeight).toFixed(1)}
                     </span>
                     <span className="text-[16px] font-semibold text-[var(--text-muted)] mb-2">kg</span>
                   </div>
@@ -166,7 +166,7 @@ export default function ProgressTracker() {
               <div className="flex items-center justify-between border-t border-[var(--border)] pt-[12px] relative z-10">
                 <div className="flex flex-col">
                   <span className="text-[12px] font-medium text-muted text-[var(--text-muted)]">Target Weight</span>
-                  <span className="text-[20px] font-semibold text-[var(--text-primary)] mt-[-2px]">{profile.targetWeight} kg</span>
+                  <span className="text-[20px] font-semibold text-[var(--text-primary)] mt-[-2px]">{Number(profile.targetWeight).toFixed(1)} kg</span>
                 </div>
                 <div className="flex flex-col items-end">
                   <div className={cn(
@@ -310,7 +310,7 @@ export default function ProgressTracker() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-[var(--text-primary)]">
-                    <p className="font-display text-lg font-bold tracking-tighter">{log.weight} <span className="text-[10px] opacity-40 text-[var(--text-muted)]">kg</span></p>
+                    <p className="font-display text-lg font-bold tracking-tighter">{Number(log.weight).toFixed(1)} <span className="text-[10px] opacity-40 text-[var(--text-muted)]">kg</span></p>
                     <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-brand transition-all" />
                   </div>
                 </div>
@@ -331,7 +331,12 @@ export default function ProgressTracker() {
               <div className="flex items-center justify-center gap-2 bg-[var(--surface-2)] p-6 rounded-[24px] border border-[var(--border)] mx-auto">
                 <input
                   type="number"
-                  placeholder="00.0"
+                  step="0.1"
+                  min="20"
+                  max="300"
+                  inputMode="decimal"
+                  pattern="[0-9]*\\.?[0-9]*"
+                  placeholder="e.g. 65.5"
                   value={newWeight}
                   onChange={(e) => setNewWeight(e.target.value)}
                   className="w-24 font-display text-4xl font-bold bg-transparent border-none text-center focus:outline-none tracking-tighter placeholder:text-[var(--text-muted)] text-[var(--text-primary)]"

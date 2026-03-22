@@ -54,6 +54,21 @@ const bmiDisplayNames: Record<
   },
 };
 
+const MEAL_COST_ESTIMATES: Record<string, string> = {
+  "Idli (plain, 2 medium)": "Free (mess)",
+  "Poha": "Free (mess) / Rs 20 canteen",
+  "Boiled Eggs (2)": "Rs 20-30",
+  "Banana (1 medium)": "Rs 10",
+  "Roasted Chana (30g)": "Rs 10",
+  "Sprouts Chaat": "Rs 15-20",
+  "Dal Tadka": "Free (mess)",
+  "Steamed Rice (1 cup cooked)": "Free (mess)",
+  "Egg Bhurji (2 eggs)": "Rs 30-40",
+  "Buttermilk / Chaas": "Free (mess) / Rs 15",
+  "Bread peanut butter": "Rs 25-30",
+  "Oats Upma": "Rs 20 (own oats)",
+};
+
 export default function Dashboard() {
   const [selectedDate] = useState(new Date());
   const { data: user, isLoading: userLoading } = useUserProfile();
@@ -394,6 +409,23 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {["hostel", "pg"].includes(String((user as any)?.livingSituation || "").toLowerCase()) && (
+          <section className="animate-slide-up">
+            <Link href="/hostel">
+              <button className="wellness-card w-full p-[16px] flex items-center justify-between text-left">
+                <div>
+                  <div className="section-label mb-1">Quick Action</div>
+                  <div className="font-display text-[20px] text-[var(--text-primary)]">Hostel Mode</div>
+                  <p className="mt-[4px] text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                    Easy mess-friendly meals and practical hostel swaps.
+                  </p>
+                </div>
+                <span className="pill-green shrink-0">Open</span>
+              </button>
+            </Link>
+          </section>
+        )}
+
         <section className="animate-slide-up space-y-[12px]">
           <SectionHeader
             title="Today's Plan"
@@ -460,6 +492,11 @@ export default function Dashboard() {
                       <p className="mt-[4px] text-[12px]" style={{ color: "var(--text-secondary)" }}>
                         {meal.calories} kcal · {meal.protein}g protein
                       </p>
+                      {["hostel", "pg"].includes(String((user as any)?.livingSituation || "").toLowerCase()) && (
+                        <span className="pill-green mt-[8px] inline-flex text-[10px]">
+                          {MEAL_COST_ESTIMATES[String(meal.name)] || "Rs 50-100"}
+                        </span>
+                      )}
                     </div>
                     <span className={cn(meal.isConsumed ? "pill-green" : "pill-brand", "text-[11px] shrink-0 self-start")}>{meal.isConsumed ? "Logged" : "Planned"}</span>
                   </div>

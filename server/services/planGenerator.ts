@@ -47,7 +47,7 @@ export type CategoryAdjustments = {
 
 export const getCategoryAdjustments = (
   category: WeightCategory,
-  goal: "weight_loss" | "muscle_gain" | "maintain",
+  goal: "weight_loss" | "muscle_gain" | "weight_gain" | "maintain",
   tdee: number,
 ): CategoryAdjustments => {
   switch (category) {
@@ -70,10 +70,12 @@ export const getCategoryAdjustments = (
         calories:
           goal === "weight_loss"
             ? tdee - 300
-            : goal === "muscle_gain"
+            : goal === "weight_gain"
+              ? tdee + 400
+              : goal === "muscle_gain"
               ? tdee + 250
               : tdee,
-        protein_per_kg: goal === "muscle_gain" ? 2.0 : 1.4,
+        protein_per_kg: goal === "muscle_gain" || goal === "weight_gain" ? 1.8 : 1.4,
         carb_percent: 45,
         fat_percent: 30,
         fiber_min_g: 25,
@@ -136,10 +138,12 @@ export const getCategoryAdjustments = (
   }
 };
 
-export function mapPrimaryGoalToPlanGoal(primaryGoal: string | null | undefined): "weight_loss" | "muscle_gain" | "maintain" {
+export function mapPrimaryGoalToPlanGoal(primaryGoal: string | null | undefined): "weight_loss" | "muscle_gain" | "weight_gain" | "maintain" {
   const g = String(primaryGoal ?? "").trim().toLowerCase();
   if (g === "fat_loss") return "weight_loss";
+  if (g === "weight_loss") return "weight_loss";
   if (g === "muscle_gain") return "muscle_gain";
+  if (g === "weight_gain") return "weight_gain";
   return "maintain";
 }
 
@@ -220,4 +224,3 @@ export function calculateCategoryTargets(profile: {
     adjustments,
   };
 }
-

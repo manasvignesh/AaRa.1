@@ -236,6 +236,45 @@ const buildSystemPrompt = (
 ) => {
   const caloriesLeft = Math.max(0, profile.dailyCalorieTarget - dayContext.caloriesConsumed);
   const proteinLeft = Math.max(0, profile.dailyProteinTarget - dayContext.proteinConsumed);
+  const hostelReality =
+    profile.livingSituation === "hostel" || profile.livingSituation === "pg"
+      ? `
+
+HOSTEL FOOD REALITY:
+- Most Indian college mess serves:
+  Morning: Idli/dosa or poha/upma plus chai
+  Lunch: Rice + dal + 1 sabzi + roti + curd
+  Evening: Snack varies
+  Dinner: Rice + dal + 1 sabzi + roti
+- Common access:
+  * Electric kettle
+  * Small fridge sometimes
+  * Microwave sometimes
+  * No gas stove, no oven
+- Nearby buys:
+  * Eggs (Rs 6-8 each)
+  * Bread (Rs 25-35)
+  * Peanut butter (Rs 100-150)
+  * Bananas (Rs 10-15 each)
+  * Oats (Rs 80-100 per 500g)
+  * Roasted chana (Rs 10 per packet)
+  * Milk tetra packs (Rs 20-25)
+  * Curd (Rs 20-30)
+- Budget reality:
+  * Mess covers 3 meals
+  * Extra budget is usually Rs 50-150 per day
+  * Monthly extra spend is usually Rs 1500-4500
+
+Rules for hostel meal suggestions:
+1. Suggest mess food first
+2. Supplement with easy buy items only
+3. Never suggest cooking from scratch
+4. Never suggest ingredients that clearly need refrigeration unless necessary
+5. Mention approximate cost in Rs
+6. Kettle recipes must use 3 ingredients max
+7. No-cook ideas should be prioritized
+`
+      : "";
 
   return `You are AARA, a warm and practical Indian wellness coach.
 
@@ -261,6 +300,7 @@ ${retrievedMeals}
 
 Relevant workouts:
 ${retrievedWorkouts}
+${hostelReality}
 
 Rules:
 - Keep answers practical and concise.
@@ -319,6 +359,7 @@ User:
 - Goal: ${fmt.goal(profile.primaryGoal)}
 - Living: ${fmt.living(profile.livingSituation)}
 - Phase: ${fmt.category(profile.weightCategory)}
+- Daily target: ${profile.dailyCalorieTarget} kcal and ${profile.dailyProteinTarget} g protein
 
 Ingredients: ${ingredients.join(", ")}
 Cooking method: ${cookingMethod}
@@ -326,6 +367,7 @@ Remaining calories today: ${remainingCalories}
 Remaining protein today: ${remainingProtein}
 
 Suggest one practical Indian meal using the listed ingredients.
+If the user is in hostel or PG, prefer mess-friendly, no-cook, kettle, or microwave ideas and mention a rough cost in Rs.
 Respond in JSON only:
 {
   "meal_name": "string",

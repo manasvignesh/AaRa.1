@@ -15,20 +15,80 @@ import { cn } from "@/lib/utils";
 const steps = [
   { id: 1, title: "Identity", subtitle: "Tell us about yourself.", fields: ["displayName", "age", "gender"], icon: User },
   { id: 2, title: "Body Stats", subtitle: "Your current metrics.", fields: ["height", "currentWeight"], icon: Scale },
-  { id: 3, title: "Your Goal", subtitle: "Where do you want to be, and by when?", fields: ["targetWeight", "dailyMealCount", "weeklyGoalPace"], icon: Target },
-  { id: 4, title: "Lifestyle", subtitle: "Activity and access.", fields: ["activityLevel", "timeAvailability", "gymAccess"], icon: Zap },
+  { id: 3, title: "Your Goal", subtitle: "Where do you want to be, and by when?", fields: ["primaryGoal", "targetWeight", "dailyMealCount", "weeklyGoalPace"], icon: Target },
+  { id: 4, title: "Lifestyle", subtitle: "Activity and access.", fields: ["livingSituation", "activityLevel", "timeAvailability", "gymAccess"], icon: Zap },
   { id: 5, title: "Kitchen", subtitle: "Food and cooking preference.", fields: ["dietaryPreferences", "cookingAccess"], icon: Utensils },
 ];
+
+const goals = [
+  {
+    value: "weight_loss",
+    label: "Lose Weight",
+    icon: "🔥",
+    description: "Burn fat, get lean",
+    showFor: ["overweight", "obese", "severely_obese", "healthy"],
+  },
+  {
+    value: "muscle_gain",
+    label: "Build Muscle",
+    icon: "💪",
+    description: "Get stronger and toned",
+    showFor: ["healthy", "underweight", "overweight"],
+  },
+  {
+    value: "weight_gain",
+    label: "Gain Weight",
+    icon: "📈",
+    description: "Healthy weight and mass gain",
+    showFor: ["underweight", "healthy"],
+  },
+  {
+    value: "maintain",
+    label: "Stay Fit",
+    icon: "⚖️",
+    description: "Maintain current weight",
+    showFor: ["healthy", "overweight", "obese", "severely_obese", "underweight"],
+  },
+] as const;
+
+const livingSituations = [
+  {
+    value: "home",
+    label: "At Home",
+    icon: "🏠",
+    description: "Full kitchen access",
+  },
+  {
+    value: "hostel",
+    label: "Hostel / PG",
+    icon: "🏫",
+    description: "Mess food, limited cooking",
+  },
+  {
+    value: "pg",
+    label: "Paying Guest",
+    icon: "🛏️",
+    description: "Shared kitchen or mess",
+  },
+  {
+    value: "working",
+    label: "Working Professional",
+    icon: "💼",
+    description: "Office + ordering food",
+  },
+] as const;
 
 const formSchema = z.object({
   displayName: z.string().min(2, "Name is too short"),
   age: z.coerce.number().min(8).max(100),
   gender: z.string().min(1),
   height: z.coerce.number().min(100).max(300),
-  currentWeight: z.coerce.number().min(30).max(300),
-  targetWeight: z.coerce.number().min(30),
+  currentWeight: z.coerce.number().min(20).max(300),
+  targetWeight: z.coerce.number().min(20).max(300),
+  primaryGoal: z.enum(["weight_loss", "muscle_gain", "weight_gain", "maintain"]),
   dailyMealCount: z.coerce.number().min(3).max(5).default(3),
   weeklyGoalPace: z.enum(["slow", "balanced", "aggressive"]).default("balanced"),
+  livingSituation: z.enum(["home", "hostel", "pg", "working"]).default("home"),
   activityLevel: z.string().min(1),
   dietaryPreferences: z.string().min(1),
   cookingAccess: z.string().min(1),
@@ -107,7 +167,9 @@ export default function Onboarding() {
       height: 170,
       currentWeight: 70,
       targetWeight: 65,
+      primaryGoal: "maintain",
       weeklyGoalPace: "balanced",
+      livingSituation: "home",
       activityLevel: "",
       dietaryPreferences: "",
       cookingAccess: "",
@@ -126,6 +188,7 @@ export default function Onboarding() {
     height > 0 && weight > 0 ? weight / Math.pow(height / 100, 2) : null;
   const bmiCategory = calculatedBmi ? getWeightCategory(calculatedBmi) : null;
   const bmiConfig = bmiCategory ? bmiDisplayNames[bmiCategory] : null;
+  const currentGoal = watch("primaryGoal");
   const weightDelta = targetWeight > 0 ? Math.abs(weight - targetWeight) : 0;
   const isGainPhase = targetWeight > weight;
   const paceDetails = paceConfig[goalPace];
@@ -138,6 +201,16 @@ export default function Onboarding() {
   const formattedEstimatedDate = estimatedDate
     ? estimatedDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
     : null;
+  const visibleGoals = goals.filter((goal) => {
+    if (!bmiCategory || bmiCategory === "healthy" || bmiCategory === "overweight") return true;
+    if (bmiCategory === "underweight") {
+      return ["weight_gain", "muscle_gain", "maintain"].includes(goal.value);
+    }
+    if (bmiCategory === "obese" || bmiCategory === "severely_obese") {
+      return ["weight_loss", "maintain"].includes(goal.value);
+    }
+    return goal.showFor.includes(bmiCategory);
+  });
 
   const handleNext = async () => {
     const fields = currentStepData.fields as (keyof FormData)[];
@@ -205,10 +278,11 @@ export default function Onboarding() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="stagger-2">
-                  <Label className="section-label mb-2 block">Age</Label>
+                  <Label className="section-label mb-2 block">Age (years)</Label>
                   <Input
                     type="number"
                     className="input-field"
+                    placeholder="e.g. 22"
                     {...register("age")}
                     onKeyDown={(event) => handleStepOneEnter(event, "gender")}
                   />
@@ -241,11 +315,21 @@ export default function Onboarding() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="stagger-1">
                   <Label className="section-label mb-2 block">Height (cm)</Label>
-                  <Input type="number" className="input-field" {...register("height")} />
+                  <Input type="number" className="input-field" placeholder="e.g. 170" {...register("height")} />
                 </div>
                 <div className="stagger-2">
                   <Label className="section-label mb-2 block">Current Weight (kg)</Label>
-                  <Input type="number" className="input-field" {...register("currentWeight")} />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="20"
+                    max="300"
+                    inputMode="decimal"
+                    pattern="[0-9]*\\.?[0-9]*"
+                    placeholder="e.g. 65.5"
+                    className="input-field"
+                    {...register("currentWeight")}
+                  />
                 </div>
               </div>
 
@@ -304,10 +388,46 @@ export default function Onboarding() {
           {currentStep === 3 && (
             <div className="space-y-5">
               <div className="stagger-1">
-                <Label className="section-label mb-2 block">Target Weight</Label>
-                <Input type="number" className="input-field" {...register("targetWeight")} />
+                <Label className="section-label mb-2 block">Primary Goal</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {visibleGoals.map((goal) => (
+                    <button
+                      key={goal.value}
+                      type="button"
+                      className={cardClass(currentGoal === goal.value)}
+                      style={currentGoal === goal.value ? { borderColor: "var(--brand-primary)" } : undefined}
+                      onClick={() => setValue("primaryGoal", goal.value)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl leading-none">{goal.icon}</span>
+                        <div>
+                          <div className="font-display text-lg" style={{ color: "var(--text-primary)" }}>
+                            {goal.label}
+                          </div>
+                          <div className="mt-1 text-[12px]" style={{ color: "var(--text-muted)" }}>
+                            {goal.description}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="stagger-2">
+                <Label className="section-label mb-2 block">Target Weight (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="20"
+                  max="300"
+                  inputMode="decimal"
+                  pattern="[0-9]*\\.?[0-9]*"
+                  placeholder="e.g. 62.5"
+                  className="input-field"
+                  {...register("targetWeight")}
+                />
+              </div>
+              <div className="stagger-3">
                 <Label className="section-label mb-2 block">Meals Per Day</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {[3, 4, 5].map((count) => (
@@ -323,7 +443,7 @@ export default function Onboarding() {
                   ))}
                 </div>
               </div>
-              <div className="stagger-3">
+              <div className="stagger-4">
                 <Label className="section-label mb-2 block">How Fast Do You Want To Reach It?</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {Object.entries(paceConfig).map(([value, pace]) => (
@@ -346,7 +466,7 @@ export default function Onboarding() {
               </div>
               {estimatedWeeks ? (
                 <div
-                  className="stagger-4 rounded-[20px] p-4"
+                  className="stagger-5 rounded-[20px] p-4"
                   style={{
                     background: "linear-gradient(145deg, rgba(47,128,237,0.08), rgba(40,181,160,0.08))",
                     border: "1px solid rgba(47,128,237,0.12)",
@@ -374,6 +494,32 @@ export default function Onboarding() {
           {currentStep === 4 && (
             <div className="space-y-5">
               <div className="stagger-1">
+                <Label className="section-label mb-2 block">Living Situation</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {livingSituations.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cardClass(watch("livingSituation") === option.value)}
+                      style={watch("livingSituation") === option.value ? { borderColor: "var(--brand-primary)" } : undefined}
+                      onClick={() => setValue("livingSituation", option.value)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl leading-none">{option.icon}</span>
+                        <div>
+                          <div className="font-display text-base" style={{ color: "var(--text-primary)" }}>
+                            {option.label}
+                          </div>
+                          <div className="mt-1 text-[12px]" style={{ color: "var(--text-muted)" }}>
+                            {option.description}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="stagger-2">
                 <Label className="section-label mb-2 block">Activity Level</Label>
                 <Select onValueChange={(v) => setValue("activityLevel", v)} defaultValue={watch("activityLevel")}>
                   <SelectTrigger className="input-field h-auto">
@@ -386,13 +532,13 @@ export default function Onboarding() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="stagger-2">
-                <Label className="section-label mb-2 block">Time Availability</Label>
-                <Input type="number" className="input-field" {...register("timeAvailability")} />
+              <div className="stagger-3">
+                <Label className="section-label mb-2 block">Time Availability (minutes)</Label>
+                <Input type="number" className="input-field" placeholder="e.g. 30" {...register("timeAvailability")} />
               </div>
               <button
                 type="button"
-                className="wellness-card stagger-3 w-full p-4 text-left"
+                className="wellness-card stagger-4 w-full p-4 text-left"
                 style={watch("gymAccess") ? { borderColor: "var(--brand-primary)" } : undefined}
                 onClick={() => setValue("gymAccess", !watch("gymAccess"))}
               >

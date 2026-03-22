@@ -17,10 +17,10 @@ export const userProfiles = pgTable("user_profiles", {
   age: integer("age").notNull(),
   gender: text("gender").notNull(), // 'male', 'female', 'other'
   height: integer("height").notNull(), // in cm
-  currentWeight: integer("current_weight").notNull(), // in kg
-  targetWeight: integer("target_weight").notNull(), // in kg - strictly fat loss
+  currentWeight: numeric("current_weight", { precision: 5, scale: 1, mode: "number" }).notNull(), // in kg
+  targetWeight: numeric("target_weight", { precision: 5, scale: 1, mode: "number" }).notNull(), // in kg
   // BMI & weight category (Indian cutoffs) - calculated on save
-  bmi: numeric("bmi", { precision: 4, scale: 1 }),
+  bmi: numeric("bmi", { precision: 4, scale: 1, mode: "number" }),
   weightCategory: text("weight_category"), // underweight|healthy|overweight|obese|severely_obese
   bmiLastCalculated: timestamp("bmi_last_calculated"),
   dailyMealCount: integer("daily_meal_count").default(3), // Fixed for the day
@@ -28,6 +28,7 @@ export const userProfiles = pgTable("user_profiles", {
   dietaryPreferences: text("dietary_preferences").notNull(), // 'veg', 'non-veg', 'egg'
   regionPreference: text("region_preference").default("north_indian"), // 'north_indian', 'south_indian'
   cookingAccess: text("cooking_access").notNull(), // 'full', 'basic', 'none'
+  livingSituation: text("living_situation").default("home"), // 'home' | 'hostel' | 'pg' | 'working'
   timeAvailability: integer("time_availability").notNull(), // minutes per day
   gymAccess: boolean("gym_access").default(false),
   displayName: text("display_name"),
@@ -35,7 +36,7 @@ export const userProfiles = pgTable("user_profiles", {
   // Mature health metrics
   sleepDuration: integer("sleep_duration").default(8), // hours
   stressLevel: text("stress_level").default("moderate"), // 'low', 'moderate', 'high'
-  primaryGoal: text("primary_goal").default("fat_loss"), // 'fat_loss', 'recomposition', 'muscle_gain'
+  primaryGoal: text("primary_goal").default("maintain"), // 'weight_loss', 'muscle_gain', 'weight_gain', 'maintain'
   weeklyGoalPace: text("weekly_goal_pace").default("balanced"), // 'slow', 'balanced', 'aggressive'
   // Preferences
   coachingTone: text("coaching_tone").default("supportive"), // 'supportive', 'direct', 'neutral'
@@ -115,7 +116,7 @@ export const workouts = pgTable("workouts", {
 export const weightLogs = pgTable("weight_logs", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
-  weight: integer("weight").notNull(), // in kg
+  weight: numeric("weight", { precision: 5, scale: 1, mode: "number" }).notNull(), // in kg
   date: date("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

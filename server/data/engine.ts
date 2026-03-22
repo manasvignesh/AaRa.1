@@ -6,10 +6,84 @@ export interface UserProfile {
     dietType: string;
     regionPreference: string;
     weightCategory?: string;
+    livingSituation?: string;
     adjustments?: {
         avoid: string[];
         prefer: string[];
     };
+}
+
+function getHostelFriendlyMeals(meals: any[], profile: UserProfile) {
+    const living = String(profile.livingSituation || "").toLowerCase();
+    if (living !== "hostel" && living !== "pg") {
+        return meals;
+    }
+
+    const HOSTEL_APPROVED_METHODS = ["no_cook", "kettle", "microwave", "mess", "canteen"];
+    const REAL_HOSTEL_MEALS = [
+        "Idli (plain, 2 medium)",
+        "Poha",
+        "Oats Upma",
+        "Boiled Eggs (2)",
+        "Banana (1 medium)",
+        "Bread peanut butter",
+        "Sprouts Chaat",
+        "Steamed Rice (1 cup cooked)",
+        "Dal Tadka",
+        "Sambar",
+        "Rajma",
+        "Roti / Chapati (2)",
+        "Curd Rice",
+        "Mixed Veg Sabzi",
+        "Egg Curry (2 eggs)",
+        "Roasted Chana (30g)",
+        "Buttermilk / Chaas",
+        "Moong Dal Soup",
+        "Khichdi",
+        "Egg Bhurji (2 eggs)",
+    ];
+
+    const hostelMeals = meals.filter((meal: any) => {
+        const name = String(meal.meal_name || meal.name || "").trim();
+        const method = String(meal.cooking_method || meal.cookingMethod || "").toLowerCase();
+        const prepTime = Number(meal.prep_time_minutes || meal.prepTimeMinutes || meal.prepTime || 0);
+        const ingredientCount = Array.isArray(meal.ingredients) ? meal.ingredients.length : 0;
+
+        const explicitlyBlocked =
+            method === "oven" ||
+            method === "deep_fried" ||
+            ["Tandoori Chicken", "Chicken Biryani", "Fish Curry", "Mutton Curry"].includes(name) ||
+            prepTime > 20 ||
+            ingredientCount >= 5;
+
+        if (explicitlyBlocked) return false;
+
+        return (
+            REAL_HOSTEL_MEALS.includes(name) ||
+            meal.is_hostel_friendly === true ||
+            meal.isHostelFriendly === true ||
+            HOSTEL_APPROVED_METHODS.includes(method)
+        );
+    });
+
+    if (hostelMeals.length >= 6) {
+        return hostelMeals;
+    }
+
+    return meals.filter((meal: any) => {
+        const method = String(meal.cooking_method || meal.cookingMethod || "").toLowerCase();
+        const prepTime = Number(meal.prep_time_minutes || meal.prepTimeMinutes || meal.prepTime || 0);
+        const ingredientCount = Array.isArray(meal.ingredients) ? meal.ingredients.length : 0;
+        const calories = Number(meal.calories_kcal || meal.calories || 0);
+        return (
+            calories < 400 &&
+            method !== "oven" &&
+            method !== "deep_fried" &&
+            !method.includes("deep") &&
+            prepTime <= 20 &&
+            ingredientCount < 5
+        );
+    });
 }
 
 export async function generatePersonalizedPlan(userProfile: UserProfile) {
@@ -100,6 +174,7 @@ export async function generatePersonalizedPlan(userProfile: UserProfile) {
     const tier3 = allMeals.filter((meal: any) => meal.diet === userProfile.dietType);
 
     let filteredMeals = hardFilter(tier1.length >= 3 ? tier1 : tier2.length >= 3 ? tier2 : tier3);
+    filteredMeals = getHostelFriendlyMeals(filteredMeals, userProfile);
 
     console.log(`[Engine] Tier 1 candidates: ${tier1.length}, Tier 2: ${tier2.length}, Tier 3: ${tier3.length}, after hardFilter: ${filteredMeals.length}`);
 
@@ -110,15 +185,24 @@ export async function generatePersonalizedPlan(userProfile: UserProfile) {
     // Per-meal-type fallback: if specific meal type is empty, use any meal matching diet (+ category if possible)
     if (breakfastOptions.length === 0) {
         console.warn(`[Engine] No breakfast options, using any breakfast matching diet`);
-        breakfastOptions = hardFilter(allMeals.filter((m: any) => m.mealType === 'breakfast' && m.diet === userProfile.dietType && matchesCategory(m)));
+        breakfastOptions = getHostelFriendlyMeals(
+            hardFilter(allMeals.filter((m: any) => m.mealType === 'breakfast' && m.diet === userProfile.dietType && matchesCategory(m))),
+            userProfile
+        );
     }
     if (lunchOptions.length === 0) {
         console.warn(`[Engine] No lunch options, using any lunch matching diet`);
-        lunchOptions = hardFilter(allMeals.filter((m: any) => m.mealType === 'lunch' && m.diet === userProfile.dietType && matchesCategory(m)));
+        lunchOptions = getHostelFriendlyMeals(
+            hardFilter(allMeals.filter((m: any) => m.mealType === 'lunch' && m.diet === userProfile.dietType && matchesCategory(m))),
+            userProfile
+        );
     }
     if (dinnerOptions.length === 0) {
         console.warn(`[Engine] No dinner options, using any dinner matching diet`);
-        dinnerOptions = hardFilter(allMeals.filter((m: any) => m.mealType === 'dinner' && m.diet === userProfile.dietType && matchesCategory(m)));
+        dinnerOptions = getHostelFriendlyMeals(
+            hardFilter(allMeals.filter((m: any) => m.mealType === 'dinner' && m.diet === userProfile.dietType && matchesCategory(m))),
+            userProfile
+        );
     }
 
     // 3. Filter Workouts

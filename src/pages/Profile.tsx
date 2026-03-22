@@ -14,6 +14,15 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { api } from "@shared/routes";
 
+const goalLabels: Record<string, string> = {
+  weight_loss: "Weight Loss",
+  muscle_gain: "Build Muscle",
+  weight_gain: "Weight Gain",
+  maintain: "Stay Fit",
+  fat_loss: "Weight Loss",
+  recomposition: "Stay Fit",
+};
+
 export default function Profile() {
   const { data: profile, isLoading } = useUserProfile();
   const { logout } = useAuth();
@@ -73,7 +82,7 @@ export default function Profile() {
                 <div>
                   <h2 className="font-display text-3xl">{profile.displayName || "Guest"}</h2>
                   <span className="pill-brand mt-3 inline-flex">
-                    {(profile.primaryGoal || "wellness").replace("_", " ")}
+                    {goalLabels[String(profile.primaryGoal || "maintain")] || "Stay Fit"}
                   </span>
                 </div>
               </div>
@@ -81,16 +90,16 @@ export default function Profile() {
 
             <section className="animate-slide-up grid grid-cols-3 gap-4">
               <div className="metric-card stagger-1 text-center">
-                <div className="section-label mb-2">Height</div>
+                <div className="section-label mb-2">Height (cm)</div>
                 <div className="font-display text-2xl">{profile.height || "--"}</div>
               </div>
               <div className="metric-card stagger-2 text-center">
-                <div className="section-label mb-2">Weight</div>
-                <div className="font-display text-2xl">{profile.currentWeight || "--"}</div>
+                <div className="section-label mb-2">Weight (kg)</div>
+                <div className="font-display text-2xl">{profile.currentWeight ? Number(profile.currentWeight).toFixed(1) : "--"}</div>
               </div>
               <div className="metric-card stagger-3 text-center">
-                <div className="section-label mb-2">Goal</div>
-                <div className="font-display text-2xl">{profile.targetWeight || "--"}</div>
+                <div className="section-label mb-2">Goal Weight (kg)</div>
+                <div className="font-display text-2xl">{profile.targetWeight ? Number(profile.targetWeight).toFixed(1) : "--"}</div>
               </div>
             </section>
 
@@ -113,8 +122,8 @@ export default function Profile() {
                     name="height"
                     render={({ field }) => (
                       <div>
-                        <label className="section-label mb-2 block">Height</label>
-                        <Input type="number" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} className="input-field" />
+                        <label className="section-label mb-2 block">Height (cm)</label>
+                        <Input type="number" placeholder="e.g. 170" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)} className="input-field" />
                       </div>
                     )}
                   />
@@ -123,8 +132,64 @@ export default function Profile() {
                     name="currentWeight"
                     render={({ field }) => (
                       <div>
-                        <label className="section-label mb-2 block">Weight</label>
-                        <Input type="number" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} className="input-field" />
+                        <label className="section-label mb-2 block">Weight (kg)</label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="20"
+                          max="300"
+                          inputMode="decimal"
+                          pattern="[0-9]*\\.?[0-9]*"
+                          placeholder="e.g. 65.5"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          className="input-field"
+                        />
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="targetWeight"
+                    render={({ field }) => (
+                      <div>
+                        <label className="section-label mb-2 block">Target Weight (kg)</label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="20"
+                          max="300"
+                          inputMode="decimal"
+                          pattern="[0-9]*\\.?[0-9]*"
+                          placeholder="e.g. 62.0"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          className="input-field"
+                        />
+                      </div>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="livingSituation"
+                    render={({ field }) => (
+                      <div>
+                        <label className="section-label mb-2 block">Living Situation</label>
+                        <Select onValueChange={field.onChange} value={field.value || "home"}>
+                          <SelectTrigger className="input-field h-auto">
+                            <SelectValue placeholder="Select living setup" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="home">At Home</SelectItem>
+                            <SelectItem value="hostel">Hostel / PG</SelectItem>
+                            <SelectItem value="pg">Paying Guest</SelectItem>
+                            <SelectItem value="working">Working Professional</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                   />
@@ -154,14 +219,15 @@ export default function Profile() {
                   render={({ field }) => (
                     <div>
                       <label className="section-label mb-2 block">Primary Goal</label>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <Select onValueChange={field.onChange} value={field.value || "maintain"}>
                         <SelectTrigger className="input-field h-auto">
                           <SelectValue placeholder="Select goal" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="fat_loss">Fat Loss</SelectItem>
-                          <SelectItem value="recomposition">Recomposition</SelectItem>
-                          <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
+                          <SelectItem value="weight_loss">Lose Weight</SelectItem>
+                          <SelectItem value="muscle_gain">Build Muscle</SelectItem>
+                          <SelectItem value="weight_gain">Gain Weight</SelectItem>
+                          <SelectItem value="maintain">Stay Fit</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
