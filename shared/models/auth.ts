@@ -17,7 +17,10 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: varchar("email").unique().notNull(),
-  password: text("password").notNull(),
+  password: text("password"),
+  googleId: varchar("google_id", { length: 100 }),
+  avatar: varchar("avatar", { length: 500 }),
+  name: varchar("name", { length: 100 }),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),

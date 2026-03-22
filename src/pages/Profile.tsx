@@ -25,7 +25,7 @@ const goalLabels: Record<string, string> = {
 
 export default function Profile() {
   const { data: profile, isLoading } = useUserProfile();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
   const { toast } = useToast();
 
@@ -76,9 +76,39 @@ export default function Profile() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pb-6">
             <section className="metric-card animate-slide-up">
               <div className="flex items-center gap-4">
-                <div className="brand-gradient flex h-20 w-20 items-center justify-center rounded-3xl text-2xl font-bold text-white">
-                  {initials}
-                </div>
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name || "Profile"}
+                    style={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid var(--brand-primary)",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: "50%",
+                      background: "var(--brand-primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "26px",
+                      fontWeight: 700,
+                      color: "var(--surface-base)",
+                      fontFamily: "var(--font-display)",
+                    }}
+                  >
+                    {(user?.name || user?.email || initials || "A")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <h2 className="font-display text-3xl">{profile.displayName || "Guest"}</h2>
                   <span className="pill-brand mt-3 inline-flex">

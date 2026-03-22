@@ -1,5 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -8,6 +9,9 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User } from "@shared/schema";
 import { pool } from "./db";
+import { db } from "./db";
+import { users, userProfiles } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 const scryptAsync = promisify(scrypt);
 const PostgresSessionStore = connectPg(session);
@@ -18,7 +22,7 @@ async function hashPassword(password: string) {
     return `${buf.toString("hex")}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {
+async function comparePasswords(supplied: string, stored: string | null | undefined) {
     if (!stored || !stored.includes(".")) {
         console.warn(`[AUTH] Malformed password hash detected (missing dot).`);
         return false;
@@ -88,6 +92,71 @@ export function setupAuth(app: Express) {
             }
         )
     );
+
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        passport.use(
+            new GoogleStrategy(
+                {
+                    clientID: process.env.GOOGLE_CLIENT_ID,
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    callbackURL: "/api/auth/google/callback",
+                },
+                async (_accessToken, _refreshToken, profile, done) => {
+                    try {
+                        const email = profile.emails?.[0]?.value?.toLowerCase().trim();
+                        const name = profile.displayName;
+                        const avatar = profile.photos?.[0]?.value;
+                        const googleId = profile.id;
+
+                        if (!email) {
+                            return done(new Error("No email from Google"));
+                        }
+
+                        const [existingUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+                        if (existingUser) {
+                            if (!existingUser.googleId || existingUser.googleId !== googleId || existingUser.avatar !== avatar) {
+                                const [updatedUser] = await db
+                                    .update(users)
+                                    .set({
+                                        googleId,
+                                        avatar: avatar || existingUser.avatar,
+                                        name: name || existingUser.name,
+                                        profileImageUrl: avatar || existingUser.profileImageUrl,
+                                        updatedAt: new Date(),
+                                    })
+                                    .where(eq(users.id, existingUser.id))
+                                    .returning();
+                                return done(null, updatedUser);
+                            }
+                            return done(null, existingUser);
+                        }
+
+                        const usernameBase = email.split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 40) || "google_user";
+                        const [newUser] = await db
+                            .insert(users)
+                            .values({
+                                email,
+                                password: null,
+                                googleId,
+                                avatar: avatar || null,
+                                name: name || usernameBase,
+                                firstName: name?.split(" ")?.[0] || usernameBase,
+                                lastName: name?.split(" ")?.slice(1).join(" ") || null,
+                                profileImageUrl: avatar || null,
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                            })
+                            .returning();
+
+                        return done(null, newUser);
+                    } catch (err) {
+                        return done(err as any);
+                    }
+                }
+            )
+        );
+    }
 
     passport.serializeUser((user: any, done) => {
         console.log(`[AUTH] Serializing user: ${user.id}`);
@@ -186,4 +255,33 @@ export function setupAuth(app: Express) {
         if (!req.isAuthenticated()) return res.sendStatus(401);
         res.json(req.user);
     });
+
+    app.get(
+        "/api/auth/google",
+        passport.authenticate("google", {
+            scope: ["profile", "email"],
+        }),
+    );
+
+    app.get(
+        "/api/auth/google/callback",
+        passport.authenticate("google", {
+            failureRedirect: "/auth?error=google_failed",
+            session: true,
+        }),
+        async (req, res) => {
+            try {
+                const user = req.user as any;
+                const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, user.id)).limit(1);
+
+                if (!profile) {
+                    return res.redirect("/onboarding");
+                }
+
+                return res.redirect("/dashboard");
+            } catch (err) {
+                return res.redirect("/auth?error=server_error");
+            }
+        },
+    );
 }
