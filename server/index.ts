@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import coachRouter from "./routes/coach";
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,6 +38,7 @@ export function log(message: string, source = "express") {
 import { setupAuth } from "./auth";
 
 setupAuth(app);
+app.use("/api/coach", coachRouter);
 
 app.use((req, res, next) => {
   const start = Date.now();

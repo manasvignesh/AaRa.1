@@ -59,6 +59,7 @@
     "express": "^5.0.1",
     "express-session": "^1.19.0",
     "framer-motion": "^11.18.2",
+    "groq-sdk": "^1.1.1",
     "input-otp": "^1.4.2",
     "localtunnel": "^2.0.2",
     "lucide-react": "^0.453.0",

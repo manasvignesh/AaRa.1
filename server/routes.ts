@@ -14,6 +14,7 @@ import { generatePersonalizedPlan } from "./data/engine";
 import { calculateCategoryTargets, getWeightCategoryDisplayName } from "./services/planGenerator";
 import { generateAiPlan } from "./services/aiPlan";
 import { generateLlmChat, generateLlmText, isLlmConfigured } from "./services/llm";
+import { suggestFromIngredients } from "./services/aara-ai";
 
 /**
  * Fetch nutrition data from API-Ninjas
@@ -778,6 +779,61 @@ export function registerRoutes(
 
     // 3. Get recent history to avoid repeating too soon
     const recentMeals = await storage.getRecentMealNames(userId, 20);
+
+    if (process.env.GROQ_API_KEY && pantry.length > 0) {
+      try {
+        const groqMeal = await suggestFromIngredients({
+          ingredients: pantry,
+          cookingMethod:
+            profile.cookingAccess === "none"
+              ? "no_cook"
+              : profile.cookingAccess === "basic"
+                ? "microwave"
+                : "stovetop",
+          remainingCalories,
+          remainingProtein,
+          profile: {
+            userId,
+            userName: profile.displayName || "there",
+            age: Number(profile.age || 25),
+            gender: String(profile.gender || "male"),
+            region: String(profile.regionPreference || "pan_india"),
+            dietType: String(profile.dietaryPreferences || "veg"),
+            primaryGoal: String(profile.primaryGoal || "maintain"),
+            livingSituation: profile.cookingAccess === "none" ? "hostel" : "home",
+            currentWeight: Number(profile.currentWeight || 70),
+            targetWeight: Number(profile.targetWeight || profile.currentWeight || 65),
+            heightCm: Number(profile.height || 170),
+            bmi: Number(profile.bmi || 22),
+            weightCategory: String(profile.weightCategory || "healthy"),
+            dailyCalorieTarget: Number(planMeta?.caloriesTarget || 2000),
+            dailyProteinTarget: Number(planMeta?.proteinTarget || 120),
+            dailyWaterTargetMl: 2500,
+          },
+        });
+
+        const updatedMeal = await storage.updateMeal(id, {
+          name: groqMeal.meal_name,
+          description: `AI-built ${originalMeal.type} using your available ingredients.`,
+          calories: groqMeal.estimated_calories,
+          protein: groqMeal.estimated_protein,
+          carbs: groqMeal.estimated_carbs,
+          fats: groqMeal.estimated_fat,
+          ingredients: pantry,
+          instructions: groqMeal.recipe_steps.join("\n"),
+          isConsumed: false,
+          consumedAlternative: false,
+          alternativeDescription: null,
+          alternativeCalories: null,
+          alternativeProtein: null,
+          feedback: reason || null,
+        });
+
+        return res.json(updatedMeal);
+      } catch (error) {
+        console.error("[MEAL_REGEN] Groq optimization failed, falling back:", error);
+      }
+    }
 
     if (isLlmConfigured() && pantry.length > 0) {
       try {
