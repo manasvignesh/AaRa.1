@@ -250,7 +250,11 @@ export const userGamificationRelations = relations(userGamification, ({ one }) =
 }));
 
 // === BASE SCHEMAS ===
-export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+export const insertUserProfileSchema = createInsertSchema(userProfiles, {
+  currentWeight: z.coerce.number().min(20).max(300),
+  targetWeight: z.coerce.number().min(20).max(300),
+  bmi: z.coerce.number().min(10).max(80).optional().nullable(),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -272,7 +276,9 @@ export const insertWorkoutSchema = createInsertSchema(workouts).omit({
   id: true
 });
 
-export const insertWeightLogSchema = createInsertSchema(weightLogs).omit({
+export const insertWeightLogSchema = createInsertSchema(weightLogs, {
+  weight: z.coerce.number().min(20).max(300),
+}).omit({
   id: true,
   createdAt: true
 });
