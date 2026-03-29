@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: aara-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: NUTRITION_API_KEY
+        sync: false
+      - key: AI_INTEGRATIONS_OPENAI_API_KEY
+        sync: false
+      - key: AI_INTEGRATIONS_OPENAI_BASE_URL
+        sync: false
+      - key: AI_INTEGRATIONS_OPENAI_MODEL
+        sync: false
